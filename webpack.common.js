@@ -5,7 +5,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
   entry: {
-     app: './src/index.js',
+     app: './src/index.jsx',
      print: './src/print.js',
      vendor: [
        'lodash'
@@ -30,6 +30,16 @@ module.exports = {
   },
   module: {
      rules: [
+      {
+        test: /\.jsx$/,
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env', 'react']
+          }
+        }
+      },
        {
          test: /\.css$/,
          use: [
