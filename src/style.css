@@ -6,8 +6,193 @@
    font-style: normal;
 }
 
-.hello {
+.checkcssworking {
   color: red;
   background: url('./icon.png');
   font-family: 'MyFont';
+}
+
+/* SVG UI Day and nighttime */
+
+
+.ground-wind {
+    fill: green;
+}
+.red-pointer {
+    stroke: red;
+    fill: red;
+}
+
+.boat-starboard {
+    stroke: green;
+    fill: green;    
+}
+.boat-port {
+    stroke: red;
+    fill: red;    
+}
+
+.starboard-sector {
+    fill:none;
+    stroke:green;
+    stroke-width:30;
+}
+.port-sector {
+    fill:none;
+    stroke:red;
+    stroke-width:30;
+}
+
+
+
+.fullbrightness {
+    stroke: black;
+    fill: black;
+    background-color: white;
+}
+
+
+.fullbrightness .rose-marker {
+    fill: black;
+}
+
+.fullbrightness .dark-area {
+    fill: black;
+    stroke: white;
+}
+
+.fullbrightness .light-area {
+    fill: white;
+    stroke: black;
+}
+
+.fullbrightness text.light-area {
+    fill: black;
+}
+
+.fullbrightness .true-wind {
+    fill: cyan;
+    stroke: cyan;
+}
+.fullbrightness .true-wind-history {
+    stroke: cyan;
+    fill: none;
+    stroke-width: 1;
+}
+
+.fullbrightness .apparent-wind {
+    fill: orange;
+    stroke: orange;
+}
+.fullbrightness .apparent-wind-history {
+    fill: none;
+    stroke: orange;
+    stroke-width: 1;
+}
+
+.fullbrightness .data-box > rect {
+    fill: rgba(255,255,255,0.9);
+}
+
+
+
+.daytime {
+    stroke: white;
+    fill: white;
+    background-color: black;
+}
+
+.daytime .rose-marker {
+    fill: white;
+}
+
+.daytime .dark-area {
+    fill: white;
+    stroke: black;
+}
+
+.daytime .light-area {
+    fill: black;
+    stroke: white;
+}
+
+.daytime text.light-area {
+    fill: white;
+}
+
+.daytime .true-wind {
+    fill: cyan;
+    stroke: cyan;
+}
+.daytime .true-wind-history {
+    stroke: cyan;
+    fill: none;
+    stroke-width: 1;
+}
+
+.daytime .apparent-wind {
+    fill: orange;
+    stroke: orange;
+}
+.daytime .apparent-wind-history {
+    fill: none;
+    stroke: orange;
+    stroke-width: 1;
+}
+
+.daytime .data-box > rect {
+    fill: rgba(10,10,10,0.5);
+}
+
+
+
+
+
+.nighttime {
+    stroke: red;
+    fill: red;
+    background-color: black;
+}
+
+
+.nighttime .dark-area {
+    fill: red;
+    stroke: black;
+}
+
+
+.nighttime .light-area {
+    fill: black;
+    stroke: red;
+}
+
+
+.nighttime text.light-area {
+    fill: red;
+}
+
+
+
+
+.nighttime .true-wind {
+    fill: cyan;
+    stroke: cyan;
+}
+.nighttime .true-wind-history {
+    stroke: cyan;
+    fill: none;
+    stroke-width: 1;
+}
+.nighttime .apparent-wind {
+    fill: orange;
+    stroke: orange;
+}
+.nighttime .apparent-wind-history {
+    fill: none;
+    stroke: orange;
+    stroke-width: 1;
+}
+
+.nighttime .data-box > rect {
+    fill: rgba(10,10,10,0.5);
 }

@@ -8,13 +8,19 @@ module.exports = {
      app: './src/index.jsx',
      print: './src/print.js',
      vendor: [
-       'lodash'
+       'lodash',
+       'd3',
+       'react',
+       'react-dom',
+       'baconjs',
+       'js-quantities',
+       '@signalk/signalk-schema'
      ]
   },  
   plugins: [
      new CleanWebpackPlugin(['dist']),
      new HtmlWebpackPlugin({
-       title: 'Production'
+       template: 'src/index.html'
      }),
      new webpack.HashedModuleIdsPlugin(),
      new webpack.optimize.CommonsChunkPlugin({
@@ -24,6 +30,7 @@ module.exports = {
        name: 'manifest'
      })
    ],
+  externals: ['mdns'],
   output: {
     filename: '[name].[chunkhash].bundle.js',
     path: path.resolve(__dirname, 'dist')
@@ -36,12 +43,14 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
+            plugins: [ 'react-html-attrs' ],
             presets: ['env', 'react']
           }
         }
       },
        {
          test: /\.css$/,
+         exclude: /(node_modules|bower_components)/,
          use: [
            'style-loader',
            'css-loader'
@@ -49,27 +58,37 @@ module.exports = {
        },
        {
          test: /\.(png|svg|jpg|gif)$/,
+         exclude: /(node_modules|bower_components)/,
          use: [
            'file-loader'
          ]
        },
        {
          test: /\.(woff|woff2|eot|ttf|otf)$/,
+         exclude: /(node_modules|bower_components)/,
          use: [
            'file-loader'
          ]
        },
        {
          test: /\.(csv|tsv)$/,
+         exclude: /(node_modules|bower_components)/,
          use: [
            'csv-loader'
          ]
        },
        {
          test: /\.xml$/,
+         exclude: /(node_modules|bower_components)/,
          use: [
            'xml-loader'
          ]
+       },
+       {
+          test: /README\.txt/,
+          use: [
+            'ignore-loader'
+          ]
        }
      ]
    }
