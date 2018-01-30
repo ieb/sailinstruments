@@ -37,7 +37,8 @@ var conversions = {
   "rad": Qty.swiftConverter('rad', 'deg')
 }
 
-function StreamBundle() {
+function StreamBundle(sourceMappings) {
+  this.sourceMappings = sourceMappings;
   this.buses = {};
   this.streams = {};
   this.pathValues = new Bacon.Bus();
@@ -48,7 +49,7 @@ StreamBundle.prototype.handleDelta = function(delta) {
   var that = this;
   if(delta.updates) {
     delta.updates.forEach(function(update) {
-      var sourceId = signalkSchema.getSourceId(update.source);
+      var sourceId = signalkSchema.getSourceId(update.source).split('.')[0];
       update.values.forEach(function(pathValue) {
         if(pathValue.path) {
           if(signalkMainPaths[pathValue.path.split('.')[0]]) {
@@ -68,6 +69,7 @@ StreamBundle.prototype.push = function(sourceId, pathValue) {
   this.getBusForSourcePath(sourceId, pathValue.path).push(pathValue.value);
 
   var key = signalkSchema.keyForSourceIdPath(sourceId, pathValue.path);
+//  console.log("Updating ", sourceId, pathValue.path, pathValue.value );
   this.allSources.push({
     sourceId: sourceId,
     path: pathValue.path,
@@ -92,10 +94,11 @@ StreamBundle.prototype.getStreamForSourcePath = function(sourceId, path) {
   if(!result) {
     var bus = this.getBusForSourcePath(sourceId, path);
     result = bus.debounceImmediate(200);
-    const units = signalkSchema.getUnits('vessels.foo.' + path)
+    /*    const units = signalkSchema.getUnits('vessels.foo.' + path)
     if(units && conversions[units]) {
       result = result.map(conversions[units]);
     }
+    */
     result = this.streams[key] = result.toProperty();
   }
   return result;

@@ -2,9 +2,11 @@
 "use strict";
 
 import React from 'react';
+import utils from './utils.js'
+import Qty  from 'js-quantities';
 
 
-
+const radToDeg = Qty.swiftConverter('rad', 'deg')
 
 class CompassRose extends React.Component {
 
@@ -17,8 +19,51 @@ class CompassRose extends React.Component {
         magneticHeading: props.magneticHeading || 282,
         northup: props.northup
     };
+
+
+     var self = this;
+    this.valueStreams = [
+      {
+        sourceId: this.props.sourceId,
+        path: "navigation.headingMagnetic",
+        update : (function(value) {
+          self.update("magneticHeading", radToDeg(value));
+        })
+      },
+      {
+        sourceId: this.props.sourceId,
+        path: "performance.headingMagnetic",
+        update : (function(value) {
+          self.update("oppositeTackDirection", radToDeg(value));
+        })
+      },
+      {
+        sourceId: this.props.sourceId,
+        path: "environment.wind.directionTrue",
+        update : (function(value) {
+          self.update("groundWindDirection", radToDeg(value));
+        })
+      },
+
+    ];
   }
 
+
+  componentDidMount() {
+    utils.resolve(this.valueStreams, this.props.databus, this.props.sourceId);
+    utils.subscribe( this.valueStreams, this);
+  }
+
+  componentWillUnmount() {
+    utils.unsubscribe(this.valueStreams);
+  }
+
+
+  update(key, value) {
+    var newState = {};
+    newState[key] = value;
+    this.setState(newState);
+  }
 
   getRoseRotation() {
     if (this.state.northup) {

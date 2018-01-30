@@ -36,7 +36,6 @@ class SignalKClientConnector extends React.Component {
 
 
   handleDeltaMessage(delta) {
-    console.log("Got "+delta);
     this.databus.handleDelta(delta);
   }
   handleConnect(connection) {

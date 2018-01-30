@@ -3,7 +3,11 @@
 
 import React from 'react';
 import * as d3 from 'd3';
+import utils from './utils.js';
+import Qty  from 'js-quantities';
 
+
+const radToDeg = Qty.swiftConverter('rad', 'deg')
 
 
 
@@ -12,28 +16,79 @@ class BoatRose extends React.Component {
 
   constructor(props) {
     super(props);
-    console.log("BoatRose ", props);
     this.props = props;
     this.state = {
         leewayAngle: props.leewayAngle || 5,
         awa: props.awa || 30,
-        aws: props.aws || 0,
         twa: props.twa || 20,
-        tws: props.tws || 0,
         vmga: props.vmga || 10,
         hdm: props.hdm || 340,
         headup: props.headup,
         twaHistory: [],
         awaHistory: []
     };
-    console.log("BoatRose ", props);
-    console.log("BoatRose ", this.state);
 
     var self = this;
     // every 1s update the history.
     setInterval(() => {
       self.updateHistory();
     }, props.historyrate || 1000);
+
+    this.valueStreams = [
+      {
+        sourceId: this.props.sourceId,
+        path: "performance.leeway",
+        update : (function(value) {
+          self.update("leewayAngle", radToDeg(value).toFixed(0));
+        })
+      },
+      {
+        sourceId: this.props.sourceId,
+        path: "environment.wind.angleApparent",
+        update : (function(value) {
+          self.update("awa", radToDeg(value).toFixed(0));
+        })
+      },
+      {
+        sourceId: this.props.sourceId,
+        path: "environment.wind.angleTrue",
+        update : (function(value) {
+          self.update("twa", radToDeg(value).toFixed(0));
+        })
+      },
+      {
+        sourceId: this.props.sourceId,
+        path: "performance.targetAngle",
+        update : (function(value) {
+          self.update("vmga", radToDeg(value).toFixed(0));
+        })
+      },
+      {
+        sourceId: this.props.sourceId,
+        path: "navigation.headingMagnetic",
+        update : (function(value) {
+          self.update("hdm", radToDeg(value).toFixed(0));
+        })
+      }
+    ];
+
+  }
+
+
+  componentDidMount() {
+    utils.resolve(this.valueStreams, this.props.databus);
+    utils.subscribe( this.valueStreams, this);
+  }
+
+  componentWillUnmount() {
+    utils.unsubscribe(this.valueStreams);
+  }
+
+
+  update(key, value) {
+    var newState = {};
+    newState[key] = value;
+    this.setState(newState);
   }
 
 
@@ -42,7 +97,7 @@ class BoatRose extends React.Component {
     if (this.state.headup) {
       return 0;
     } else {
-      return -this.state.hdm;
+      return this.state.hdm;
     }
   }
 

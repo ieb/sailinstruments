@@ -8,16 +8,21 @@ class InstrumentContainer extends React.Component {
   constructor(props) {
     super(props);
     this.props = props;
+
+    var location = this.props.translate || "0,0";
+    var transform = "translate("+location+")";
     this.state = {
       width: props.width || 500,
-      height: props.height || 500
+      height: props.height || 500,
+      transform: transform
     }
   }
 
   render() {
     // the instument is 0,0,650,650
     return (
-      <svg viewBox="0 0 650 650" width={this.state.width} height={this.state.height}>
+      <svg viewBox="0 0 650 650" transform={this.state.transform} width={this.state.width} height={this.state.height}>
+
             <g>
               {this.props.children}
             </g>
