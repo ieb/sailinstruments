@@ -17,6 +17,7 @@ class BoatRose extends React.Component {
   constructor(props) {
     super(props);
     this.props = props;
+    this.app = props.app;
     this.state = {
         leewayAngle: props.leewayAngle || 5,
         awa: props.awa || 30,
@@ -36,35 +37,35 @@ class BoatRose extends React.Component {
 
     this.valueStreams = [
       {
-        sourceId: this.props.sourceId,
+        sourceId: this.app.sourceId,
         path: "performance.leeway",
         update : (function(value) {
           self.update("leewayAngle", radToDeg(value).toFixed(0));
         })
       },
       {
-        sourceId: this.props.sourceId,
+        sourceId: this.app.sourceId,
         path: "environment.wind.angleApparent",
         update : (function(value) {
           self.update("awa", radToDeg(value).toFixed(0));
         })
       },
       {
-        sourceId: this.props.sourceId,
+        sourceId: this.app.sourceId,
         path: "environment.wind.angleTrue",
         update : (function(value) {
           self.update("twa", radToDeg(value).toFixed(0));
         })
       },
       {
-        sourceId: this.props.sourceId,
+        sourceId: this.app.sourceId,
         path: "performance.targetAngle",
         update : (function(value) {
           self.update("vmga", radToDeg(value).toFixed(0));
         })
       },
       {
-        sourceId: this.props.sourceId,
+        sourceId: this.app.sourceId,
         path: "navigation.headingMagnetic",
         update : (function(value) {
           self.update("hdm", radToDeg(value).toFixed(0));
@@ -76,7 +77,7 @@ class BoatRose extends React.Component {
 
 
   componentDidMount() {
-    utils.resolve(this.valueStreams, this.props.databus);
+    utils.resolve(this.valueStreams, this.app.databus);
     utils.subscribe( this.valueStreams, this);
   }
 

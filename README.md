@@ -12,6 +12,7 @@ The outer magnetic heading rose is configured to be north up and has a ground wi
 
 # Todo
 Polar visualisation
+Polar VMG performance, beacause a helm may sail a better VMG in the conditions fast and low that hitting the polar target wind angle and sailing slow.
 Settings
 Grid system
 VMG to Waypoints

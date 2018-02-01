@@ -3,36 +3,36 @@
 
 import React from 'react';
 import Bacon from 'baconjs';
-import cogMagnetic from './calcs/cogMagnetic.js';
-import groundWind from './calcs/groundWind.js';
-import performance from './calcs/performance.js';
-import trueWind from './calcs/trueWind.js';
-import vmg from './calcs/vmg.js';
+import cogMagnetic from './cogMagnetic.js';
+import groundWind from './groundWind.js';
+import performance from './performance.js';
+import trueWind from './trueWind.js';
+import vmg from './vmg.js';
 
 /**
  * this class allows claculations on derived data reducing the data that the server needs to supply.
  * and allowing in browser configuration.
  */
-class Calculations extends React.Component {
+class Calculations  {
 
 
-  constructor(props) {
-    super(props);
-    this.props = props;
+  constructor(databus, sourceId, polar) {
+    this.databus = databus;
+    this.sourceId = sourceId;
+    // so that we can get access outside.
+    this.polarPerformance = performance(polar);
     this.calculations = [
       cogMagnetic(),
       groundWind(),
       trueWind(),
-      performance(),
+      this.polarPerformance,
       vmg()
     ];
     this.unsubscribes = [];
+    this.connect();
   }
 
-
-
-
-  componentDidMount() {
+  connect() {
     var self = this;
     this.calculations.forEach(calculation => {    
       if ( calculation.init ) {
@@ -49,7 +49,7 @@ class Calculations extends React.Component {
           calculation.calculator,
           calculation.derivedFrom.map(function(path) {
             // build an array of args based on the list of derivedFrom.
-            return self.props.databus.getBusForSourcePath(self.props.sourceId,path);
+            return self.databus.getBusForSourcePath(self.sourceId,path);
           })
         ).changes()
         .debounceImmediate(100)
@@ -73,21 +73,16 @@ class Calculations extends React.Component {
           .onValue(values => {
             // push the output back onto the bus.
             values.forEach(function(pathValue) {
-              self.props.databus.push(self.props.sourceId, pathValue);
+              self.databus.push(self.sourceId, pathValue);
             });
           });
 
   }
 
-  componentWillUnmount() {
+  disconnect() {
     this.unsubscribes.forEach(f => f());
   }
 
-  render() {
-    return (
-      <div></div>
-    );
-  }
 
 }
 

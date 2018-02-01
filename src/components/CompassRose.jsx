@@ -13,10 +13,11 @@ class CompassRose extends React.Component {
   constructor(props) {
     super(props);
     this.props = props;
+    this.app = props.app;
     this.state = {
         oppositeTackDirection: props.oppositeTackDirection || 340,
         groundWindDirection: props.groundWindDirection || 50,
-        magneticHeading: props.magneticHeading || 282,
+        hdm: props.magneticHeading || 282,
         northup: props.northup
     };
 
@@ -24,21 +25,21 @@ class CompassRose extends React.Component {
      var self = this;
     this.valueStreams = [
       {
-        sourceId: this.props.sourceId,
+        sourceId: this.app.sourceId,
         path: "navigation.headingMagnetic",
         update : (function(value) {
-          self.update("magneticHeading", radToDeg(value));
+          self.update("hdm", radToDeg(value));
         })
       },
       {
-        sourceId: this.props.sourceId,
+        sourceId: this.app.sourceId,
         path: "performance.headingMagnetic",
         update : (function(value) {
           self.update("oppositeTackDirection", radToDeg(value));
         })
       },
       {
-        sourceId: this.props.sourceId,
+        sourceId: this.app.sourceId,
         path: "environment.wind.directionTrue",
         update : (function(value) {
           self.update("groundWindDirection", radToDeg(value));
@@ -50,7 +51,7 @@ class CompassRose extends React.Component {
 
 
   componentDidMount() {
-    utils.resolve(this.valueStreams, this.props.databus, this.props.sourceId);
+    utils.resolve(this.valueStreams, this.app.databus, this.app.sourceId);
     utils.subscribe( this.valueStreams, this);
   }
 
@@ -69,7 +70,7 @@ class CompassRose extends React.Component {
     if (this.state.northup) {
       return 0;
     } else {
-      return this.state.magneticHeading;
+      return -this.state.hdm;
     }
   }
 

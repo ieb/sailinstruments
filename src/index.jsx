@@ -3,10 +3,11 @@ import {render} from 'react-dom';
 import InstrumentContainer from './components/InstrumentContainer.jsx';
 import CompassRose from './components/CompassRose.jsx';
 import BoatRose from './components/BoatRose.jsx';
-import Calculations from './components/Calculations.jsx';
+import Calculations from './components/calcs/calculations.jsx';
 import DataBox from './components/DataBox.jsx';
 import SignalKClientConnector from './databus/SignalKClientConnector.jsx';
 import Qty  from 'js-quantities';
+
 import './style.css';
 
 import StreamBundle from './databus/streambundle.js';
@@ -38,17 +39,34 @@ const percent = function(x) {
 class App extends React.Component {
   constructor(props) {
         super(props);
+        this.props = props;
         this.databus = new StreamBundle();
+        this.sourceId = this.props.sourceId;
         this.knownKeys = {};
         var self = this;
         var isUnkownKey = function(source) {
             return typeof self.knownKeys[source.key] === 'undefined';
         }.bind(this);
+        console.log("A1");
         this.databus.allSources.filter(isUnkownKey).onValue(this.handlePossiblyNewSource.bind(this));
+        console.log("A2");
+
+        this.calculations = new Calculations(this.databus, this.sourceId);
+        console.log("A3");
   }
   handlePossiblyNewSource(newSource) {
     this.knownKeys[newSource.key] = newSource;
     console.log("Added NewSource ", newSource.key, " to ", this.knownKeys);
+  }
+
+  componentDidMount() {
+        console.log("A4");
+    this.calculations.connect();
+        console.log("A5");
+  }
+
+  componentWillUnmount() {
+    this.calculations.disconnect();
   }
 
 
@@ -68,86 +86,84 @@ class App extends React.Component {
 */
 
   render () {
+    console.log("Starting to render");
     return ( 
         <div>
         <SignalKClientConnector databus={this.databus} autoconnect={true} connectHost="localhost:3000" />
         <div className="fullbrightness">
+
             <InstrumentContainer width="600" height="600" translate="10,10" >
-                <CompassRose northup={true} databus={this.databus} sourceId="nmeaFromFile" />
-                <BoatRose headup={false} databus={this.databus} sourceId="nmeaFromFile" />
+                <CompassRose northup={true} app={this} />
+                <BoatRose headup={false} app={this} />
                 <DataBox translate="300, 272" withBox={true}
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="navigation.speedThroughWater"
                     displayValue={msToKn}
                     title="stw" />
                 <DataBox translate="300, 352" withBox={true} 
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="environment.wind.speedApparent"
                     displayValue={msToKn}
                     title="aws" />
 
                 <DataBox translate="60, 35" 
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="performance.polarSpeed"
                     displayValue={msToKn}
                     title="polar stw" />
                 <DataBox translate="60, 85" 
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="performance.polarSpeedRatio"
                     displayValue={percent}
                     title="polar %" />
-
                 <DataBox translate="540, 35" 
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="performance.targetAngle"
                     displayValue={radToDeg}
                     title="target twa" />
                 <DataBox translate="540, 85" 
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="performance.targetSpeed"
                     displayValue={msToKn}
                     title="target stw" />
 
                 <DataBox translate="540, 550" 
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="performance.headingMagnetic"
                     displayValue={radToDeg}
                     title="tack dir" />
                 <DataBox translate="540, 600" 
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="performance.ignore"
                     displayValue={radToDeg}
                     title="box number 6" />
                 <DataBox translate="60, 550" 
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="performance.leeway"
                     displayValue={msToKn}
                     title="leeway" />
                 <DataBox translate="60, 600" 
-                    databus={this.databus}
-                    sourceId="nmeaFromFile" 
+                    app={this}
                     path="performance.ignore"
                     displayValue={msToKn}
                     title="box number 8" />
 
-
             </InstrumentContainer>
+
+            <InstrumentContainer width="600" height="600" translate="10,10" >
+                <CompassRose northup={false} app={this} />
+                <BoatRose headup={true} app={this} />
+            </InstrumentContainer>
+
+
         </div>
-        <Calculations  databus={this.databus} sourceId="nmeaFromFile" />
-        </div>
+    </div>
     );
   }
 }
 
 //  <Calculations  databus={this.databus} sourceId="nmeaFromFile.II" />
-       
-render(<App/>, document.getElementById("react"));
+
+const element = <App sourceId="nmeaFromFile" ></App>;    
+
+render(element, document.getElementById("react"));

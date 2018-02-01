@@ -4,7 +4,7 @@ const _ = require('lodash')
 
 // for the moment, hard code the polar data.
 
-module.exports = function() {
+module.exports = function(polarSource) {
 
   /**
    * find the indexes a below and above the value of b.
@@ -59,6 +59,27 @@ module.exports = function() {
     if ( d > Math.PI*2 ) d = d - Math.PI*2;
     if ( d < 0 ) d = d + Math.PI*2;
     return d;
+  }
+
+  /**
+   * Expects tws in radians.
+   * returns an array of { twa: , stw: } in si units.
+   */
+  function calcSpeedCurve(polarData, tws) {
+    var polarCurve = [];
+    if ( polarData.lookup) {
+      var twsi = findIndexes(polarData.tws, tws);
+      for (var ia = 0; ia < finePolar.twa.length; ia++) {
+        // twa is in radians, stw is in m/s
+        polarCurve.push({ twa: finePolar.twa[ia], stw: polarData.stw[ia][twsi[1]] });
+      }
+    } else {
+      // could be slow in the fine table has not been built.
+      for (var twa = 0; twa < Math.PI; twa += Math.PI/50 ) {
+        polarCurve.push({ twa: twa, stw: getPerformance(polarData, tws, twa, 0).polarSpeed});
+      }
+    }
+    return polarCurve;
   }
 
   /**
@@ -233,9 +254,9 @@ module.exports = function() {
     derivedFrom: [ "environment.wind.angleTrueWater", "environment.wind.speedTrue", "navigation.speedThroughWater", 
     'navigation.headingTrue', 'navigation.magneticVariation'
     ],
-    init: function(options) {
+    init: function() {
       // need to find some way of loading a specif polar file
-      var polar = require('./polar/pogo1250');
+      var polar = polarSource || require('./polar/pogo1250');
 
       if ( polar.twa.length !== polar.stw.length) {
         throw("Polar STW does not have enough rows for the TWA array. Expected:"+polar.twa.length+" Found:"+polar.stw.length);
@@ -258,6 +279,9 @@ module.exports = function() {
       // Optimisatin,
       polar = buildFinePolarTable(polar);
       polarPerf.polar = polar;
+    },
+    performanceForSpeed: function(tws) {
+      return calcSpeedCurve(polarPerf.polar, tws);
     },
     calculator: function(twa, tws, stw, trueHeading, magneticVariation){
       try {

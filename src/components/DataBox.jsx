@@ -16,6 +16,7 @@ class DataBox extends React.Component {
   constructor(props) {
     super(props);
     this.props = props;
+    this.app = props.app;
     this.state = {
         value : 0
     };
@@ -29,7 +30,7 @@ class DataBox extends React.Component {
     var self = this;
     this.valueStreams = [
       {
-        sourceId: this.props.sourceId,
+        sourceId: this.app.sourceId,
         path: this.props.path,
         update : (function(value) {
           self.setState({ value: self.displayValue(value) });
@@ -39,7 +40,7 @@ class DataBox extends React.Component {
   }
 
   componentDidMount() {
-    utils.resolve(this.valueStreams, this.props.databus);
+    utils.resolve(this.valueStreams, this.app.databus);
     utils.subscribe( this.valueStreams, this);
   }
 
