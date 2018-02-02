@@ -5,6 +5,7 @@ import CompassRose from './components/CompassRose.jsx';
 import BoatRose from './components/BoatRose.jsx';
 import Calculations from './components/calcs/calculations.jsx';
 import DataBox from './components/DataBox.jsx';
+import PolarChart from './components/PolarChart.jsx';
 import SignalKClientConnector from './databus/SignalKClientConnector.jsx';
 import Qty  from 'js-quantities';
 
@@ -56,7 +57,7 @@ class App extends React.Component {
   }
   handlePossiblyNewSource(newSource) {
     this.knownKeys[newSource.key] = newSource;
-    console.log("Added NewSource ", newSource.key, " to ", this.knownKeys);
+    //console.log("Added NewSource ", newSource.key, " to ", this.knownKeys);
   }
 
   componentDidMount() {
@@ -151,8 +152,7 @@ class App extends React.Component {
             </InstrumentContainer>
 
             <InstrumentContainer width="600" height="600" translate="10,10" >
-                <CompassRose northup={false} app={this} />
-                <BoatRose headup={true} app={this} />
+              <PolarChart app={this} />
             </InstrumentContainer>
 
 

@@ -69,9 +69,9 @@ module.exports = function(polarSource) {
     var polarCurve = [];
     if ( polarData.lookup) {
       var twsi = findIndexes(polarData.tws, tws);
-      for (var ia = 0; ia < finePolar.twa.length; ia++) {
+      for (var ia = 0; ia < polarData.twa.length; ia++) {
         // twa is in radians, stw is in m/s
-        polarCurve.push({ twa: finePolar.twa[ia], stw: polarData.stw[ia][twsi[1]] });
+        polarCurve.push({ twa: polarData.twa[ia], stw: polarData.stw[ia][twsi[1]] });
       }
     } else {
       // could be slow in the fine table has not been built.

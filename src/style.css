@@ -80,6 +80,12 @@
     stroke-width: 1;
 }
 
+.fullbrightness .true-wind-marker {
+    stroke: cyan;
+    fill: cyan;
+    stroke-width: 1;
+}
+
 .fullbrightness .apparent-wind {
     fill: orange;
     stroke: orange;
@@ -127,6 +133,11 @@
 .daytime .true-wind-history {
     stroke: cyan;
     fill: none;
+    stroke-width: 1;
+}
+.daytime .true-wind-marker {
+    stroke: cyan;
+    fill: cyan;
     stroke-width: 1;
 }
 
@@ -181,6 +192,11 @@
 .nighttime .true-wind-history {
     stroke: cyan;
     fill: none;
+    stroke-width: 1;
+}
+.nighttime .true-wind-history {
+    stroke: cyan;
+    fill: cyan;
     stroke-width: 1;
 }
 .nighttime .apparent-wind {
