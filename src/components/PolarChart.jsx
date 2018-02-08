@@ -27,8 +27,9 @@ class PolarChart extends React.Component {
       targetAngle: 0,
       maxStw: 0,
       scale: 0,
-      polarCurve: []
-
+      polarCurve: [],
+      twaHistory : [],
+      stwHistory: []
     };
 
 
@@ -52,39 +53,44 @@ class PolarChart extends React.Component {
         sourceId: this.app.sourceId,
         path: "environment.wind.speedTrue",
         update : (function(value) {
-          self.updateTws(msToKnC(value).toFixed(1));
+          self.updateTws(msToKnC(value));
         })
       },
       {
         sourceId: this.app.sourceId,
         path: "environment.wind.angleTrue",
         update : (function(value) {
-          self.update("twa", radToDeg(value).toFixed(0));
+          self.update("twa", radToDeg(value));
         })
       },
       {
         sourceId: this.app.sourceId,
         path: "navigation.speedThroughWater",
         update : (function(value) {
-          self.update("stw", msToKnC(value).toFixed(1));
+          self.update("stw", msToKnC(value));
         })
       },
       {
         sourceId: this.app.sourceId,
         path: "performance.targetSpeed",
         update : (function(value) {
-          self.update("targetSpeed", msToKnC(value).toFixed(1));
+          self.update("targetSpeed", msToKnC(value));
         })
       },
       {
         sourceId: this.app.sourceId,
         path: "performance.targetAngle",
         update : (function(value) {
-          self.update("targetAngle", radToDeg(value).toFixed(0));
+          self.update("targetAngle", radToDeg(value));
         })
       },
 
     ];
+
+    setInterval(() => {
+      self.updateHistory();
+    }, props.historyrate || 1000);
+
   }
 
 
@@ -131,8 +137,22 @@ class PolarChart extends React.Component {
           maxStw = polarCurve[i].stw;
         }
       }
-      // make the max an even number.
-      maxStw = (Math.floor(maxStw/2)+1)*2;
+      // fix the max based on lookup to keep the display more stable.
+      //
+      if ( maxStw > this.state.maxStw ) {
+        // must be increased
+        var m = (Math.floor((maxStw*1.2)/2)+1)*2;
+        console.log("Increasing ", maxStw, this.state.maxStw, m);
+        maxStw = m;
+      } else if ( maxStw < this.state.maxStw*0.6 ) {
+        // must be decreased.
+        var m = (Math.floor((maxStw*1.2)/2)+1)*2;
+        console.log("Decreasing ", maxStw, this.state.maxStw, m);
+        maxStw = m;
+      } else {
+        maxStw = this.state.maxStw;
+      }
+
       // the outer ring is at 240 from the center.
       var scale = 240/maxStw;
       var a = [];
@@ -152,6 +172,26 @@ class PolarChart extends React.Component {
       });
     }
   }
+
+
+
+  addToHistory(a, v) {
+    // react requires that state is immutable at all times.
+    let h = a.slice();
+    h.push(v);
+    if (h.length > 100) {
+      h.shift();
+    }
+    return h;
+  }
+
+  updateHistory() {
+    this.setState({
+        twaHistory: this.addToHistory(this.state.twaHistory, this.state.twa),
+        stwHistory: this.addToHistory(this.state.stwHistory, this.state.stw)
+    });
+  }
+
 
   getRoseRotation() {
     if (this.state.headup) {
@@ -255,11 +295,20 @@ class PolarChart extends React.Component {
         {radialLines}
         {this.generateCircular()}
         {this.generatePolarLine()}
+        {this.generateHistoryMarkers()}       
         {this.drawWindAngles()}
     </g>
   );
   }
 
+/*
+        <g transform="translate(300,300)">
+            <path d={this.generateHistoryLine(0,25,false)}  className="polar-speed-history-25"></path>
+            <path d={this.generateHistoryLine(25,50, false)} className="polar-speed-history-50" ></path>
+            <path d={this.generateHistoryLine(50,75, false)} className="polar-speed-history-75"  ></path>
+            <path d={this.generateHistoryLine(75,100, true)} className="polar-speed-history-100"  ></path>
+        </g>
+*/
 
   // Generators, dynamic markup ----------------------------------------------------------------------------------------------
   generateCircular() {
@@ -304,10 +353,49 @@ class PolarChart extends React.Component {
     const radialLine = d3.radialLine().curve(d3.curveBasis);
     return (
         <g transform="translate(300,300)">
-          <path d={radialLine(this.state.polarCurve)} className="true-wind-history"  ></path>
+          <path d={radialLine(this.state.polarCurve)} className="polar-speed-graph"  ></path>
         </g>
         );
   } 
+
+  generateHistoryMarkers() {
+    var m = [];
+    for (var i = 0; i < this.state.twaHistory.length; i++) {
+      var transform = this.generateRotation(this.state.twaHistory[i]);
+      var pos = 300-(this.state.stwHistory[i]*this.state.scale);
+      var color = "rgba(0,255,0,"+i/this.state.twaHistory.length+")";
+      m.push((<circle cx="300" cy={pos} r="3" key={i} transform={transform} fill={color} strokeWidth="0" ></circle>));
+    };
+    return m;
+  }
+
+
+  generateHistoryLine(startpc, endpc, current) {
+    if ( this.state.twaHistory.length < 10 ) {
+      return "";
+    }
+    var start = Math.min(Math.floor(this.state.twaHistory.length*(startpc/100)), this.state.twaHistory.length-1);
+    var end = Math.min(Math.floor(this.state.twaHistory.length*(endpc/100)), this.state.twaHistory.length-1);
+    const radialLine = d3.radialLine().curve(d3.curveBasis);
+    let a = [];
+    var twa;
+    for (let i = start; i <= end; i++) { 
+        twa = this.state.twaHistory[i];
+        if (twa < 0) {
+          twa = 360+twa;
+        }
+        a.push([ twa*Math.PI/180, this.state.stwHistory[i]*this.state.scale]);
+    };
+    if (current) {
+      twa = this.state.twa;
+      if (twa < 0) {
+        twa = 360+twa;
+      }
+      a.push([ twa*Math.PI/180, this.state.stw*this.state.scale]);      
+    }
+    return radialLine(a);
+  } 
+
 
 
 }

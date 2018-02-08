@@ -14,7 +14,6 @@ class CompassRose extends React.Component {
     super(props);
     this.props = props;
     this.app = props.app;
-    console.log("App is ", this.app);
     this.state = {
         oppositeTackDirection: props.oppositeTackDirection || 340,
         groundWindDirection: props.groundWindDirection || 50,

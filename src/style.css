@@ -71,18 +71,51 @@
 }
 
 .fullbrightness .true-wind {
-    fill: cyan;
-    stroke: cyan;
+    fill: blue;
+    stroke: blue;
 }
 .fullbrightness .true-wind-history {
-    stroke: cyan;
+    stroke: blue;
     fill: none;
     stroke-width: 1;
 }
 
+
+.fullbrightness .polar-speed-graph {
+    stroke: black;
+    fill: none;
+    stroke-width: 2;
+
+}
+
+.fullbrightness .polar-speed-history-25 {
+    stroke: rgba(0,0,255,0.2);
+    fill: none;
+    stroke-width: 3;
+
+}
+.fullbrightness .polar-speed-history-50 {
+    stroke: rgba(0,0,255,0.4);
+    fill: none;
+    stroke-width: 3;
+
+}
+.fullbrightness .polar-speed-history-75 {
+    stroke: rgba(0,0,255,0.5);
+    fill: none;
+    stroke-width: 3;
+
+}
+.fullbrightness .polar-speed-history-100 {
+    stroke: rgba(0,0,255,0.7);
+    fill: none;
+    stroke-width: 4;
+}
+
+
 .fullbrightness .true-wind-marker {
-    stroke: cyan;
-    fill: cyan;
+    stroke: blue;
+    fill: blue;
     stroke-width: 1;
 }
 
@@ -127,17 +160,17 @@
 }
 
 .daytime .true-wind {
-    fill: cyan;
-    stroke: cyan;
+    fill: blue;
+    stroke: blue;
 }
 .daytime .true-wind-history {
-    stroke: cyan;
+    stroke: blue;
     fill: none;
     stroke-width: 1;
 }
 .daytime .true-wind-marker {
-    stroke: cyan;
-    fill: cyan;
+    stroke: blue;
+    fill: blue;
     stroke-width: 1;
 }
 
@@ -212,3 +245,173 @@
 .nighttime .data-box > rect {
     fill: rgba(10,10,10,0.5);
 }
+
+
+
+
+
+.react-grid-layout {
+  position: relative;
+  transition: height 200ms ease;
+}
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top;
+}
+.react-grid-item.cssTransforms {
+  transition-property: transform;
+}
+.react-grid-item.resizing {
+  z-index: 1;
+  will-change: width, height;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 3;
+  will-change: transform;
+}
+
+.react-grid-item.react-grid-placeholder {
+  background: red;
+  opacity: 0.2;
+  transition-duration: 100ms;
+  z-index: 2;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.react-grid-item > .react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 5px;
+  height: 5px;
+  border-right: 2px solid rgba(0, 0, 0, 0.4);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+}
+
+
+.react-resizable {
+  position: relative;
+}
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2IDYiIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSI2cHgiIGhlaWdodD0iNnB4Ij48ZyBvcGFjaXR5PSIwLjMwMiI+PHBhdGggZD0iTSA2IDYgTCAwIDYgTCAwIDQuMiBMIDQgNC4yIEwgNC4yIDQuMiBMIDQuMiAwIEwgNiAwIEwgNiA2IEwgNiA2IFoiIGZpbGw9IiMwMDAwMDAiLz48L2c+PC9zdmc+');
+  background-position: bottom right;
+  padding: 0 3px 3px 0;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  box-sizing: border-box;
+  cursor: se-resize;
+}
+
+
+.settings {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    right: 40px;
+    bottom: 40px;
+    border: 1px solid rgb(204, 204, 204);
+    background: rgb(255, 255, 255);
+    overflow: auto;
+    border-radius: 10px;
+}
+.settings_after-open {
+}
+.settings_before-close {
+}
+.settings_before-close {
+
+}
+.settingsOverlay {
+    position: fixed; 
+    top: 0px; 
+    left: 0px; 
+    right: 0px; 
+    bottom: 0px; 
+    background-color: rgba(150, 150, 150, 0.75);
+}
+.settingsOverlay_after-open {
+
+}
+.settingsOverlay_before-close {
+}
+
+.globalSettingsButton {
+    position: absolute;
+    right: 10px;
+    top: 10px;        
+}
+
+.globalSettingsButton > button {
+    border: none;
+    font-size: 16px;
+}
+
+.settingsClose {
+    position: absolute;
+    right: 5px;
+    top: 5px;    
+}
+
+.settingsClose > button {
+    border: none;
+}
+
+.settingsApply {
+    position: absolute;
+    right: 136px;
+    bottom: 17px;
+}
+
+.settingsApply > button {
+    border: solid;
+    font-size: 16px;
+    background-color: #92b3e6;
+    border-color: #a0b2c1;
+    border-width: 1px;
+    border-radius: 5px;
+    padding-top: 8px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 8px;
+}
+
+
+.settingsCancel {
+    position: absolute;
+    right: 17px;
+    bottom: 17px;
+}
+
+.settingsCancel > button {
+    border: solid #797676;
+    font-size: 16px;
+    border-width: 1px;
+    border-radius: 5px;
+    padding-top: 8px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 8px;
+}
+
+

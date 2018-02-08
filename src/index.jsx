@@ -1,12 +1,9 @@
 import React from 'react';
 import {render} from 'react-dom';
-import InstrumentContainer from './components/InstrumentContainer.jsx';
-import CompassRose from './components/CompassRose.jsx';
-import BoatRose from './components/BoatRose.jsx';
-import Calculations from './components/calcs/calculations.jsx';
-import DataBox from './components/DataBox.jsx';
-import PolarChart from './components/PolarChart.jsx';
 import SignalKClientConnector from './databus/SignalKClientConnector.jsx';
+import SettingsScreen from './components/SettingsScreen.jsx';
+import Calculations from './components/calcs/calculations.jsx';
+import Layout from './components/Layout.jsx';
 import Qty  from 'js-quantities';
 
 import './style.css';
@@ -44,6 +41,8 @@ class App extends React.Component {
         this.databus = new StreamBundle();
         this.sourceId = this.props.sourceId;
         this.knownKeys = {};
+        this.layout = undefined;
+        this.settings = undefined;
         var self = this;
         var isUnkownKey = function(source) {
             return typeof self.knownKeys[source.key] === 'undefined';
@@ -54,6 +53,9 @@ class App extends React.Component {
 
         this.calculations = new Calculations(this.databus, this.sourceId);
         console.log("A3");
+        this.openSettings = this.openSettings.bind(this);
+        this.openGlobalSettings = this.openGlobalSettings.bind(this);
+
   }
   handlePossiblyNewSource(newSource) {
     this.knownKeys[newSource.key] = newSource;
@@ -70,7 +72,27 @@ class App extends React.Component {
     this.calculations.disconnect();
   }
 
+  registerLayout(layout) {
+    this.layout = layout;
+  }
+  registerSettings(settings) {
+    this.settings = settings;
+    console.log("Settings registered. ");
+  }
 
+  openSettings(settingsPage) {
+    if ( this.settings !== undefined ) {
+      console.log("Opening settings.");
+      this.settings.openModal(settingsPage);
+    } else {
+      console.log("Settings not registered. ");
+    }
+  }
+
+
+  openGlobalSettings() {
+    this.openSettings();        
+  }
 /*
       { path: 'performance.polarSpeed', value: polarPerformance.polarSpeed},   // polar speed at this twa
       { path: 'performance.polarSpeedRatio', value: polarPerformance.polarSpeedRatio}, // polar speed ratio
@@ -90,9 +112,19 @@ class App extends React.Component {
     console.log("Starting to render");
     return ( 
         <div>
+
         <SignalKClientConnector databus={this.databus} autoconnect={true} connectHost="localhost:3000" />
         <div className="fullbrightness">
+            <SettingsScreen app={this} />
+            <div className="globalSettingsButton"><button onClick={(event) => { this.openGlobalSettings(); }}>(i)</button></div>
+            <Layout app={this} />
+        </div>
+    </div>
+    );
+  }
+}
 
+/*
             <InstrumentContainer width="600" height="600" translate="10,10" >
                 <CompassRose northup={true} app={this} />
                 <BoatRose headup={false} app={this} />
@@ -156,11 +188,7 @@ class App extends React.Component {
             </InstrumentContainer>
 
 
-        </div>
-    </div>
-    );
-  }
-}
+*/
 
 //  <Calculations  databus={this.databus} sourceId="nmeaFromFile.II" />
 

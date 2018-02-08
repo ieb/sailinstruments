@@ -14,7 +14,9 @@ module.exports = {
        'react-dom',
        'baconjs',
        'js-quantities',
-       '@signalk/signalk-schema'
+       '@signalk/signalk-schema',
+       'react-grid-layout',
+       'react-modal'
      ]
   },  
   plugins: [
