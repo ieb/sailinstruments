@@ -28,12 +28,11 @@ class BoatRose extends React.Component {
         twaHistory: [],
         awaHistory: []
     };
+    this.twaHistory = [];
+    this.awaHistory = [];
 
     var self = this;
     // every 1s update the history.
-    setInterval(() => {
-      self.updateHistory();
-    }, props.historyrate || 1000);
 
     this.valueStreams = [
       {
@@ -72,6 +71,10 @@ class BoatRose extends React.Component {
         })
       }
     ];
+    this.bound = false;
+    setInterval(() => {
+      self.updateHistory();
+    }, props.historyrate || 1000);
 
   }
 
@@ -79,17 +82,22 @@ class BoatRose extends React.Component {
   componentDidMount() {
     utils.resolve(this.valueStreams, this.app.databus);
     utils.subscribe( this.valueStreams, this);
+    this.bound = true;
+    console.log("Bound BoatRose");
   }
 
   componentWillUnmount() {
     utils.unsubscribe(this.valueStreams);
+    this.bound = false;
+    console.log("UnBound BoatRose");
+
   }
 
 
   update(key, value) {
-    var newState = {};
-    newState[key] = value;
-    this.setState(newState);
+      var newState = {};
+      newState[key] = value;
+      this.setState(newState);      
   }
 
 
@@ -113,10 +121,12 @@ class BoatRose extends React.Component {
   }
 
   updateHistory() {
-    this.setState({
-        twaHistory: this.addToHistory(this.state.twaHistory, this.state.twa),
-        awaHistory: this.addToHistory(this.state.awaHistory, this.state.awa)
-    });
+    if ( this.bound ) {
+      this.setState({
+          twaHistory: this.addToHistory(this.state.twaHistory, this.state.twa),
+          awaHistory: this.addToHistory(this.state.awaHistory, this.state.awa)
+      });
+    }
   }
 
   generateHistoryLine(c, history) {

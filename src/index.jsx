@@ -1,9 +1,9 @@
 import React from 'react';
 import {render} from 'react-dom';
 import SignalKClientConnector from './databus/SignalKClientConnector.jsx';
-import SettingsScreen from './components/SettingsScreen.jsx';
 import Calculations from './components/calcs/calculations.jsx';
 import Layout from './components/Layout.jsx';
+import GlobalSettings from './components/settings/GlobalSettings.jsx';
 import Qty  from 'js-quantities';
 
 import './style.css';
@@ -39,11 +39,20 @@ class App extends React.Component {
         super(props);
         this.props = props;
         this.databus = new StreamBundle();
+        this.clientConnector = new SignalKClientConnector({
+           databus : this.databus,
+           autoconnect: true,
+           connectHost : "localhost:3000" 
+        });
         this.sourceId = this.props.sourceId;
         this.knownKeys = {};
         this.layout = undefined;
         this.settings = undefined;
         var self = this;
+        this.state = {
+           url : "http://localhost:3000"
+        };
+      
         var isUnkownKey = function(source) {
             return typeof self.knownKeys[source.key] === 'undefined';
         }.bind(this);
@@ -53,9 +62,8 @@ class App extends React.Component {
 
         this.calculations = new Calculations(this.databus, this.sourceId);
         console.log("A3");
-        this.openSettings = this.openSettings.bind(this);
         this.openGlobalSettings = this.openGlobalSettings.bind(this);
-
+        this.addTab = this.addTab.bind(this);
   }
   handlePossiblyNewSource(newSource) {
     this.knownKeys[newSource.key] = newSource;
@@ -75,24 +83,31 @@ class App extends React.Component {
   registerLayout(layout) {
     this.layout = layout;
   }
-  registerSettings(settings) {
-    this.settings = settings;
-    console.log("Settings registered. ");
-  }
 
-  openSettings(settingsPage) {
-    if ( this.settings !== undefined ) {
-      console.log("Opening settings.");
-      this.settings.openModal(settingsPage);
-    } else {
-      console.log("Settings not registered. ");
+  addTab() {
+    if ( this.layout !== undefined ) {
+      this.layout.addTab();
     }
   }
 
 
+
   openGlobalSettings() {
-    this.openSettings();        
+    var self = this;
+    this.setState({ settings: React.createElement(GlobalSettings, 
+      { 
+        url: this.state.url, 
+        update: (update) => {
+          self.setState({url: update.url});
+        } ,
+        remove: () => {
+          self.setState({settings: ""});
+        }
+      }
+    ) });
   }
+
+
 /*
       { path: 'performance.polarSpeed', value: polarPerformance.polarSpeed},   // polar speed at this twa
       { path: 'performance.polarSpeedRatio', value: polarPerformance.polarSpeedRatio}, // polar speed ratio
@@ -112,11 +127,12 @@ class App extends React.Component {
     console.log("Starting to render");
     return ( 
         <div>
-
-        <SignalKClientConnector databus={this.databus} autoconnect={true} connectHost="localhost:3000" />
         <div className="fullbrightness">
-            <SettingsScreen app={this} />
-            <div className="globalSettingsButton"><button onClick={(event) => { this.openGlobalSettings(); }}>(i)</button></div>
+            {this.state.settings}
+            <div className="globalSettingsButton">
+              <button onClick={(event) => { this.openGlobalSettings(); }}>&#9432;</button>
+              <button onClick={(event) => { this.addTab(); }}>&#10753;</button>
+            </div>
             <Layout app={this} />
         </div>
     </div>

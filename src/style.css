@@ -383,7 +383,7 @@
     bottom: 17px;
 }
 
-.settingsApply > button {
+.settingsApply > input {
     border: solid;
     font-size: 16px;
     background-color: #92b3e6;
@@ -414,4 +414,25 @@
     padding-bottom: 8px;
 }
 
+
+.react-tabs__tab > button {
+    border: none;
+    position: relative;
+    font-size: 16px;
+    top: 0px;
+    left: 12px;
+}
+
+
+
+.gridElementControls {
+    position: absolute;
+    font-size: 10px;
+    right: 1px;
+    top: 1px;
+}
+
+.gridElementControls > button {
+    border: none;    
+}
 

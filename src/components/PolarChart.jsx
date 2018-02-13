@@ -32,8 +32,7 @@ class PolarChart extends React.Component {
       stwHistory: []
     };
 
-
-     var self = this;
+    var self = this;
     this.valueStreams = [
       {
         sourceId: this.app.sourceId,
@@ -87,6 +86,8 @@ class PolarChart extends React.Component {
 
     ];
 
+    this.bound = false;
+
     setInterval(() => {
       self.updateHistory();
     }, props.historyrate || 1000);
@@ -97,19 +98,21 @@ class PolarChart extends React.Component {
   componentDidMount() {
     utils.resolve(this.valueStreams, this.app.databus, this.app.sourceId);
     utils.subscribe( this.valueStreams, this);
+    this.bound = true;
   }
 
   componentWillUnmount() {
     utils.unsubscribe(this.valueStreams);
+    this.bound = false;
   }
 
 
   // state management ---------------------------------------------------------------------------------------------
   //
   update(key, value) {
-    var newState = {};
-    newState[key] = value;
-    this.setState(newState);
+      var newState = {};
+      newState[key] = value;
+      this.setState(newState);      
   }
 
   zeroState() {
@@ -119,7 +122,6 @@ class PolarChart extends React.Component {
           scale: 240/2,
           polarCurve: []
       });
-
   }
 
   updateTws(tws) {
@@ -169,7 +171,7 @@ class PolarChart extends React.Component {
         maxStw: maxStw,
         scale: scale,
         polarCurve: a
-      });
+      });        
     }
   }
 
@@ -186,10 +188,12 @@ class PolarChart extends React.Component {
   }
 
   updateHistory() {
-    this.setState({
-        twaHistory: this.addToHistory(this.state.twaHistory, this.state.twa),
-        stwHistory: this.addToHistory(this.state.stwHistory, this.state.stw)
-    });
+    if ( this.bound ) {
+      this.setState({
+          twaHistory: this.addToHistory(this.state.twaHistory, this.state.twa),
+          stwHistory: this.addToHistory(this.state.stwHistory, this.state.stw)
+      });
+    }
   }
 
 

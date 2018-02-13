@@ -16,7 +16,8 @@ module.exports = {
        'js-quantities',
        '@signalk/signalk-schema',
        'react-grid-layout',
-       'react-modal'
+       'react-modal',
+       'react-tabs'
      ]
   },  
   plugins: [
