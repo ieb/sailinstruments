@@ -5,7 +5,6 @@ import React from 'react';
 import utils from './utils.js';
 
 class DataBox extends React.Component {
-
   /**
    * <DataBox translate="50,5" 
    *      sourceId="sourceId" 
@@ -28,45 +27,36 @@ class DataBox extends React.Component {
       this.displayValue = function(x) { return x; }
     }
     var self = this;
-    this.valueStreams = [
-      {
-        sourceId: this.app.sourceId,
-        path: this.props.path,
-        update : (function(value) {
-          self.setState({ value: self.displayValue(value) });
-        })
-      }
-    ];
+    this.app.stats.addPath(this.props.path);
+    setInterval(() => {
+      self.update();
+    }, props.updaterate || 1000);
   }
 
   componentDidMount() {
-    utils.resolve(this.valueStreams, this.app.databus);
-    utils.subscribe( this.valueStreams, this);
+    this.bound = true;
+    this.update();
   }
 
   componentWillUnmount() {
-    utils.unsubscribe(this.valueStreams);
+    this.bound = false;
+  }
+
+  update() {
+    if (this.bound ) {
+      var vs = this.app.stats.valueStreams;
+      this.setState({value: this.props.displayValue(vs[this.props.path].value)});
+    }
   }
 
   render() {
-    if ( this.props.withBox ) {
     return (
       <g transform={this.transform}  className="data-box" >
-          <rect width="120" height="50" x="-60" y="-37" rx="5" ry="5"  ></rect>
-          <text x="0" y="0" textAnchor="middle" fontSize="38"  id="AwaterSpeed">{this.state.value}</text>
+          {this.props.withBox && <rect width="120" height="50" x="-60" y="-37" rx="5" ry="5"  ></rect>}
+          <text x="0" y="0" textAnchor="middle" fontSize="38" >{this.state.value}</text>
           <text x="55" y="10" textAnchor="end" fontSize="15" >{this.props.title}</text>
       </g>
       );
-
-    } else {
-      return (
-        <g transform={this.transform}  className="data-box" >
-            <text x="0" y="0" textAnchor="middle" fontSize="38"  id="AwaterSpeed">{this.state.value}</text>
-            <text x="55" y="10" textAnchor="end" fontSize="15" >{this.props.title}</text>
-        </g>
-      );
-
-    }
   }
 
 }

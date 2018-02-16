@@ -2,7 +2,9 @@ import React from 'react';
 import {render} from 'react-dom';
 import SignalKClientConnector from './databus/SignalKClientConnector.jsx';
 import Calculations from './components/calcs/calculations.jsx';
+import Stats from './components/Stats.jsx';
 import Layout from './components/Layout.jsx';
+import DataInstrument from './components/DataInstrument.jsx';
 import GlobalSettings from './components/settings/GlobalSettings.jsx';
 import Qty  from 'js-quantities';
 
@@ -61,6 +63,11 @@ class App extends React.Component {
         console.log("A2");
 
         this.calculations = new Calculations(this.databus, this.sourceId);
+        this.stats = new Stats({
+          historyTime: 20000,
+          historyPeriod: 1000,
+          app: this
+        });
         console.log("A3");
         this.openGlobalSettings = this.openGlobalSettings.bind(this);
         this.addTab = this.addTab.bind(this);
@@ -134,7 +141,9 @@ class App extends React.Component {
               <button onClick={(event) => { this.addTab(); }}>&#10753;</button>
             </div>
             <Layout app={this} />
+            <DataInstrument app={this} />
         </div>
+
     </div>
     );
   }

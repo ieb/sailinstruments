@@ -3,10 +3,6 @@
 
 import React from 'react';
 import utils from './utils.js'
-import Qty  from 'js-quantities';
-
-
-const radToDeg = Qty.swiftConverter('rad', 'deg')
 
 class CompassRose extends React.Component {
 
@@ -21,50 +17,40 @@ class CompassRose extends React.Component {
         northup: props.northup
     };
 
+    this.app.stats.addPath("environment.wind.directionTrue");
+    this.app.stats.addPath("performance.headingMagnetic");
+    this.app.stats.addPath("navigation.headingMagnetic");
 
-     var self = this;
-    this.valueStreams = [
-      {
-        sourceId: this.app.sourceId,
-        path: "navigation.headingMagnetic",
-        update : (function(value) {
-          self.update("hdm", radToDeg(value));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "performance.headingMagnetic",
-        update : (function(value) {
-          self.update("oppositeTackDirection", radToDeg(value));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "environment.wind.directionTrue",
-        update : (function(value) {
-          self.update("groundWindDirection", radToDeg(value));
-        })
-      },
 
-    ];
+    var self = this;
+    this.bound = false;
+    setInterval(() => {
+      self.update();
+    }, props.updaterate || 1000);
   }
 
 
   componentDidMount() {
-    utils.resolve(this.valueStreams, this.app.databus, this.app.sourceId);
-    utils.subscribe( this.valueStreams, this);
+    this.bound = true;
+    this.update();
   }
 
   componentWillUnmount() {
-    utils.unsubscribe(this.valueStreams);
+    this.bound = false;
   }
 
-
-  update(key, value) {
-    var newState = {};
-    newState[key] = value;
-    this.setState(newState);
+  update() {
+    if ( this.bound ) {
+      var vs = this.app.stats.valueStreams;
+      this.setState({
+        oppositeTackDirection: utils.convertDeg(vs["performance.headingMagnetic"].value),
+        groundWindDirection: utils.convertDeg(vs["environment.wind.directionTrue"].value),
+        hdm: utils.convertDeg(vs["navigation.headingMagnetic"].value),
+      });            
+    }
   }
+
+  // -------------------------- rendering ----------------------------------
 
   getRoseRotation() {
     if (this.state.northup) {

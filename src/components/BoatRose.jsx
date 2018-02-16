@@ -4,12 +4,6 @@
 import React from 'react';
 import * as d3 from 'd3';
 import utils from './utils.js';
-import Qty  from 'js-quantities';
-
-
-const radToDeg = Qty.swiftConverter('rad', 'deg')
-
-
 
 
 class BoatRose extends React.Component {
@@ -28,78 +22,52 @@ class BoatRose extends React.Component {
         twaHistory: [],
         awaHistory: []
     };
-    this.twaHistory = [];
-    this.awaHistory = [];
+
+
+    this.app.stats.addPath("performance.leeway");
+    this.app.stats.addPath("environment.wind.angleApparent", true);
+    this.app.stats.addPath("environment.wind.angleTrue", true);
+    this.app.stats.addPath("performance.targetAngle");
+    this.app.stats.addPath("navigation.headingMagnetic");
+
 
     var self = this;
-    // every 1s update the history.
-
-    this.valueStreams = [
-      {
-        sourceId: this.app.sourceId,
-        path: "performance.leeway",
-        update : (function(value) {
-          self.update("leewayAngle", radToDeg(value).toFixed(0));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "environment.wind.angleApparent",
-        update : (function(value) {
-          self.update("awa", radToDeg(value).toFixed(0));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "environment.wind.angleTrue",
-        update : (function(value) {
-          self.update("twa", radToDeg(value).toFixed(0));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "performance.targetAngle",
-        update : (function(value) {
-          self.update("vmga", radToDeg(value).toFixed(0));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "navigation.headingMagnetic",
-        update : (function(value) {
-          self.update("hdm", radToDeg(value).toFixed(0));
-        })
-      }
-    ];
     this.bound = false;
     setInterval(() => {
-      self.updateHistory();
-    }, props.historyrate || 1000);
+      self.update();
+    }, props.updaterate || 1000);
 
   }
 
 
   componentDidMount() {
-    utils.resolve(this.valueStreams, this.app.databus);
-    utils.subscribe( this.valueStreams, this);
     this.bound = true;
     console.log("Bound BoatRose");
+    this.update();
   }
 
   componentWillUnmount() {
-    utils.unsubscribe(this.valueStreams);
     this.bound = false;
     console.log("UnBound BoatRose");
+  }
 
+  update() {
+    if ( this.bound ) {
+      var vs = this.app.stats.valueStreams;
+      this.setState({
+        twaHistory: utils.convertDegA(vs["environment.wind.angleTrue"].history),
+        awaHistory: utils.convertDegA(vs["environment.wind.angleApparent"].history),
+        leewayAngle: utils.convertDeg(vs["performance.leeway"].value),
+        awa: utils.convertDeg(vs["environment.wind.angleApparent"].value),
+        twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
+        vmga: utils.convertDeg(vs["performance.targetAngle"].value),
+        hdm: utils.convertDeg(vs["navigation.headingMagnetic"].value),
+      });            
+    }
   }
 
 
-  update(key, value) {
-      var newState = {};
-      newState[key] = value;
-      this.setState(newState);      
-  }
-
+  // -------------------------- rendering ----------------------------------
 
 
   getRoseRotation() {
@@ -110,24 +78,6 @@ class BoatRose extends React.Component {
     }
   }
 
-  addToHistory(a, v) {
-    // react requires that state is immutable at all times.
-    let h = a.slice();
-    h.push(v);
-    if (h.length > 20) {
-      h.shift();
-    }
-    return h;
-  }
-
-  updateHistory() {
-    if ( this.bound ) {
-      this.setState({
-          twaHistory: this.addToHistory(this.state.twaHistory, this.state.twa),
-          awaHistory: this.addToHistory(this.state.awaHistory, this.state.awa)
-      });
-    }
-  }
 
   generateHistoryLine(c, history) {
     const radialLine = d3.radialLine().curve(d3.curveBasis);

@@ -414,15 +414,44 @@
     padding-bottom: 8px;
 }
 
-
-.react-tabs__tab > button {
-    border: none;
-    position: relative;
+.tabControls {
+    position: absolute;
     font-size: 16px;
-    top: 0px;
-    left: 12px;
+    top: 5px;
+    right: 1px;
 }
 
+
+.tabControls > button {
+    border: none;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+.dropDown {
+    position: absolute;
+    left: -1px;
+    top: 29px;
+    padding: 16px;
+    border-top: none;
+    border-left: solid 1px;
+    border-radius: 3px;
+    background-color: #ccccccf7;
+    z-index: 3;
+    border-bottom: solid 1px;
+    border-right: solid 1px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    width: 129px;
+    padding: 2px;
+}
+
+.dropDown > button {
+    border: none;
+    background-color: inherit;
+}
 
 
 .gridElementControls {

@@ -6,6 +6,8 @@ import  ReactGridLayout from 'react-grid-layout';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import WindInstrument from './WindInstrument.jsx';
 import PolarInstrument from './PolarInstrument.jsx';
+import DataInstrument from './DataInstrument.jsx';
+import InlineEdit from './InlineEdit.jsx';
 import './react-tabs.css';
 
 
@@ -18,7 +20,8 @@ class Layout extends React.Component {
     this.key = new Date().getTime();
     this.namedComponents = {
       WindInstrument: WindInstrument,
-      PolarInstrument: PolarInstrument
+      PolarInstrument: PolarInstrument,
+      DataInstrument: DataInstrument
     };
     // register the layout with the app so that components can be registered.
     this.app.registerLayout(this);
@@ -33,23 +36,23 @@ class Layout extends React.Component {
       tabs: [
        {
         layout : [
-          { i: "wind", x:0,  y:1, w:1, h:1, contents: { name: "WindInstrument", props : { northup: false }} },
-          { i: "polar", x:1,  y:1, w:1, h:1, contents: { name: "PolarInstrument", props: {}} }
+          { i: "wind", x:0,  y:1, w:10, h:10, contents: { name: "WindInstrument", props : { northup: false }} },
+          { i: "polar", x:10,  y:1, w:10, h:10, contents: { name: "PolarInstrument", props: {}} }
         ],
         key: 1,
-        cols: 2,
-        rowHeight: 600,
+        cols: 20,
+        rowHeight: 60,
         width: 1200,
         title: 'tab1'        
        },
        {
         layout : [
-          { i: "wind", x:0,  y:1, w:1, h:1, contents: { name: "WindInstrument", props : { northup: false }} },
-          { i: "polar", x:1,  y:1, w:1, h:1, contents: { name: "PolarInstrument", props: {}} }
+          { i: "wind", x:0,  y:1, w:10, h:10, contents: { name: "WindInstrument", props : { northup: false }} },
+          { i: "polar", x:10,  y:1, w:10, h:10, contents: { name: "PolarInstrument", props: {}} }
         ],
         key: 2,
-        cols: 2,
-        rowHeight: 600,
+        cols: 20,
+        rowHeight: 60,
         width: 1200,
         title: 'tab1'      
        }
@@ -69,8 +72,8 @@ class Layout extends React.Component {
       {
         layout : [],
         key: this.key,
-        cols: 2,
-        rowHeight: 600,
+        cols: 10,
+        rowHeight: 120,
         width: 1200,
         title: 'unamed'        
       });
@@ -113,6 +116,77 @@ class Layout extends React.Component {
     });
   }
 
+
+
+  removeTab(tab) {
+    var newTabs = [];
+    for (var i = 0; i < this.state.tabs.length; i++) {
+      if ( this.state.tabs[i].key !== tab.key ) {
+        newTabs.push(this.state.tabs[i]);
+      }
+    }
+    this.setState({
+      tabs: newTabs,
+      activeMenu: undefined
+    });
+  }
+
+  onAddClick(tab, componentName, width, height) {
+    var newTabs = [];
+    for (var i = 0; i < this.state.tabs.length; i++) {
+      if ( this.state.tabs[i].key === tab.key ) {
+        var newTab = this.copy(this.state.tabs[i]);
+        newTab.layout = this.state.tabs[i].layout.slice();
+        this.key++;
+        newTab.layout.push({ i: ""+this.key, x:0,  y:0, w:width, h:height, contents: { name: componentName, props: {}} });
+        newTabs.push(newTab);
+      } else {
+        newTabs.push(this.state.tabs[i]);
+      }
+    }
+    this.setState({
+      tabs: newTabs,
+      activeMenu: undefined
+    });    
+  }
+
+  onTabMenuHide(event, tab) {
+    this.setState({
+      activeMenu: undefined
+    });
+    event.preventDefault();
+  }
+  onTabMenuShow(event, tab) {
+    if ( this.state.activeMenu === undefined ) {
+      this.setState({
+        activeMenu: tab.key
+      });
+    }
+    event.preventDefault();
+  }
+
+  onStartTabEdit(event, tab) {
+    if ( this.state.editing === undefined) {
+      this.setState({
+        editing: tab.key
+      });
+    }
+    event.preventDefault();
+  }
+
+  onFinishTabEdit(tab, value) {
+    var newTabs = this.state.tabs.slice();
+    for (var i = 0; i < newTabs.length; i++) {
+      if ( newTabs[i].key === this.state.editing) {
+        newTabs[i].title = value;
+      }
+    }
+    this.setState({
+      editing: undefined,
+      tabs: newTabs
+    });    
+  }
+
   moveCell(tabKey, gridKey, dir) {
     var newTabs = [];
     // immutabled remove the cell, which means replacing everything enroute to the cell
@@ -128,11 +202,11 @@ class Layout extends React.Component {
             newTab.layout.push(this.state.tabs[i].layout[j]);
             console.log("copied layout ",this.state.tabs[i].layout[j]);
           } else {
-            var newLayout = this.copy(this.state.tabs[i].layout[j]);
-            newLayout.x = Math.max(0,newLayout.x + dir.x); 
-            newLayout.y = Math.max(0,newLayout.y + dir.y); 
-            newLayout.w = Math.max(1,newLayout.w + dir.w); 
-            newLayout.h = Math.max(1,newLayout.h + dir.h);
+            var newCell = this.copy(this.state.tabs[i].layout[j]);
+            newCell.x = Math.max(0,newCell.x + dir.x); 
+            newCell.y = Math.max(0,newCell.y + dir.y); 
+            newCell.w = Math.max(1,newCell.w + dir.w); 
+            newCell.h = Math.max(1,newCell.h + dir.h);
             newTab.layout.push(newLayout); 
             console.log("modified layout ",newLayout);
           }
@@ -150,44 +224,29 @@ class Layout extends React.Component {
     });
   }
 
+  onLayoutChange(layout, tab) {
 
-  removeTab(key) {
     var newTabs = [];
     for (var i = 0; i < this.state.tabs.length; i++) {
-      if ( this.state.tabs[i].key !== key ) {
+      if ( this.state.tabs[i].key === tab.key ) {
+        var newTab = this.copy(this.state.tabs[i]);
+        var layoutByKey = {};
+        console.log("Applying ",layout);
+        for (var j = 0; j < layout.length; j++) {
+          layoutByKey[layout[j].i] = layout[j];
+        }
+        for (var j = 0; j < this.state.tabs[i].layout.length; j++) {
+          layoutByKey[this.state.tabs[i].layout[j].i].contents = this.state.tabs[i].layout[j].contents;
+        }        
+        newTab.layout = layout;
+        newTabs.push(newTab);
+      } else {
         newTabs.push(this.state.tabs[i]);
-      }
-    }
-    this.setState({tabs: newTabs});
-  }
-
-  onStartTabEdit(event, key) {
-    if ( this.state.editing === undefined) {
-      this.setState({
-        editing: key
-      });
-    }
-    event.preventDefault();
-  }
-
-  onUpdateTabTitle(event, key) {
-    var newTabs = this.state.tabs.slice();
-    for (var i = 0; i < newTabs.length; i++) {
-      if ( newTabs[i].key === key) {
-        newTabs[i].title = event.target.value;
       }
     }
     this.setState({
       tabs: newTabs
     });
-    event.preventDefault();
-
-  }
-  onFinishTabEdit(key) {
-    this.setState({
-      editing: undefined
-    });    
-    event.preventDefault();
   }
 
 
@@ -201,14 +260,6 @@ class Layout extends React.Component {
         <div className="gridElementControls" >
         <button 
           onClick={() => { this.removeCell(tabKey, gridElement.i) }} >&#10754;</button>
-        <button  
-          onClick={() => { this.moveCell(tabKey, gridElement.i, { x: -1, y: 0, w: 0, h: 0}) }} >&#8592;</button>
-        <button  
-          onClick={() => { this.moveCell(tabKey, gridElement.i, { x: 0, y: -1, w: 0, h: 0}) }} >&#8593;</button>
-        <button  
-          onClick={() => { this.moveCell(tabKey, gridElement.i, { x: 1, y: 0, w: 0, h: 0}) }} >&#8594;</button>
-        <button  
-          onClick={() => { this.moveCell(tabKey, gridElement.i, { x: 0, y: 1, w: 0, h: 0}) }} >&#8595;</button>
         </div>
         {component}
         </div>
@@ -228,12 +279,46 @@ class Layout extends React.Component {
   }
 
 
-  renderTab(n) {
-    var key = this.state.tabs[n].key;
-    if ( this.state.editing === key ) {
-      return (<Tab key={key} ><form onSubmit={(e) => { this.onFinishTabEdit(e,key) }} ><input type="text" value={this.state.tabs[n].title} onChange={(e) => {this.onUpdateTabTitle(e,key)}}/></form></Tab>)
+  renderControls(tab) {
+    if (this.state.activeMenu === tab.key ) {
+      return (
+          <div>
+            <div className="tabControls" >
+              <button onClick={(e) => { this.onTabMenuHide(e, tab) }} >&#9652;</button>
+            </div>
+            <div className="dropDown" >
+              <button onClick={(e) => { this.onAddClick(tab, "DataInstrument", 2, 1)}}>Add Databox</button>
+              <button onClick={(e) => { this.onAddClick(tab, "WindInstrument", 10, 10)}}>Add Wind Instrument</button>
+              <button onClick={(e) => { this.onAddClick(tab, "PolarInstrument", 10, 10)}}>Add Polar Instrument</button>
+              <button onClick={(e) => { this.removeTab(tab)}}>Remove Tab</button>
+            </div>
+          </div>
+        );
     } else {
-      return (<Tab key={key} onDoubleClick={(e) => {this.onStartTabEdit(e, key)}} >{this.state.tabs[n].title}<button onClick={() => { this.removeTab(key) }} >&#10754;</button></Tab>)
+      return (
+          <div className="tabControls" >
+            <button onClick={(e) => { this.onTabMenuShow(e, tab) }} >&#9662;</button>
+          </div>
+        );
+    }
+  }
+
+
+  renderTab(n) {
+    var tab = this.state.tabs[n];
+    if ( this.state.editing === tab.key ) {
+      return (<Tab key={tab.key} >
+        <InlineEdit onDone={(value) => {this.onFinishTabEdit(tab, value)}} value={tab.title} /> 
+        </Tab>
+        );
+    } else {
+      return (
+        <Tab key={tab.key} 
+        onDoubleClick={(e) => {this.onStartTabEdit(e, tab)}} >
+        {tab.title}
+        {this.renderControls(tab)}
+        </Tab>
+        );
     }
   }
 
@@ -244,18 +329,22 @@ class Layout extends React.Component {
     }
     return tabs;
   }
+  renderPanel(tab) {
+    return  (<TabPanel key={tab.key}>
+          <ReactGridLayout className="layout" 
+            layout={tab.layout} 
+            onLayoutChange={(layout) => {this.onLayoutChange(layout, tab)}}
+            cols={tab.cols} 
+            rowHeight={tab.rowHeight} 
+            width={tab.width}>
+          {this.renderGrid(tab)}
+          </ReactGridLayout>
+        </TabPanel>);
+  }
   renderPanels() {
     var panels = [];
     for (var i = 0; i < this.state.tabs.length; i++) {
-      panels.push((<TabPanel key={this.state.tabs[i].key}>
-          <ReactGridLayout className="layout" 
-            layout={this.state.tabs[i].layout} 
-            cols={this.state.tabs[i].cols} 
-            rowHeight={this.state.tabs[i].rowHeight} 
-            width={this.state.tabs[i].width}>
-          {this.renderGrid(this.state.tabs[i])}
-          </ReactGridLayout>
-        </TabPanel>));
+      panels.push(this.renderPanel(this.state.tabs[i]));
     }
     return panels;
   }

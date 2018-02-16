@@ -7,7 +7,6 @@ import utils from './utils.js'
 import Qty  from 'js-quantities';
 
 
-const radToDeg = Qty.swiftConverter('rad', 'deg');
 const msToKnC = Qty.swiftConverter('m/s', 'kn');
 const knToMsC = Qty.swiftConverter('kn', 'm/s');
 
@@ -32,101 +31,55 @@ class PolarChart extends React.Component {
       stwHistory: []
     };
 
-    var self = this;
-    this.valueStreams = [
-      {
-        sourceId: this.app.sourceId,
-        path: "navigation.headingMagnetic",
-        update : (function(value) {
-          self.update("hdm", radToDeg(value));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "performance.headingMagnetic",
-        update : (function(value) {
-          self.update("oppositeTackDirection", radToDeg(value));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "environment.wind.speedTrue",
-        update : (function(value) {
-          self.updateTws(msToKnC(value));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "environment.wind.angleTrue",
-        update : (function(value) {
-          self.update("twa", radToDeg(value));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "navigation.speedThroughWater",
-        update : (function(value) {
-          self.update("stw", msToKnC(value));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "performance.targetSpeed",
-        update : (function(value) {
-          self.update("targetSpeed", msToKnC(value));
-        })
-      },
-      {
-        sourceId: this.app.sourceId,
-        path: "performance.targetAngle",
-        update : (function(value) {
-          self.update("targetAngle", radToDeg(value));
-        })
-      },
 
-    ];
+    this.app.stats.addPath("navigation.headingMagnetic");
+    this.app.stats.addPath("performance.headingMagnetic");
+    this.app.stats.addPath("environment.wind.speedTrue");
+    this.app.stats.addPath("environment.wind.angleTrue", true);
+    this.app.stats.addPath("navigation.speedThroughWater", true);
+    this.app.stats.addPath("performance.targetSpeed");
+    this.app.stats.addPath("performance.targetAngle");
 
     this.bound = false;
-
+    var self = this;
     setInterval(() => {
-      self.updateHistory();
-    }, props.historyrate || 1000);
+      self.update();
+    }, props.updaterate || 1000);
 
   }
 
 
   componentDidMount() {
-    utils.resolve(this.valueStreams, this.app.databus, this.app.sourceId);
-    utils.subscribe( this.valueStreams, this);
     this.bound = true;
+    this.update();
   }
 
   componentWillUnmount() {
-    utils.unsubscribe(this.valueStreams);
     this.bound = false;
   }
 
 
   // state management ---------------------------------------------------------------------------------------------
   //
-  update(key, value) {
-      var newState = {};
-      newState[key] = value;
-      this.setState(newState);      
-  }
 
-  zeroState() {
-      this.setState({
-          tws: 0.01,
-          maxStw: 2,
-          scale: 240/2,
-          polarCurve: []
-      });
-  }
+  update() {
+    var vs = this.app.stats.valueStreams;
+    var tws = utils.convertKn(vs["environment.wind.speedTrue"].value);
 
-  updateTws(tws) {
     if ( tws < 0.01 ) {
-      this.zeroState();
+      this.setState({
+        tws: tws,
+        maxStw: 2,
+        scale: 240/2,
+        polarCurve: [],
+        stw: utils.convertKn(vs["navigation.speedThroughWater"].value),
+        twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
+        targetSpeed: utils.convertKn(vs["performance.targetSpeed"].value),
+        targetAngle: utils.convertDeg(vs["performance.targetAngle"].value),
+        twaHistory : utils.convertDegA(vs["environment.wind.angleTrue"].history),
+        stwHistory: utils.convertKnA(vs["navigation.speedThroughWater"].history)
+        });
+
     } else {
       var polarCurve = this.app.calculations.polarPerformance.performanceForSpeed(knToMsC(tws));
       // polarCurve is [ { tws: < rad >, stw: <m/s>}]
@@ -170,32 +123,19 @@ class PolarChart extends React.Component {
         tws: tws,
         maxStw: maxStw,
         scale: scale,
-        polarCurve: a
+        polarCurve: a,
+        stw: utils.convertKn(vs["navigation.speedThroughWater"].value),
+        twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
+        targetSpeed: utils.convertKn(vs["performance.targetSpeed"].value),
+        targetAngle: utils.convertDeg(vs["performance.targetAngle"].value),
+        twaHistory : utils.convertDegA(vs["environment.wind.angleTrue"].history),
+        stwHistory: utils.convertKnA(vs["navigation.speedThroughWater"].history)
       });        
     }
   }
 
 
-
-  addToHistory(a, v) {
-    // react requires that state is immutable at all times.
-    let h = a.slice();
-    h.push(v);
-    if (h.length > 100) {
-      h.shift();
-    }
-    return h;
-  }
-
-  updateHistory() {
-    if ( this.bound ) {
-      this.setState({
-          twaHistory: this.addToHistory(this.state.twaHistory, this.state.twa),
-          stwHistory: this.addToHistory(this.state.stwHistory, this.state.stw)
-      });
-    }
-  }
-
+  // -------------------------------- rendering ------------------------------
 
   getRoseRotation() {
     if (this.state.headup) {
