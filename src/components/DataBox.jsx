@@ -28,14 +28,26 @@ class DataBox extends React.Component {
     }
     var self = this;
     this.app.stats.addPath(this.props.path);
-    setInterval(() => {
-      self.update();
-    }, props.updaterate || 1000);
+    this.updaterate = props.updaterate || 1000;
+    this.update = this.update.bind(this);
   }
 
+  static getDefaultProperties() {
+    return {
+        updaterate: 1000,
+        translate: "0,0",
+        path: "navigation.speedThroughWater",
+        units: "kn",
+        title: "stw"
+    }
+  }
+
+
   componentDidMount() {
-    this.bound = true;
-    this.update();
+    if ( !this.bound ) {
+      this.bound = true;
+      this.update();
+    }
   }
 
   componentWillUnmount() {
@@ -46,6 +58,7 @@ class DataBox extends React.Component {
     if (this.bound ) {
       var vs = this.app.stats.valueStreams;
       this.setState({value: this.props.displayValue(vs[this.props.path].value)});
+      setTimeout(this.update, this.updaterate);
     }
   }
 

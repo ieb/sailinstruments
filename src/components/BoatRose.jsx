@@ -33,17 +33,17 @@ class BoatRose extends React.Component {
 
     var self = this;
     this.bound = false;
-    setInterval(() => {
-      self.update();
-    }, props.updaterate || 1000);
-
+    this.updaterate = props.updaterate || 1000;
+    this.update = this.update.bind(this);
   }
 
 
   componentDidMount() {
-    this.bound = true;
-    console.log("Bound BoatRose");
-    this.update();
+    if ( !this.bound ) {
+      this.bound = true;
+      console.log("Bound BoatRose");
+      this.update();      
+    }
   }
 
   componentWillUnmount() {
@@ -63,6 +63,7 @@ class BoatRose extends React.Component {
         vmga: utils.convertDeg(vs["performance.targetAngle"].value),
         hdm: utils.convertDeg(vs["navigation.headingMagnetic"].value),
       });            
+      setTimeout(this.update, this.updaterate);
     }
   }
 

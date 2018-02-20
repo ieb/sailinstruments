@@ -18,6 +18,12 @@ class WindInstrument extends React.Component {
     };
   }
 
+  static getDefaultProperties() {
+    return {
+        northup: true,
+        updaterate: 1000
+    }
+  }
 
   render() {
 
@@ -46,10 +52,12 @@ class WindInstrument extends React.Component {
     }
 
 
+
+
     return (
           <InstrumentContainer width="600" height="600" translate="10,10" >
-                <CompassRose northup={this.state.northup} app={this.app} />
-                <BoatRose headup={!this.state.northup} app={this.app} />
+                <CompassRose northup={this.state.northup} app={this.app} updaterate={this.props.updaterate} />
+                <BoatRose headup={!this.state.northup} app={this.app} updaterate={this.props.updaterate} />
                 <DataBox translate="300, 272" withBox={true}
                     app={this.app}
                     path="navigation.speedThroughWater"

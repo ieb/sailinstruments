@@ -8,6 +8,8 @@ import WindInstrument from './WindInstrument.jsx';
 import PolarInstrument from './PolarInstrument.jsx';
 import DataInstrument from './DataInstrument.jsx';
 import InlineEdit from './InlineEdit.jsx';
+import ConfigureGridElement from './ConfigureGridElement.jsx';
+import _ from "lodash";
 import './react-tabs.css';
 
 
@@ -58,6 +60,7 @@ class Layout extends React.Component {
        }
       ]
     };
+    this.doneConfigureGridElement = this.doneConfigureGridElement.bind(this);
   }
 
   registerComponent(name, constructor) {
@@ -138,7 +141,11 @@ class Layout extends React.Component {
         var newTab = this.copy(this.state.tabs[i]);
         newTab.layout = this.state.tabs[i].layout.slice();
         this.key++;
-        newTab.layout.push({ i: ""+this.key, x:0,  y:0, w:width, h:height, contents: { name: componentName, props: {}} });
+        var props = {};
+        if ( typeof this.namedComponents[componentName].getDefaultProperties === 'function') {
+          props =  this.namedComponents[componentName].getDefaultProperties();
+        } 
+        newTab.layout.push({ i: ""+this.key, x:0,  y:0, w:width, h:height, contents: { name: componentName, props: props }});
         newTabs.push(newTab);
       } else {
         newTabs.push(this.state.tabs[i]);
@@ -147,7 +154,7 @@ class Layout extends React.Component {
     this.setState({
       tabs: newTabs,
       activeMenu: undefined
-    });    
+    });
   }
 
   onTabMenuHide(event, tab) {
@@ -165,6 +172,10 @@ class Layout extends React.Component {
     event.preventDefault();
   }
 
+  componentDidUpdate() {
+    this.app.databus.push("internal", { path: "layoutData", value: this.state});    
+  }
+
   onStartTabEdit(event, tab) {
     if ( this.state.editing === undefined) {
       this.setState({
@@ -172,6 +183,22 @@ class Layout extends React.Component {
       });
     }
     event.preventDefault();
+  }
+
+  configureGridElement(tab, gridElement) {
+    console.log("Would configure ", gridElement);
+    this.setState({
+      configuringElement: gridElement,
+      configuringTab: tab
+    });
+  }
+
+  doneConfigureGridElement() {
+    console.log("Done configure ");
+    this.setState({
+      configuringElement: undefined,
+      configuringTab: undefined
+    });
   }
 
   onFinishTabEdit(tab, value) {
@@ -249,21 +276,27 @@ class Layout extends React.Component {
     });
   }
 
+  updateLayout(layoutData) {
+    this.setState(layoutData);
+  }
 
-  renderGridElement(tabKey, gridElement) {
+
+  renderGridElement(tab, gridElement) {
     console.log("GridElement ", gridElement);
-    var props = gridElement.contents.props;
+    var props = _.cloneDeep(gridElement.contents.props);
     props.app = this.app;
     var component = React.createElement(this.namedComponents[gridElement.contents.name], props);
-    return (
-        <div key={gridElement.i} >
-        <div className="gridElementControls" >
-        <button 
-          onClick={() => { this.removeCell(tabKey, gridElement.i) }} >&#10754;</button>
-        </div>
-        {component}
-        </div>
-    );
+      return (
+          <div key={gridElement.i} >
+          <div className="gridElementControls" >
+          <button 
+            onClick={() => { this.removeCell(tab.key, gridElement.i) }} >&#10754;</button>
+          </div>
+          <div onDoubleClick={() => { this.configureGridElement(tab, gridElement) }}>
+          {component}
+          </div>
+          </div>
+      );
 
   }
 
@@ -272,7 +305,7 @@ class Layout extends React.Component {
     var renderedLayout = [];
     for (var i = 0; i < tab.layout.length; i++) {
       var gridElement = tab.layout[i];
-      renderedLayout.push(this.renderGridElement(tab.key, gridElement));
+      renderedLayout.push(this.renderGridElement(tab, gridElement));
     };
     console.log("Layout ", renderedLayout);
     return renderedLayout;
@@ -331,12 +364,16 @@ class Layout extends React.Component {
   }
   renderPanel(tab) {
     return  (<TabPanel key={tab.key}>
+          { (this.state.configuringTab === tab) && (<ConfigureGridElement 
+              onDone={this.doneConfigureGridElement} 
+              gridElement={this.state.configuringElement} />)}
           <ReactGridLayout className="layout" 
             layout={tab.layout} 
             onLayoutChange={(layout) => {this.onLayoutChange(layout, tab)}}
             cols={tab.cols} 
             rowHeight={tab.rowHeight} 
             width={tab.width}>
+
           {this.renderGrid(tab)}
           </ReactGridLayout>
         </TabPanel>);

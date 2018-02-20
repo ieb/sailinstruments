@@ -28,15 +28,29 @@ class DataInstrument extends React.Component {
     this.setUnits(this.units);
     var self = this;
     console.log(this.state, this.path, this.units);
-    setInterval(() => {
-      self.update();
-    }, props.updaterate || 1000);
+    this.updaterate = props.updaterate || 1000;
+    this.update = this.update.bind(this);
 
   }
 
+  static getDefaultProperties() {
+    return {
+        withBox: true,
+        updaterate: 1000,
+        translate: "0,0",
+        path: "environment.wind.angleApparent",
+        units: "deg",
+        title: "awa"
+    }
+  }
+
+
+
   componentDidMount() {
-    this.bound = true;
-    this.update();
+    if ( !this.bound ) {
+      this.bound = true;
+      this.update();
+    }
   }
 
   componentWillUnmount() {
@@ -50,6 +64,7 @@ class DataInstrument extends React.Component {
         value: this.displayValue(vs[this.path].value),
         units: this.units
         });
+      setTimeout(this.update, this.updaterate);
     } 
   }
 
@@ -96,7 +111,6 @@ class DataInstrument extends React.Component {
         this.displayValue = asIs;
     }
     this.units = units;
-    this.update();
   }
 
 

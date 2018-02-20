@@ -42,16 +42,18 @@ class PolarChart extends React.Component {
 
     this.bound = false;
     var self = this;
-    setInterval(() => {
-      self.update();
-    }, props.updaterate || 1000);
+    this.updaterate = props.updaterate || 1000;
+    this.update = this.update.bind(this);
 
   }
 
 
+
   componentDidMount() {
-    this.bound = true;
-    this.update();
+    if ( !this.bound ) {
+      this.bound = true;
+      this.update();
+    }
   }
 
   componentWillUnmount() {
@@ -63,74 +65,77 @@ class PolarChart extends React.Component {
   //
 
   update() {
-    var vs = this.app.stats.valueStreams;
-    var tws = utils.convertKn(vs["environment.wind.speedTrue"].value);
+    if (this.bound) {
+      var vs = this.app.stats.valueStreams;
+      var tws = utils.convertKn(vs["environment.wind.speedTrue"].value);
 
-    if ( tws < 0.01 ) {
-      this.setState({
-        tws: tws,
-        maxStw: 2,
-        scale: 240/2,
-        polarCurve: [],
-        stw: utils.convertKn(vs["navigation.speedThroughWater"].value),
-        twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
-        targetSpeed: utils.convertKn(vs["performance.targetSpeed"].value),
-        targetAngle: utils.convertDeg(vs["performance.targetAngle"].value),
-        twaHistory : utils.convertDegA(vs["environment.wind.angleTrue"].history),
-        stwHistory: utils.convertKnA(vs["navigation.speedThroughWater"].history)
-        });
+      if ( tws < 0.01 ) {
+        this.setState({
+          tws: tws,
+          maxStw: 2,
+          scale: 240/2,
+          polarCurve: [],
+          stw: utils.convertKn(vs["navigation.speedThroughWater"].value),
+          twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
+          targetSpeed: utils.convertKn(vs["performance.targetSpeed"].value),
+          targetAngle: utils.convertDeg(vs["performance.targetAngle"].value),
+          twaHistory : utils.convertDegA(vs["environment.wind.angleTrue"].history),
+          stwHistory: utils.convertKnA(vs["navigation.speedThroughWater"].history)
+          });
 
-    } else {
-      var polarCurve = this.app.calculations.polarPerformance.performanceForSpeed(knToMsC(tws));
-      // polarCurve is [ { tws: < rad >, stw: <m/s>}]
-      // needs to be [[x,y]]
-      var plot = [];
-      var maxStw = 0;
-      for (var i = 0; i < polarCurve.length; i++) {
-         polarCurve[i].stw = msToKnC(polarCurve[i].stw);
-        if ( polarCurve[i].stw > maxStw ) {
-          maxStw = polarCurve[i].stw;
-        }
-      }
-      // fix the max based on lookup to keep the display more stable.
-      //
-      if ( maxStw > this.state.maxStw ) {
-        // must be increased
-        var m = (Math.floor((maxStw*1.2)/2)+1)*2;
-        console.log("Increasing ", maxStw, this.state.maxStw, m);
-        maxStw = m;
-      } else if ( maxStw < this.state.maxStw*0.6 ) {
-        // must be decreased.
-        var m = (Math.floor((maxStw*1.2)/2)+1)*2;
-        console.log("Decreasing ", maxStw, this.state.maxStw, m);
-        maxStw = m;
       } else {
-        maxStw = this.state.maxStw;
-      }
+        var polarCurve = this.app.calculations.polarPerformance.performanceForSpeed(knToMsC(tws));
+        // polarCurve is [ { tws: < rad >, stw: <m/s>}]
+        // needs to be [[x,y]]
+        var plot = [];
+        var maxStw = 0;
+        for (var i = 0; i < polarCurve.length; i++) {
+           polarCurve[i].stw = msToKnC(polarCurve[i].stw);
+          if ( polarCurve[i].stw > maxStw ) {
+            maxStw = polarCurve[i].stw;
+          }
+        }
+        // fix the max based on lookup to keep the display more stable.
+        //
+        if ( maxStw > this.state.maxStw ) {
+          // must be increased
+          var m = (Math.floor((maxStw*1.2)/2)+1)*2;
+          console.log("Increasing ", maxStw, this.state.maxStw, m);
+          maxStw = m;
+        } else if ( maxStw < this.state.maxStw*0.6 ) {
+          // must be decreased.
+          var m = (Math.floor((maxStw*1.2)/2)+1)*2;
+          console.log("Decreasing ", maxStw, this.state.maxStw, m);
+          maxStw = m;
+        } else {
+          maxStw = this.state.maxStw;
+        }
 
-      // the outer ring is at 240 from the center.
-      var scale = 240/maxStw;
-      var a = [];
-      for (var i = 0; i < polarCurve.length; i++) {
-        a.push([polarCurve[i].twa, polarCurve[i].stw*scale]);
-      };
-      for (var i = polarCurve.length-1; i >= 0; i--) {
-        a.push([(Math.PI*2)-polarCurve[i].twa, polarCurve[i].stw*scale]);
-      };
-      //console.log("Polar curve is ", maxStwn, scalen, polarCurve);
-      //console.log("PolarLine is ",a);
-      this.setState({
-        tws: tws,
-        maxStw: maxStw,
-        scale: scale,
-        polarCurve: a,
-        stw: utils.convertKn(vs["navigation.speedThroughWater"].value),
-        twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
-        targetSpeed: utils.convertKn(vs["performance.targetSpeed"].value),
-        targetAngle: utils.convertDeg(vs["performance.targetAngle"].value),
-        twaHistory : utils.convertDegA(vs["environment.wind.angleTrue"].history),
-        stwHistory: utils.convertKnA(vs["navigation.speedThroughWater"].history)
-      });        
+        // the outer ring is at 240 from the center.
+        var scale = 240/maxStw;
+        var a = [];
+        for (var i = 0; i < polarCurve.length; i++) {
+          a.push([polarCurve[i].twa, polarCurve[i].stw*scale]);
+        };
+        for (var i = polarCurve.length-1; i >= 0; i--) {
+          a.push([(Math.PI*2)-polarCurve[i].twa, polarCurve[i].stw*scale]);
+        };
+        //console.log("Polar curve is ", maxStwn, scalen, polarCurve);
+        //console.log("PolarLine is ",a);
+        this.setState({
+          tws: tws,
+          maxStw: maxStw,
+          scale: scale,
+          polarCurve: a,
+          stw: utils.convertKn(vs["navigation.speedThroughWater"].value),
+          twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
+          targetSpeed: utils.convertKn(vs["performance.targetSpeed"].value),
+          targetAngle: utils.convertDeg(vs["performance.targetAngle"].value),
+          twaHistory : utils.convertDegA(vs["environment.wind.angleTrue"].history),
+          stwHistory: utils.convertKnA(vs["navigation.speedThroughWater"].history)
+        });        
+      }
+      setTimeout(this.update, this.updaterate);
     }
   }
 

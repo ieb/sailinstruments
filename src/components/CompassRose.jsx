@@ -22,17 +22,17 @@ class CompassRose extends React.Component {
     this.app.stats.addPath("navigation.headingMagnetic");
 
 
-    var self = this;
     this.bound = false;
-    setInterval(() => {
-      self.update();
-    }, props.updaterate || 1000);
+    this.updaterate = props.updaterate || 1000;
+    this.update = this.update.bind(this);
   }
 
 
   componentDidMount() {
-    this.bound = true;
-    this.update();
+    if ( !this.bound ) {
+      this.bound = true;
+      this.update();      
+    }
   }
 
   componentWillUnmount() {
@@ -46,7 +46,8 @@ class CompassRose extends React.Component {
         oppositeTackDirection: utils.convertDeg(vs["performance.headingMagnetic"].value),
         groundWindDirection: utils.convertDeg(vs["environment.wind.directionTrue"].value),
         hdm: utils.convertDeg(vs["navigation.headingMagnetic"].value),
-      });            
+      });
+      setTimeout(this.update, this.updaterate);            
     }
   }
 

@@ -14,12 +14,18 @@ class PolarInstrument extends React.Component {
     };
   }
 
+  static getDefaultProperties() {
+    return {
+        updaterate: 1000
+    }
+  }
+
 
   render() {
 
     return (
         <InstrumentContainer width="600" height="600" translate="10,10" >
-          <PolarChart app={this.app} />
+          <PolarChart app={this.app} updaterate={this.props.updaterate} />
         </InstrumentContainer>
 
     );
