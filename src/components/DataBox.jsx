@@ -17,28 +17,50 @@ class DataBox extends React.Component {
     this.props = props;
     this.app = props.app;
     this.state = {
-        value : 0
+        value : 0,
+        title: props.title,
+        units: props.units,
+        translate: props.translate,
+        withBox: props.withBox || false,
+        updaterate : props.updaterate || 1000
     };
-    this.transform="translate ("+this.props.translate+")";
-    if ( typeof this.props.displayValue === "function") {
-      this.displayValue = this.props.displayValue; 
-    } else {
-      console.log("No display value supplied ", this.props.displayValue);
-      this.displayValue = function(x) { return x; }
-    }
-    var self = this;
-    this.app.stats.addPath(this.props.path);
-    this.updaterate = props.updaterate || 1000;
+    this.setPaths(this.props);
     this.update = this.update.bind(this);
   }
 
-  static getDefaultProperties() {
+  static getDefaultProperties(app) {
     return {
         updaterate: 1000,
         translate: "0,0",
-        path: "navigation.speedThroughWater",
+        dataPath: app.sourceId+".navigation.speedThroughWater",
         units: "kn",
         title: "stw"
+    }
+  }
+
+  setPaths(props) {
+    this.dataPath = this.props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
+    this.dataStream = this.app.stats.addPath(this.dataPath);
+  }
+
+
+  componentWillReceiveProps(nextProps) {
+    var newState = {};
+    var update = false;
+    for(var k in this.state) {
+      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
+        newState[k] = nextProps[k];
+        update = true;
+      }
+    }
+    for(var k in nextProps ) {
+      if (k.endsWith("Path") && nextProps[k] !== this[k] ) {
+        this.setPaths(nextProps);
+        break;
+      }
+    }
+    if ( update ) {
+        this.setState(newState);
     }
   }
 
@@ -56,18 +78,20 @@ class DataBox extends React.Component {
 
   update() {
     if (this.bound ) {
-      var vs = this.app.stats.valueStreams;
-      this.setState({value: this.props.displayValue(vs[this.props.path].value)});
-      setTimeout(this.update, this.updaterate);
+      this.setState({
+        value: utils.getDisplay(this.state.units)(this.dataStream.value)
+      });
+      setTimeout(this.update, this.state.updaterate);
     }
   }
 
   render() {
+    var transform="translate ("+this.state.translate+")";
     return (
-      <g transform={this.transform}  className="data-box" >
-          {this.props.withBox && <rect width="120" height="50" x="-60" y="-37" rx="5" ry="5"  ></rect>}
+      <g transform={transform}  className="data-box" >
+          {this.state.withBox && <rect width="120" height="50" x="-60" y="-37" rx="5" ry="5"  ></rect>}
           <text x="0" y="0" textAnchor="middle" fontSize="38" >{this.state.value}</text>
-          <text x="55" y="10" textAnchor="end" fontSize="15" >{this.props.title}</text>
+          <text x="55" y="10" textAnchor="end" fontSize="15" >{this.state.title}</text>
       </g>
       );
   }

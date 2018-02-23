@@ -8,13 +8,16 @@
 
   const Qty  = require('js-quantities');
 
-  const radToDeg = Qty.swiftConverter('rad', 'deg')
-  const msToKnC = Qty.swiftConverter('m/s', 'kn');
+  const radToDeg = Qty.swiftConverter('rad', 'deg');
+  const msToKn = Qty.swiftConverter('m/s', 'kn');
 
 
   var resolve = function(valueStreams, databus) {
       for (var i in  valueStreams) {
-        valueStreams[i].stream = databus.getStreamForSourcePath(valueStreams[i].sourceId,valueStreams[i].path);
+        valueStreams[i].stream = databus.getStreamForSourcePath(valueStreams[i].sourceId,valueStreams[i].paramPath);
+        if ( valueStreams[i].stream === undefined ) {
+          console.log("Resolved Failed ", valueStreams[i].sourceId,valueStreams[i].paramPath, valueStreams[i].stream);
+        }
       };
   }
 
@@ -56,13 +59,68 @@
   var convertKnA = function(a) {
     var ad = [];
     for (var i = a.length - 1; i >= 0; i--) {
-      ad.push(+(msToKnC(a[i]).toFixed(2)));
+      ad.push(+(msToKn(a[i]).toFixed(2)));
     }; 
     return ad;
   }
   var convertKn = function(a) {
-    return +(msToKnC(a).toFixed(2));
+    return +(msToKn(a).toFixed(2));
   }
+
+  const radToDegF  = function(x) {
+    return radToDeg(x).toFixed(0);
+  }
+  const msToKnF = function(x) {
+    var v = msToKn(x);
+    if (v < 10) {
+      return v.toFixed(2);
+    } else {
+      return v.toFixed(1);
+    }
+  }
+
+  const percentF = function(x) {
+    var v = x * 100;
+    if (v < 10) {
+      return v.toFixed(1);
+    } else {
+      return v.toFixed(0);
+    }
+  }
+
+  const asIs = function(x) {
+      return x;
+  }
+
+
+
+  var getDisplay = function(units) {
+    if ( units === "deg" ){
+        return radToDegF;
+    } else if ( units === "kn" ) {
+        return msToKnF;
+    } else if ( units === "%" ) {
+        return percentF;
+    } else {
+        return asIs;
+    }
+  }
+
+  var getSymbol = function(units) {
+    if ( units === "deg" ){
+        return "deg"
+    } else if ( units === "kn" ) {
+        return "kn";
+    } else if ( units === "%" ) {
+        return "%";
+    } else if ( units === "C") {
+        return "C"
+    } else {
+      return "";
+    }
+  }
+
+
 
 
 
@@ -73,6 +131,8 @@
         convertDeg : convertDeg,
         convertDegA : convertDegA,
         convertKn : convertKn,
-        convertKnA : convertKnA
+        convertKnA : convertKnA,
+        getDisplay: getDisplay,
+        getSymbol: getSymbol
     };
 }());

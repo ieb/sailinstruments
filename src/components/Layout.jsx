@@ -8,7 +8,7 @@ import WindInstrument from './WindInstrument.jsx';
 import PolarInstrument from './PolarInstrument.jsx';
 import DataInstrument from './DataInstrument.jsx';
 import InlineEdit from './InlineEdit.jsx';
-import ConfigureGridElement from './ConfigureGridElement.jsx';
+import ConfigureCell from './ConfigureCell.jsx';
 import _ from "lodash";
 import './react-tabs.css';
 
@@ -60,7 +60,7 @@ class Layout extends React.Component {
        }
       ]
     };
-    this.doneConfigureGridElement = this.doneConfigureGridElement.bind(this);
+    this.doneConfigureCell = this.doneConfigureCell.bind(this);
   }
 
   registerComponent(name, constructor) {
@@ -84,78 +84,72 @@ class Layout extends React.Component {
   }
 
 
-  copy(m) {
-    var newM = {}
-    for(var k in m) {
-      if (m.hasOwnProperty(k) ) {
-        newM[k] = m[k];
-      }
-    }
-    return newM;
-  }
 
-  removeCell(tabKey, gridKey) {
-    var newTabs = [];
-    // immutabled remove the cell, which means replacing everything enroute to the cell
-    // default shallow copies dont do this correctly, so do it the hard way.
-    for (var i = 0; i < this.state.tabs.length; i++) {
-      if ( this.state.tabs[i].key === tabKey ) {
-
-        var newTab = this.copy(this.state.tabs[i]);
-        newTab.layout = [];
-        for (var j = 0; j < this.state.tabs[i].layout.length; j++ ) {
-          if ( this.state.tabs[i].layout[j].i !== gridKey ) {
-            newTab.layout.push(this.state.tabs[i].layout[j]);
-          }
+  /**
+   * Update an immutable item from a [] of items keyed, by a key which 
+   * must match the target. The udpateItemCB is called with a fresh 
+   * shallow clone of the item which the implementation of that function
+   * should either modify and return, or, if it is to be deleted, return undefined.
+   * This function can be chained to gether to edit an immutable tree.
+   * callbacks should be synchronous.
+   */
+  updateItem(items, key, target, updateItemCB) {
+    var newItems = [];
+    for (var i = 0; i < items.length; i++) {
+      if ( items[i][key] === target[key] ) {
+        var newItem = updateItemCB(_.clone(items[i]));
+        if ( newItem !== undefined ) {
+          newItems.push(newItem);
         }
-        newTabs.push(newTab);
       } else {
-        newTabs.push(this.state.tabs[i]);
+        newItems.push(items[i]);
       }
     }
-    console.log("Removing ", tabKey, gridKey, newTabs);
-    this.setState({
-      tabs: newTabs
-    });
+    return newItems;
   }
 
-
+  removeCell(tab, cell) {
+    var self = this;
+    self.setState({tabs: self.updateItem(self.state.tabs, "key", tab, (newTab)=> {
+      newTab.layout = self.updateItem(newTab.layout, "i", cell, (newCell) => {
+        console.log("Removing ", newTab.key, cell.i, newCell);
+        return undefined;
+      });
+      console.log("Updated Tab ", newTab);
+      return newTab;
+    })});    
+  }
 
   removeTab(tab) {
-    var newTabs = [];
-    for (var i = 0; i < this.state.tabs.length; i++) {
-      if ( this.state.tabs[i].key !== tab.key ) {
-        newTabs.push(this.state.tabs[i]);
-      }
-    }
-    this.setState({
-      tabs: newTabs,
+    var self = this;
+    self.setState({
+      tabs: self.updateItem(self.state.tabs, "key", tab, (newTab) => {
+          return undefined;
+        }),
       activeMenu: undefined
     });
   }
 
+
   onAddClick(tab, componentName, width, height) {
-    var newTabs = [];
-    for (var i = 0; i < this.state.tabs.length; i++) {
-      if ( this.state.tabs[i].key === tab.key ) {
-        var newTab = this.copy(this.state.tabs[i]);
-        newTab.layout = this.state.tabs[i].layout.slice();
-        this.key++;
+    var self = this;
+    self.setState({
+      tabs: self.updateItem(self.state.tabs, "key", tab, (newTab) => {
+        newTab.layout = newTab.layout.slice();
+        self.key++;
         var props = {};
-        if ( typeof this.namedComponents[componentName].getDefaultProperties === 'function') {
-          props =  this.namedComponents[componentName].getDefaultProperties();
+        if ( typeof self.namedComponents[componentName].getDefaultProperties === 'function') {
+          props =  self.namedComponents[componentName].getDefaultProperties(this.app);
         } 
         newTab.layout.push({ i: ""+this.key, x:0,  y:0, w:width, h:height, contents: { name: componentName, props: props }});
-        newTabs.push(newTab);
-      } else {
-        newTabs.push(this.state.tabs[i]);
-      }
-    }
-    this.setState({
-      tabs: newTabs,
+        return newTab;
+      }),
       activeMenu: undefined
     });
   }
+
+
+
 
   onTabMenuHide(event, tab) {
     this.setState({
@@ -185,95 +179,67 @@ class Layout extends React.Component {
     event.preventDefault();
   }
 
-  configureGridElement(tab, gridElement) {
-    console.log("Would configure ", gridElement);
+  configureCell(tab, cell) {
+    console.log("Would configure ", cell);
     this.setState({
-      configuringElement: gridElement,
+      configuringCell: cell,
       configuringTab: tab
     });
   }
 
-  doneConfigureGridElement() {
-    console.log("Done configure ");
-    this.setState({
-      configuringElement: undefined,
-      configuringTab: undefined
-    });
+  doneConfigureCell(finalConfig) {
+    if (finalConfig !== undefined) {
+      console.log("Done configure ", finalConfig);
+      var self = this;
+      var newTabs = self.updateItem(self.state.tabs, "key", self.state.configuringTab, (newTab)=> {
+        newTab.layout = self.updateItem(newTab.layout, "i", self.state.configuringCell, (newCell) => {
+          newCell.contents = _.clone(newCell.contents);
+          newCell.contents.props = _.clone(finalConfig);
+          console.log("Updated  cell",newCell);
+          return newCell;
+        });
+        return newTab;
+      });    
+      console.log("Updated Tabs ", newTabs);
+      this.setState({
+        tabs: newTabs,
+        configuringCell: undefined,
+        configuringTab: undefined
+      });      
+
+    } else {
+      this.setState({
+        configuringCell: undefined,
+        configuringTab: undefined
+      });      
+    }
   }
 
   onFinishTabEdit(tab, value) {
-    var newTabs = this.state.tabs.slice();
-    for (var i = 0; i < newTabs.length; i++) {
-      if ( newTabs[i].key === this.state.editing) {
-        newTabs[i].title = value;
-      }
-    }
-    this.setState({
-      editing: undefined,
-      tabs: newTabs
+    var self = this;
+    self.setState({tabs: self.updateItem(self.state.tabs, "key", { key: self.state.editing}, (newTab) => {
+        newTab.title = value;
+        return newTab;
+      }),
+      editing: undefined
     });    
   }
 
-  moveCell(tabKey, gridKey, dir) {
-    var newTabs = [];
-    // immutabled remove the cell, which means replacing everything enroute to the cell
-    // default shallow copies dont do this correctly, so do it the hard way.
-    for (var i = 0; i < this.state.tabs.length; i++) {
-      if ( this.state.tabs[i].key === tabKey ) {
-        // take a 
-
-        var newTab = this.copy(this.state.tabs[i]);
-        newTab.layout = [];
-        for (var j = 0; j < this.state.tabs[i].layout.length; j++ ) {
-          if ( this.state.tabs[i].layout[j].i !== gridKey ) {
-            newTab.layout.push(this.state.tabs[i].layout[j]);
-            console.log("copied layout ",this.state.tabs[i].layout[j]);
-          } else {
-            var newCell = this.copy(this.state.tabs[i].layout[j]);
-            newCell.x = Math.max(0,newCell.x + dir.x); 
-            newCell.y = Math.max(0,newCell.y + dir.y); 
-            newCell.w = Math.max(1,newCell.w + dir.w); 
-            newCell.h = Math.max(1,newCell.h + dir.h);
-            newTab.layout.push(newLayout); 
-            console.log("modified layout ",newLayout);
-          }
-        }
-        console.log("Deep Copy ",this.state.tabs[i], newTab);
-        newTabs.push(newTab);
-      } else {
-        console.log("Shallow Copy ",this.state.tabs[i]);
-        newTabs.push(this.state.tabs[i]);
-      }
-    }
-    console.log("After Move ", tabKey, gridKey, newTabs);
-    this.setState({
-      tabs: newTabs
-    });
-  }
 
   onLayoutChange(layout, tab) {
-
-    var newTabs = [];
-    for (var i = 0; i < this.state.tabs.length; i++) {
-      if ( this.state.tabs[i].key === tab.key ) {
-        var newTab = this.copy(this.state.tabs[i]);
+    var self = this;
+    self.setState({tabs: self.updateItem(self.state.tabs, "key", tab, (newTab) => {
         var layoutByKey = {};
         console.log("Applying ",layout);
         for (var j = 0; j < layout.length; j++) {
           layoutByKey[layout[j].i] = layout[j];
         }
-        for (var j = 0; j < this.state.tabs[i].layout.length; j++) {
-          layoutByKey[this.state.tabs[i].layout[j].i].contents = this.state.tabs[i].layout[j].contents;
+        for (var j = 0; j < newTab.layout.length; j++) {
+          layoutByKey[newTab.layout[j].i].contents = newTab.layout[j].contents;
         }        
         newTab.layout = layout;
-        newTabs.push(newTab);
-      } else {
-        newTabs.push(this.state.tabs[i]);
-      }
-    }
-    this.setState({
-      tabs: newTabs
-    });
+        return newTab;
+    })});
   }
 
   updateLayout(layoutData) {
@@ -281,22 +247,21 @@ class Layout extends React.Component {
   }
 
 
-  renderGridElement(tab, gridElement) {
-    console.log("GridElement ", gridElement);
-    var props = _.cloneDeep(gridElement.contents.props);
-    props.app = this.app;
-    var component = React.createElement(this.namedComponents[gridElement.contents.name], props);
-      return (
-          <div key={gridElement.i} >
-          <div className="gridElementControls" >
-          <button 
-            onClick={() => { this.removeCell(tab.key, gridElement.i) }} >&#10754;</button>
-          </div>
-          <div onDoubleClick={() => { this.configureGridElement(tab, gridElement) }}>
-          {component}
-          </div>
-          </div>
-      );
+  renderCell(tab, cell) {
+    console.log("Rendering Updated Cell ", cell);
+    var component = this.namedComponents[cell.contents.name].generateComponent(cell.contents.props, this.app);
+    console.log("New Element is ", component);
+    return (
+        <div key={cell.i} >
+        <div className="cellControls" >
+        <button 
+          onClick={() => { this.removeCell(tab, cell) }} >&#10754;</button>
+        </div>
+        <div onDoubleClick={() => { this.configureCell(tab, cell) }}>
+        {component}
+        </div>
+        </div>
+    );
 
   }
 
@@ -304,8 +269,8 @@ class Layout extends React.Component {
   renderGrid(tab) {
     var renderedLayout = [];
     for (var i = 0; i < tab.layout.length; i++) {
-      var gridElement = tab.layout[i];
-      renderedLayout.push(this.renderGridElement(tab, gridElement));
+      var cell = tab.layout[i];
+      renderedLayout.push(this.renderCell(tab, cell));
     };
     console.log("Layout ", renderedLayout);
     return renderedLayout;
@@ -337,8 +302,7 @@ class Layout extends React.Component {
   }
 
 
-  renderTab(n) {
-    var tab = this.state.tabs[n];
+  renderTab(tab) {
     if ( this.state.editing === tab.key ) {
       return (<Tab key={tab.key} >
         <InlineEdit onDone={(value) => {this.onFinishTabEdit(tab, value)}} value={tab.title} /> 
@@ -358,15 +322,17 @@ class Layout extends React.Component {
   renderTabs() {
     var tabs = [];
     for (var i = 0; i < this.state.tabs.length; i++) {
-      tabs.push(this.renderTab(i));
+      tabs.push(this.renderTab(this.state.tabs[i]));
     }
     return tabs;
   }
   renderPanel(tab) {
+    console.log("Rendering tab ", tab);
     return  (<TabPanel key={tab.key}>
-          { (this.state.configuringTab === tab) && (<ConfigureGridElement 
-              onDone={this.doneConfigureGridElement} 
-              gridElement={this.state.configuringElement} />)}
+          { (this.state.configuringTab === tab) && (<ConfigureCell 
+              onDone={this.doneConfigureCell} 
+              cell={this.state.configuringCell} 
+              app={this.app} />)}
           <ReactGridLayout className="layout" 
             layout={tab.layout} 
             onLayoutChange={(layout) => {this.onLayoutChange(layout, tab)}}

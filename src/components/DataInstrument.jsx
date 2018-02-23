@@ -5,6 +5,8 @@ import React from 'react';
 import InstrumentContainer from './InstrumentContainer.jsx';
 import DataBox from './DataBox.jsx';
 import Qty  from 'js-quantities';
+import utils from './utils.js';
+
 
 class DataInstrument extends React.Component {
 
@@ -12,38 +14,67 @@ class DataInstrument extends React.Component {
     super(props);
     this.props = props;
     this.app = props.app;
-    var withBox = true;
-    if (props.withBox !== undefined ) {
-        withBox = props.withBox;
-    }
-    this.units = props.units || "deg";
     this.state = {
-      withBox : withBox,
       title: props.title || "awa",
-      units: this.units,
-      value: 0
+      units: props.units || "deg",
+      value: 0,
+      withBox: props.withBox || false,
+      updaterate : props.updaterate || 1000
     };
-    this.path = props.path || "environment.wind.angleApparent",
-    this.app.stats.addPath(this.path);
-    this.setUnits(this.units);
-    var self = this;
-    console.log(this.state, this.path, this.units);
-    this.updaterate = props.updaterate || 1000;
+    this.setPaths(props);
     this.update = this.update.bind(this);
 
   }
 
-  static getDefaultProperties() {
+  static getDefaultProperties(app) {
     return {
         withBox: true,
         updaterate: 1000,
         translate: "0,0",
-        path: "environment.wind.angleApparent",
+        dataPath: app.sourceId+".environment.wind.angleApparent",
         units: "deg",
         title: "awa"
     }
   }
 
+
+  static generateComponent(props, app) {
+    return (
+        <DataInstrument withBox={props.withBox} 
+          updaterate={props.updaterate}
+          translate={props.translate}
+          dataPath={props.dataPath}
+          units={props.units}
+          title={props.title}
+          app={app}  />
+        );
+  }
+
+  setPaths(props) {
+    this.dataPath = props.dataPath || this.app.sourceId+".environment.wind.angleApparent",
+    this.dataStream = this.app.stats.addPath(this.dataPath);
+  }
+
+
+  componentWillReceiveProps(nextProps) {
+    var newState = {};
+    var update = false;
+    for(var k in this.state) {
+      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
+        newState[k] = nextProps[k];
+        update = true;
+      }
+    }
+    for(var k in nextProps ) {
+      if (k.endsWith("Path") && nextProps[k] !== this[k] ) {
+        this.setPaths(nextProps);
+        break;
+      }
+    }
+    if ( update ) {
+        this.setState(newState);
+    }
+  }
 
 
   componentDidMount() {
@@ -59,12 +90,10 @@ class DataInstrument extends React.Component {
 
   update() {
     if (this.bound ) {
-      var vs = this.app.stats.valueStreams;
       this.setState({
-        value: this.displayValue(vs[this.path].value),
-        units: this.units
+        value: utils.getDisplay(this.state.units)(this.dataStream.value),
         });
-      setTimeout(this.update, this.updaterate);
+      setTimeout(this.update, this.state.updaterate);
     } 
   }
 
@@ -73,62 +102,16 @@ class DataInstrument extends React.Component {
     this.app.stats.addPath(this.path);
   }
 
-  setUnits(units) {
-    const radToDegC = Qty.swiftConverter('rad', 'deg');
-    const radToDeg  = function(x) {
-      return radToDegC(x).toFixed(0);
-    }
-    const msToKnC = Qty.swiftConverter('m/s', 'kn');
-    const msToKn = function(x) {
-      var v = msToKnC(x);
-      if (v < 10) {
-        return v.toFixed(2);
-      } else {
-        return v.toFixed(1);
-      }
-    }
-
-    const percent = function(x) {
-      var v = x * 100;
-      if (v < 10) {
-        return v.toFixed(1);
-      } else {
-        return v.toFixed(0);
-      }
-    }
-
-    const asIs = function(x) {
-        return x;
-    }
-
-    if ( units === "deg" ){
-        this.displayValue = radToDeg;
-    } else if ( units === "kn" ) {
-        this.displayValue = msToKn;
-    } else if ( units === "%" ) {
-        this.displayValue = percent;
-    } else {
-        this.displayValue = asIs;
-    }
-    this.units = units;
-  }
 
 
   render() {
-    var symbol = "";
-    if ( this.units === "deg" ){
-        symbol = "deg"
-    } else if ( this.units === "kn" ) {
-        symbol = "kn";
-    } else if ( this.units === "%" ) {
-        symbol = "%";
-    } else if ( this.units === "C") {
-        symbol = "C"
-    }
 
 
+
+    var symbol = utils.getSymbol(this.state.units);
 
     return (
+
         <svg viewBox="0,0,120, 60" transform="translate(0,0)" width="120" height="60">
           <g transform="translate(0,0)" className="data-box">
             {this.state.withBox && <rect width="120" height="60" x="0" y="0" rx="5" ry="5"></rect>}

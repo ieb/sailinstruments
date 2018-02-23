@@ -31,15 +31,30 @@ class Stats  {
     this.historyLength = Math.round(time/this.historyRate);
   }
 
+  getSourceId(path) {
+    if (path.charAt(0) === '.') {
+      return this.app.sourceId;
+    } else {
+      return path.split('.')[0];
+    }
+  }
+  getPath(path) {
+    return path.split('.').slice(1).join(".");
+  }
+
+
+
   addPath(path, withHistory) {
+    var sourceId = this.getSourceId(path);
+    var paramPath = this.getPath(path);
     if ( this.valueStreams[path] === undefined) {
       var h = undefined;
       if (withHistory) {
         h = [];
       }
       var vs = this.valueStreams[path] = {
-        sourceId: this.app.sourceId,
-        path: path,
+        sourceId: sourceId,
+        paramPath: paramPath,
         value: 0,
         update: (v) => {
           vs.value = v;
@@ -53,6 +68,8 @@ class Stats  {
         this.valueStreams[path].history = [];
       }
     }
+    console.log("Added path ", path);
+    return this.valueStreams[path];
   }
 
   updateHistory() {

@@ -75,7 +75,7 @@ class App extends React.Component {
   }
   handlePossiblyNewSource(newSource) {
     this.knownKeys[newSource.key] = newSource;
-    //console.log("Added NewSource ", newSource.key, " to ", this.knownKeys);
+    // console.log("Added NewSource ", newSource.key, " to ", this.knownKeys);
   }
 
   componentDidMount() {

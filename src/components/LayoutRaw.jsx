@@ -29,7 +29,7 @@ class LayoutRaw extends React.Component {
     this.doReset = this.doReset.bind(this);
     this.layoutDataStream = {
         sourceId: "internal",
-        path: "layoutData",
+        paramPath: "layoutData",
         update: this.update
     };
   }
@@ -120,7 +120,6 @@ class LayoutRaw extends React.Component {
 
 
   render() {
-    console.log(this.state.layoutData);
     return (
       <form onSubmit={this.submit} >
       <textarea value={this.state.layoutData} onChange={this.change} rows="80" cols="132" ></textarea>

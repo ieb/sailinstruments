@@ -13,28 +13,58 @@ class BoatRose extends React.Component {
     this.props = props;
     this.app = props.app;
     this.state = {
-        leewayAngle: props.leewayAngle || 5,
-        awa: props.awa || 30,
-        twa: props.twa || 20,
-        vmga: props.vmga || 10,
-        hdm: props.hdm || 340,
+        leewayAngle: 5,
+        awa: 30,
+        twa: 20,
+        vmga: 10,
+        hdm: 340,
         headup: props.headup,
         twaHistory: [],
-        awaHistory: []
+        awaHistory: [],
+        updaterate: props.updaterate || 1000
     };
 
+    console.log("New BoatRose Headup ", this.state.headup);
 
-    this.app.stats.addPath("performance.leeway");
-    this.app.stats.addPath("environment.wind.angleApparent", true);
-    this.app.stats.addPath("environment.wind.angleTrue", true);
-    this.app.stats.addPath("performance.targetAngle");
-    this.app.stats.addPath("navigation.headingMagnetic");
-
+    this.setPaths(this.props);
 
     var self = this;
     this.bound = false;
-    this.updaterate = props.updaterate || 1000;
     this.update = this.update.bind(this);
+  }
+
+  setPaths(props) {
+    this.leewayPath = props.leewayPath || this.app.sourceId+".performance.leeway";
+    this.awaPath = props.awaPath || this.app.sourceId+".environment.wind.angleApparent";
+    this.twaPath = props.twaPath || this.app.sourceId+".environment.wind.angleTrue";
+    this.targetAnglePath = props.targetAnglePath || this.app.sourceId+".performance.targetAngle";
+    this.hdmPath = props.hdmPath || this.app.sourceId+".navigation.headingMagnetic"
+    this.leewayStream = this.app.stats.addPath(this.leewayPath);
+    this.awaStream = this.app.stats.addPath(this.awaPath, true);
+    this.twaStream = this.app.stats.addPath(this.twaPath, true);
+    this.targetAngleStream = this.app.stats.addPath(this.targetAnglePath);
+    this.hdmStream = this.app.stats.addPath(this.hdmPath);    
+  }
+
+
+  componentWillReceiveProps(nextProps) {
+    var newState = {};
+    var update = false;
+    for(var k in this.state) {
+      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
+        newState[k] = nextProps[k];
+        update = true;
+      }
+    }
+    for(var k in nextProps ) {
+      if (k.endsWith("Path") && nextProps[k] !== this[k] ) {
+        this.setPaths(nextProps);
+        break;
+      }
+    }
+    if ( update ) {
+        this.setState(newState);
+    }
   }
 
 
@@ -55,15 +85,15 @@ class BoatRose extends React.Component {
     if ( this.bound ) {
       var vs = this.app.stats.valueStreams;
       this.setState({
-        twaHistory: utils.convertDegA(vs["environment.wind.angleTrue"].history),
-        awaHistory: utils.convertDegA(vs["environment.wind.angleApparent"].history),
-        leewayAngle: utils.convertDeg(vs["performance.leeway"].value),
-        awa: utils.convertDeg(vs["environment.wind.angleApparent"].value),
-        twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
-        vmga: utils.convertDeg(vs["performance.targetAngle"].value),
-        hdm: utils.convertDeg(vs["navigation.headingMagnetic"].value),
+        twaHistory: utils.convertDegA(this.twaStream.history),
+        awaHistory: utils.convertDegA(this.awaStream.history),
+        leewayAngle: utils.convertDeg(this.leewayStream.value),
+        awa: utils.convertDeg(this.awaStream.value),
+        twa: utils.convertDeg(this.twaStream.value),
+        vmga: utils.convertDeg(this.targetAngleStream.value),
+        hdm: utils.convertDeg(this.hdmStream.value),
       });            
-      setTimeout(this.update, this.updaterate);
+      setTimeout(this.update, this.state.updaterate);
     }
   }
 

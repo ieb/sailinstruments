@@ -18,11 +18,24 @@ class InstrumentContainer extends React.Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    var newState = {};
+    var update = false;
+    for(var k in this.state) {
+      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
+        newState[k] = nextProps[k];
+        update = true;
+      }
+    }
+    if ( update ) {
+        this.setState(newState);
+    }
+  }
+
   render() {
     // the instument is 0,0,650,650
     return (
       <svg viewBox="0 0 650 650" transform={this.state.transform} width={this.state.width} height={this.state.height}>
-
             <g>
               {this.props.children}
             </g>

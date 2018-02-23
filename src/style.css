@@ -454,37 +454,39 @@
 }
 
 
-.gridElementControls {
+.cellControls {
     position: absolute;
     font-size: 10px;
     right: 1px;
     top: 1px;
 }
 
-.gridElementControls > button {
+.cellControls > button {
     border: none;    
 }
 
-.configureOverlay {
-    position: fixed; 
-    top: 0px; 
-    left: 0px; 
-    right: 0px; 
-    bottom: 0px; 
-    background-color: rgba(150, 150, 150, 0.75);
-    z-index: 2;
+.settingsForm {
+    border: 1px solid;
+    position: fixed;
+    left: 90px;
+    right: 45%;
+    top: 90px;
+    bottom: 90px;
+    padding: 10px;
 }
 
-.configureDialog {
-    position: absolute;
-    top: 40px;
-    left: 40px;
-    right: 40px;
-    bottom: 40px;
-    border: 1px solid rgb(204, 204, 204);
-    background: rgb(255, 255, 255);
-    overflow: auto;
-    border-radius: 10px;
+.settingsForm > label {
+  display: block;
+  padding: 3px;
 }
 
+.settingsForm input  {
+   position: absolute;
+   left: 10em;
+}
+
+.settingsForm select {
+   position: absolute;
+   left: 10em;
+}
 

@@ -28,24 +28,58 @@ class PolarChart extends React.Component {
       scale: 0,
       polarCurve: [],
       twaHistory : [],
-      stwHistory: []
+      stwHistory: [],
+      updaterate: props.updaterate || 1000
     };
 
-
-    this.app.stats.addPath("navigation.headingMagnetic");
-    this.app.stats.addPath("performance.headingMagnetic");
-    this.app.stats.addPath("environment.wind.speedTrue");
-    this.app.stats.addPath("environment.wind.angleTrue", true);
-    this.app.stats.addPath("navigation.speedThroughWater", true);
-    this.app.stats.addPath("performance.targetSpeed");
-    this.app.stats.addPath("performance.targetAngle");
+    this.setPaths(props);
 
     this.bound = false;
     var self = this;
-    this.updaterate = props.updaterate || 1000;
     this.update = this.update.bind(this);
 
   }
+
+
+  setPaths(props) {
+    this.hdmPath = this.props.hdmPath || this.app.sourceId+".navigation.headingMagnetic";
+    this.otherTackDirPath = this.props.otherTackDirPath || this.app.sourceId+".performance.headingMagnetic";
+    this.twsPath = this.props.twsPath || this.app.sourceId+".environment.wind.speedTrue";
+    this.twaPath = this.props.twaPath || this.app.sourceId+".environment.wind.angleTrue";
+    this.stwPath = this.props.stwPath || this.app.sourceId+".navigation.speedThroughWater";
+    this.targetSpeedPath = this.props.targetSpeedPath || this.app.sourceId+".performance.targetSpeed";
+    this.targetAnglePath = this.props.targetAnglePath || this.app.sourceId+".performance.targetAngle";
+
+    this.hdmStream = this.app.stats.addPath(this.hdmPath);
+    this.otherTackDirStream = this.app.stats.addPath(this.otherTackDirPath);
+    this.twsStream = this.app.stats.addPath(this.twsPath);
+    this.twaStream = this.app.stats.addPath(this.twaPath,true);
+    this.stwStream = this.app.stats.addPath(this.stwPath, true);
+    this.targetSpeedStream = this.app.stats.addPath(this.targetSpeedPath);
+    this.targetAngleStream = this.app.stats.addPath(this.targetAnglePath);
+  }
+
+
+  componentWillReceiveProps(nextProps) {
+    var newState = {};
+    var update = false;
+    for(var k in this.state) {
+      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
+        newState[k] = nextProps[k];
+        update = true;
+      }
+    }
+    for(var k in nextProps ) {
+      if (k.endsWith("Path") && nextProps[k] !== this[k] ) {
+        this.setPaths(nextProps);
+        break;
+      }
+    }
+    if ( update ) {
+        this.setState(newState);
+    }
+  }
+
 
 
 
@@ -66,8 +100,7 @@ class PolarChart extends React.Component {
 
   update() {
     if (this.bound) {
-      var vs = this.app.stats.valueStreams;
-      var tws = utils.convertKn(vs["environment.wind.speedTrue"].value);
+      var tws = utils.convertKn(this.twsStream.value);
 
       if ( tws < 0.01 ) {
         this.setState({
@@ -75,12 +108,12 @@ class PolarChart extends React.Component {
           maxStw: 2,
           scale: 240/2,
           polarCurve: [],
-          stw: utils.convertKn(vs["navigation.speedThroughWater"].value),
-          twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
-          targetSpeed: utils.convertKn(vs["performance.targetSpeed"].value),
-          targetAngle: utils.convertDeg(vs["performance.targetAngle"].value),
-          twaHistory : utils.convertDegA(vs["environment.wind.angleTrue"].history),
-          stwHistory: utils.convertKnA(vs["navigation.speedThroughWater"].history)
+          stw: utils.convertKn(this.stwStream.value),
+          twa: utils.convertDeg(this.twaStream.value),
+          targetSpeed: utils.convertKn(this.targetSpeedStream.value),
+          targetAngle: utils.convertDeg(this.targetAngleStream.value),
+          twaHistory : utils.convertDegA(this.twaStream.history),
+          stwHistory: utils.convertKnA(this.stwStream.history)
           });
 
       } else {
@@ -127,15 +160,15 @@ class PolarChart extends React.Component {
           maxStw: maxStw,
           scale: scale,
           polarCurve: a,
-          stw: utils.convertKn(vs["navigation.speedThroughWater"].value),
-          twa: utils.convertDeg(vs["environment.wind.angleTrue"].value),
-          targetSpeed: utils.convertKn(vs["performance.targetSpeed"].value),
-          targetAngle: utils.convertDeg(vs["performance.targetAngle"].value),
-          twaHistory : utils.convertDegA(vs["environment.wind.angleTrue"].history),
-          stwHistory: utils.convertKnA(vs["navigation.speedThroughWater"].history)
+          stw: utils.convertKn(this.stwStream.value),
+          twa: utils.convertDeg(this.twaStream.value),
+          targetSpeed: utils.convertKn(this.targetSpeedStream.value),
+          targetAngle: utils.convertDeg(this.targetAngleStream.value),
+          twaHistory : utils.convertDegA(this.twaStream.history),
+          stwHistory: utils.convertKnA(this.stwStream.history)
         });        
       }
-      setTimeout(this.update, this.updaterate);
+      setTimeout(this.update, this.state.updaterate);
     }
   }
 

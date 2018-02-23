@@ -11,20 +11,46 @@ class CompassRose extends React.Component {
     this.props = props;
     this.app = props.app;
     this.state = {
-        oppositeTackDirection: props.oppositeTackDirection || 340,
-        groundWindDirection: props.groundWindDirection || 50,
-        hdm: props.magneticHeading || 282,
-        northup: props.northup
+        oppositeTackDirection: 340,
+        groundWindDirection: 50,
+        hdm: 282,
+        northup: props.northup,
+        updaterate: props.updaterate || 1000
     };
-
-    this.app.stats.addPath("environment.wind.directionTrue");
-    this.app.stats.addPath("performance.headingMagnetic");
-    this.app.stats.addPath("navigation.headingMagnetic");
-
-
+    this.setPaths(this.props);
     this.bound = false;
-    this.updaterate = props.updaterate || 1000;
     this.update = this.update.bind(this);
+  }
+
+
+  setPaths(props) {
+    this.twdPath = props.twdPath || this.app.sourceId+".environment.wind.directionTrue";
+    this.oppTrackDirPath = props.oppTrackDirPath || this.app.sourceId+".performance.headingMagnetic";
+    this.hdmPath = props.hdmPath || this.app.sourceId+".navigation.headingMagnetic";
+    this.twdStream = this.app.stats.addPath(this.twdPath);
+    this.oppTrackDirStream = this.app.stats.addPath(this.oppTrackDirPath);
+    this.hdmStream = this.app.stats.addPath(this.hdmPath);
+  }
+
+
+  componentWillReceiveProps(nextProps) {
+    var newState = {};
+    var update = false;
+    for(var k in this.state) {
+      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
+        newState[k] = nextProps[k];
+        update = true;
+      }
+    }
+    for(var k in nextProps ) {
+      if (k.endsWith("Path") && nextProps[k] !== this[k] ) {
+        this.setPaths(nextProps);
+        break;
+      }
+    }
+    if ( update ) {
+        this.setState(newState);
+    }
   }
 
 
@@ -41,13 +67,12 @@ class CompassRose extends React.Component {
 
   update() {
     if ( this.bound ) {
-      var vs = this.app.stats.valueStreams;
       this.setState({
-        oppositeTackDirection: utils.convertDeg(vs["performance.headingMagnetic"].value),
-        groundWindDirection: utils.convertDeg(vs["environment.wind.directionTrue"].value),
-        hdm: utils.convertDeg(vs["navigation.headingMagnetic"].value),
+        oppositeTackDirection: utils.convertDeg(this.oppTrackDirStream.value),
+        groundWindDirection: utils.convertDeg(this.twdStream.value),
+        hdm: utils.convertDeg(this.hdmStream.value),
       });
-      setTimeout(this.update, this.updaterate);            
+      setTimeout(this.update, this.state.updaterate);            
     }
   }
 
