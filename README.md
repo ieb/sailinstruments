@@ -22,10 +22,10 @@ The outer magnetic heading rose is configured to be north up and has a ground wi
 * Settings - allow each component to show a modal settings page.
 * Grid system - be able to create a layout with multiple plages without having to change the code.
 * Draw VMG performance on the polar, beacause a helm may sail a better VMG in the conditions fast and low that hitting the polar target wind angle and sailing slow. - The polar chart does this for up and downwind. VMG to waypoint might need more info, however the radial lines make it possible to see where the best VMG is to any heading at a specific wind strength.
+* Persist layout to local storage, or to a end point - only works when app is loded from a server, state saved locally.
 
 ## In progress
 
-* Persist layout to local storage, or to a end point.
 * Add strip chart components.
 * Expand stats capabilities, (standard deviation, moving averages)
 

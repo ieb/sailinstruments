@@ -120,6 +120,36 @@
     }
   }
 
+  function loadLocalData() {
+    var localData = {};
+    try {
+      var fromLocal = window.localStorage.getItem('sailingInstruments');
+      if (fromLocal) {
+        localData = JSON.parse(fromLocal);
+      }
+    } 
+    catch (ex) {
+      console.error(ex);
+    }
+    return localData;
+  }
+
+
+  var saveLocalData = function(key, data) {
+    var localStorageData = loadLocalData();
+    localStorageData[key] = data;
+    try {
+      window.localStorage.setItem('sailingInstruments', JSON.stringify(localStorageData));
+      console.log("Saved ", key);
+    } catch (ex) {
+      console.error(ex)
+    }
+  };
+  var loadLocalDataItem = function(key) {
+    return loadLocalData()[key];
+  };
+
+
 
 
 
@@ -133,6 +163,8 @@
         convertKn : convertKn,
         convertKnA : convertKnA,
         getDisplay: getDisplay,
-        getSymbol: getSymbol
+        getSymbol: getSymbol,
+        saveLocalData: saveLocalData,
+        loadLocalDataItem: loadLocalDataItem
     };
 }());

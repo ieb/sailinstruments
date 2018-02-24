@@ -10,6 +10,7 @@ import DataInstrument from './DataInstrument.jsx';
 import InlineEdit from './InlineEdit.jsx';
 import ConfigureCell from './ConfigureCell.jsx';
 import _ from "lodash";
+import utils from './utils.js';
 import './react-tabs.css';
 
 
@@ -60,6 +61,10 @@ class Layout extends React.Component {
        }
       ]
     };
+    var savedState = utils.loadLocalDataItem("layout");
+    if ( savedState ) {
+      this.state = savedState;
+    }
     this.doneConfigureCell = this.doneConfigureCell.bind(this);
   }
 
@@ -167,8 +172,11 @@ class Layout extends React.Component {
   }
 
   componentDidUpdate() {
-    this.app.databus.push("internal", { path: "layoutData", value: this.state});    
+    this.app.databus.push("internal", { path: "layoutData", value: this.state});
+    utils.saveLocalData("layout",this.state);
   }
+
+
 
   onStartTabEdit(event, tab) {
     if ( this.state.editing === undefined) {
