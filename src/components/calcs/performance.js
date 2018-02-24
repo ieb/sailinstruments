@@ -1,3 +1,5 @@
+/*jshint node:true */
+"use strict";
 
 
 const _ = require('lodash')
@@ -189,7 +191,8 @@ module.exports = function(polarSource) {
     // everything in SI here.
     var intwa = twa;
     if ( twa < 0) twa = -twa;
-    var twal = 0; twah = Math.PI;
+    var twal = 0;
+    var twah = Math.PI;
     if ( twa < Math.PI/2 ) {
       twah = Math.PI/2;
     } else {

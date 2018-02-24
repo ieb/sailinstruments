@@ -3,22 +3,20 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
+function isExternal(module) {
+  var context = module.context;
+
+  if (typeof context !== 'string') {
+    return false;
+  }
+
+  return context.indexOf('node_modules') !== -1;
+}
+
 module.exports = {
   entry: {
      app: './src/index.jsx',
-     print: './src/print.js',
-     vendor: [
-       'lodash',
-       'd3',
-       'react',
-       'react-dom',
-       'baconjs',
-       'js-quantities',
-       '@signalk/signalk-schema',
-       'react-grid-layout',
-       'react-modal',
-       'react-tabs'
-     ]
+     print: './src/print.js'
   },  
   plugins: [
      new CleanWebpackPlugin(['dist']),
@@ -27,7 +25,10 @@ module.exports = {
      }),
      new webpack.HashedModuleIdsPlugin(),
      new webpack.optimize.CommonsChunkPlugin({
-       name: 'vendor'
+       name: 'vendor',
+       minChunks: function(module) {
+          return isExternal(module);
+       }
      }),
      new webpack.optimize.CommonsChunkPlugin({
        name: 'manifest'
@@ -41,8 +42,19 @@ module.exports = {
   module: {
      rules: [
       {
-        test: /\.jsx$/,
+        test: /\.(jsx|js)$/,
         exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            plugins: [ 'react-html-attrs' ],
+            presets: ['env', 'react']
+          }
+        }
+      },
+      {
+        test: /\.(jsx|js)$/,
+        include: /node_modules\/ws/,
         use: {
           loader: 'babel-loader',
           options: {

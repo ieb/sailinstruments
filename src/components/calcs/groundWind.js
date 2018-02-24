@@ -1,3 +1,6 @@
+/*jshint node:true */
+"use strict";
+
 const debug = require('debug')('signalk-derived-data')
 
 module.exports = function() {

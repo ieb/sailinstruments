@@ -1,3 +1,6 @@
+/*jshint node:true */
+"use strict";
+
 /*
 
 StreamBundle is a "bundle of streams": Bacon.js streams, two

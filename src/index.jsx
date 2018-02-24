@@ -1,3 +1,6 @@
+/*jshint node:true */
+"use strict";
+
 import React from 'react';
 import {render} from 'react-dom';
 import SignalKClientConnector from './databus/SignalKClientConnector.jsx';
