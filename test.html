@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Canvas tutorial</title>
+    <script src="node_modules/d3/build/d3.js"></script>
+    <script type="text/javascript">
+
+      var fontFamily = "sans-serif";
+      var twaHistory = [ 90, 80, 70, 75, 80 ];
+      var awaHistory = [ 95, 85, 75, 80, 85 ];
+
+
+      // significant figures.
+      var sig = {
+        hdg: 1,
+        boatUp: 1,
+        twa: 1,
+        awa: 1,
+        leeway: 1,
+        gwd: 1,
+        otack: 1        
+      }
+
+      var current = {
+        hdg: 0,
+        boatUp: 0,
+        twa: 0,
+        awa: 0,
+        leeway: 0,
+        gwd: 0,
+        otack: 0,
+        twaHistory: [],        
+        awaHistory: []
+      }
+      var state = {
+        hdg: 0,
+        boatUp: 0,
+        twa: 0,
+        awa: 0,
+        leeway: 0,
+        gwd: 0,
+        otack: 0,
+        twaHistory: [],        
+        awaHistory: []
+      };
+      var drawState = {};
+      var damping = 10;
+
+      function updateValue(event) {
+        current[event.target.name] = event.target.value;
+      }
+
+
+      var updateFn = function() {
+        // maintain an IIR filter between the current value and the state.
+        for(var p in state ) {
+          if ( !p.endsWith("History" )) {
+            state[p] = state[p] - state[p]/damping + current[p]/damping;
+          } 
+        }
+        for(var h in state ) {
+          if ( h.endsWith("History" )) {
+            var p = h.substr(0,h.length-"History".length);
+            state[h].unshift(state[p]);
+            while (state[h].length > 100 ) {
+              state[h].pop();
+            }        
+          } 
+          historyUpdate = true;
+        }
+        setTimeout(updateFn, 100);
+      }
+
+      updateFn();
+
+      function isRedrawRequired(props) {
+        var require = false;
+        for(var i in props) {
+          var p = props[i];
+          if ( p.endsWith("History" ) ) {
+            if ( historyUpdate ) {
+              require = true;
+            }
+          } else {
+            if (drawState[p] === undefined || drawState[p] !== +state[p].toFixed(sig[p]) ) {
+              console.log("Triggered redraw due to ",p);
+              require = true;
+            }            
+          }
+        }
+        return require;
+      }
+      function saveDrawState() {
+        for(var p in state) {
+          if ( p.endsWith("History" )) {
+            drawState[p] = state[p];
+          } else {
+            if (drawState[p] === undefined || drawState[p] !== +state[p].toFixed(sig[p]) ) {
+              drawState[p] = +(state[p].toFixed(sig[p]));
+            }            
+          }
+        }
+        historyUpdate = false;
+      }
+
+      function draw() {
+        if ( isRedrawRequired([ "hdg" ])) {
+          drawCompas(-state.hdg);          
+        }
+        if ( isRedrawRequired([ "boatUp" ])) {
+          drawRose(state.boatUp);
+        }
+        if ( isRedrawRequired([ "boatUp", "twa" ,"awa", "leeway", "twaHistory", "awaHistory" ])) {
+          drawRosePointers(state.boatUp, state.twa ,state.awa, state.leeway, state.twaHistory, state.awaHistory);
+        }
+        if ( isRedrawRequired([ "hdg", "gwd" ,"otack" ])) {
+          drawCompasPointers(-state.hdg, state.gwd, state.otack);
+        }
+        saveDrawState();
+        var raf = window.requestAnimationFrame(draw);
+
+      }
+      function clearArea( ctx, canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Rose pointers and history
+      function drawRosePointers(angle, twa, awa, leeway, twaHistory, awaHistory) {
+        var canvas = document.getElementById('rosepointers');
+        if (canvas.getContext) {
+          var ctx = canvas.getContext('2d');
+          ctx.save();
+            clearArea(ctx, canvas);
+            ctx.translate(310,310);
+
+
+            // outer rose rotation.
+            ctx.rotate(angle*Math.PI/180);
+
+            createBoatMarker(ctx, twa, 'T', 'blue', 'white', 'black');
+            createBoatMarker(ctx, awa, 'A', 'orange', 'white', 'black');
+            createBoatMarker(ctx, leeway, 'L', 'black', 'white', 'black');
+            createRadialHistory(ctx, twa, twaHistory, 'blue');
+            createRadialHistory(ctx, awa, awaHistory, 'orange');
+          ctx.restore();
+        }
+      }
+      // outer compas rose pointers.
+      function drawCompasPointers(angle, gwd, otack) {
+        var canvas = document.getElementById('compaspointers');
+        if (canvas.getContext) {
+          var ctx = canvas.getContext('2d');
+          ctx.save();
+            clearArea(ctx, canvas);
+            ctx.translate(310,310);
+
+            // outer rose rotation.
+            ctx.rotate(angle*Math.PI/180);
+
+            createCompasMarker(ctx, gwd, 'G', 'green', 'white', 'black');
+            createCompasMarker(ctx, otack, 'O', 'black', 'white', 'black');
+
+          ctx.restore();
+
+        }
+      }
+
+      function createRadialHistory(ctx, c,  history, color) {
+        const radialLine = d3.radialLine().curve(d3.curveBasis);
+        let a = [];
+        a.push([ (c-180)*Math.PI/180, -200]);  
+        for (let i = 0; i < history.length-1; i++) { 
+           a.push([  (history[i]-180)*Math.PI/180, -(history.length-i-1)*(200/history.length)]);
+        };
+        ctx.beginPath();
+        radialLine.context(ctx)(a);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = color;
+        ctx.stroke();
+      }
+
+
+      function createBoatMarker(ctx, angle, name, color, lightColor, darkColor) {
+        ctx.save();
+        ctx.rotate(Math.PI*angle/180);
+        ctx.fillStyle = color;
+        ctx.lineStyle = color;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0,-225);
+        ctx.arc(0,-225,10,0,2*Math.PI,true);
+        ctx.moveTo(-10,-222);
+        ctx.lineTo(0,-200);
+        ctx.lineTo(10,-222);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0,-225);
+        ctx.fillStyle = lightColor;
+        ctx.arc(0,-225,8,0,2*Math.PI,true);
+        ctx.fill();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = darkColor;
+        ctx.font = '15px '+fontFamily;
+        ctx.fillText(name, 0, -220);                  
+
+        ctx.restore();
+      }
+
+
+
+      function createCompasMarker(ctx, angle, name, color, lightColor, darkColor) {
+        ctx.save();
+        ctx.rotate(Math.PI*angle/180);
+        ctx.fillStyle = color;
+        ctx.lineStyle = color;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0,-280);
+        ctx.arc(0,-280,10,0,2*Math.PI,true);
+        ctx.moveTo(-10,-277);
+        ctx.lineTo(0,-250);
+        ctx.lineTo(10,-277);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0,-280);
+        ctx.fillStyle = lightColor;
+        ctx.arc(0,-280,8,0,2*Math.PI,true);
+        ctx.fill();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = darkColor;
+        ctx.font = '15px '+fontFamily;
+        ctx.fillText(name, 0, -275);
+        ctx.restore();
+      }
+
+
+
+      function drawCompas(angle) {
+        var canvas = document.getElementById('compas');
+        if (canvas.getContext) {
+          var ctx = canvas.getContext('2d');
+          const crMajorTicks = new Path2D("M 0 -252 L 0 -240 M 0 240 L 0 252");
+          const crMinorTicks = new Path2D("M 0 -247 L 0 -240 M 0 240 L 0 247");
+          const crsubMinorTicks = new Path2D("M 0 -245 L 0 -240 M 0 240 L 0 245");
+
+
+          const pointerN1 = new Path2D("M 0 -280 L -5 -240 0 -240 0 -280 M 0 260 L  5 240 0 240 0 260");  
+          const pointerN2 = new Path2D("M 0 -280 L  5 -240 0 -240 0 -280 M 0 260 L -5 240 0 240 0 260");
+          const pointerW1 = new Path2D("M 0 -260 L -5 -240 0 -240 0 -260 M 0 260 L  5 240 0 240 0 260");
+          const pointerW2 = new Path2D("M 0 -260 L  5 -240 0 -240 0 -260 M 0 260 L -5 240 0 240 0 260");
+
+          
+          ctx.save();
+            clearArea(ctx, canvas);
+            ctx.translate(310,310);
+
+            // outer rose rotation.
+            ctx.rotate(angle*Math.PI/180);
+
+
+            ctx.save();
+              ctx.beginPath();
+              ctx.arc(0, 0, 240, 0, 2*Math.PI, false);
+              ctx.stroke();
+
+              for(var i = 0; i < 180; i++) {
+                if ( i%10 == 0) {
+                  ctx.lineWidth = 1;
+                  ctx.stroke(crMajorTicks);
+                } else if ( i%5 == 0) {
+                  ctx.lineWidth = 0.5;
+                  ctx.stroke(crMinorTicks);
+                } else {
+                  ctx.lineWidth = 0.5;
+                  ctx.stroke(crsubMinorTicks);
+                }
+                ctx.rotate(Math.PI/180);
+              }
+            ctx.restore();
+
+            ctx.save();
+            ctx.fillStyle = 'black';
+            ctx.lineWidth = 0.5;
+            ctx.fill(pointerN1);
+            ctx.stroke(pointerN2);
+            ctx.rotate(Math.PI*90/180);
+            ctx.fill(pointerW1);
+            ctx.stroke(pointerW2);
+            ctx.restore();
+            
+            ctx.save();
+              var nlabels = {
+                0: [{l:'N', p: -280, f: '28px'} ],
+                90: [{l:'E', p: -285, f: '28px'}, {l:'90', p: -265, f: '20px'}],
+                180: [{l:'S', p: -285, f: '28px'}, {l:'180', p: -265, f: '20px'}],
+                270: [{l:'W', p: -285, f: '28px'}, {l:'270', p: -265, f: '20px'}]
+              }
+              ctx.textAlign = 'center';
+              for(var i = 0; i < 360; i+=10) {
+                if ( nlabels[i] !== undefined ) {
+                  for(var k in nlabels[i]) {
+                    ctx.font = nlabels[i][k].f+' '+fontFamily;
+                    ctx.fillText(nlabels[i][k].l, 0, nlabels[i][k].p);
+                  }
+                } else {
+                  ctx.font = '15px '+fontFamily;                  
+                  ctx.fillText(i.toString(), 0, -252);
+                }
+                ctx.rotate(Math.PI*10/180);
+              }
+            ctx.restore();
+
+          ctx.restore();
+        }
+      }
+
+      function drawRose(angle) {
+        var canvas = document.getElementById('rose');
+        if (canvas.getContext) {
+          var ctx = canvas.getContext('2d');
+
+          const majorTick = new Path2D("M 0 -200 L 0 -182 M 0 182 L 0 200");
+          const minorTick = new Path2D("M 0 -200 L 0 -185 M 0 185 L 0 200");
+          const subMinorTick = new Path2D("M 0 -200 L 0 -190 M 0 190 L 0 200");
+          const fineTick = new Path2D("M 0 -200 L 0 -194 M 0 194 L 0 200");
+          const starboardSector = new Path2D("M 0 -185 a 185 185 0 0 1 160.21469970012114 92.50000000000001");
+          const portSector = new Path2D("M 0 -185 a 185 185 0 0 0 -160.21469970012114 92.50000000000001");
+
+          const boatPort = new Path2D("M 0 -100 A 80,130 0 0,0 -20,60 L 0,60");
+          const boatStarboard = new Path2D("M 0 -100 A 80,130 0 0,1 20,60 L 0,60");
+
+          ctx.save();
+          {
+            clearArea(ctx, canvas);
+            ctx.translate(310,310);
+
+            // outer rose rotation.
+            ctx.rotate(angle*Math.PI/180);
+
+
+            // draw sectors
+            ctx.save();
+            {
+              ctx.lineWidth = 30;
+              ctx.strokeStyle = 'red';
+              ctx.stroke(portSector);
+              ctx.strokeStyle = 'green';
+              ctx.stroke(starboardSector);            
+            }
+            ctx.restore();
+
+            // boat shape.
+            ctx.save();
+            {
+              ctx.fillStyle = 'red';
+              ctx.fill(boatPort);
+              ctx.fillStyle = 'green';
+              ctx.fill(boatStarboard);            
+            }
+            ctx.restore();
+
+
+
+            // draw ticks
+            ctx.save();
+            {
+              ctx.font = '28px '+fontFamily;
+              ctx.textAlign = 'center';
+              for(var i = 0; i < 180; i++) {
+                if ( i%30 == 0) {
+                  ctx.lineWidth = 2;
+                  ctx.stroke(majorTick);
+                } else if ( i%10 == 0) {
+                  ctx.lineWidth = 1;
+                  ctx.stroke(minorTick);
+                } else if ( i%5 == 0) {
+                  ctx.lineWidth = 0.5;
+                  ctx.stroke(subMinorTick);
+                } else if ( i < 40 || i > 140) {
+                  ctx.lineWidth = 0.5;
+                  ctx.stroke(fineTick);
+                }
+                if (i != 0 &&  i%30 == 0 ) {
+                  ctx.fillText(i.toString(), 0, -145);
+                }
+                ctx.rotate(Math.PI/180);
+              }            
+            }
+            ctx.restore();
+            
+            // draw numbers
+            ctx.save();
+            {
+              ctx.font = '28px '+fontFamily;
+              ctx.textAlign = 'center';
+              for(var i = 30; i < 180; i+=30) {
+                  ctx.rotate(-Math.PI*30/180);
+                  ctx.fillText(-i.toString(), 0, -145);
+              }
+            }
+            ctx.restore();
+            
+            ctx.save();
+            {
+              ctx.font = '28px '+fontFamily;
+              ctx.textAlign = 'center';
+              ctx.rotate(Math.PI);
+              ctx.fillText("180", 0, -145);
+            }
+            ctx.restore();
+
+
+          }
+          ctx.restore(); // reset to no rotation.
+        }
+      }
+    </script>
+    <style type="text/css">
+      .instrumentContainer {
+        font-family: sans-serif;
+
+      }
+      .instrumentContainer > canvas { 
+        border: 1px 
+        solid black;
+        position: absolute;
+        top: 0px;
+        left: 0px; 
+      }
+      .dataBoxFill {
+        background: rgba(215,215,215,0.7);      
+      }
+
+      .dataBox {
+        position: absolute;
+        width: 100px;
+        height: 50px;
+        border-radius: 5px;   
+        border: 1px solid black;
+      }
+      .dataBoxValue {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        text-align: center;
+        font-size: 30px;
+      }
+      .dataBoxUnits {
+        position: absolute;
+        bottom:  2px;
+        right:  2px; 
+        font-size: 14px;
+      }
+      .dataBoxTitle {
+        position: absolute;
+        bottom:  2px;
+        left:  2px; 
+        font-size: 14px;
+      }
+      .inputForm {
+        position: absolute;
+        right: 0px;
+      }
+      .inputForm > label {
+        display: block;
+      }
+    </style>
+  </head>
+  <body onload="draw();">
+    <form class="inputForm" onSubmit="return false;">
+      <label>awa <input name="awa" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>twa <input name="twa" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>hdg <input name="hdg" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>boatUp <input name="boatUp" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>leeway <input name="leeway" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>gwd <input name="gwd" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>otack <input name="otack" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>damping <input name="damping" type="number" value="10" onChange="if ( event.target.value > 2 ) damping = event.target.value;" /></label>
+    </form>
+    <div class="instrumentContainer"  >
+      <canvas id="compas" width="620" height="620"></canvas>
+      <canvas id="rose" width="620" height="620"></canvas>
+      <canvas id="rosepointers" width="620" height="620"></canvas>
+      <canvas id="compaspointers" width="620" height="620"></canvas>
+      <div class="dataBox dataBoxFill" style="top: 250px;left: 260px;">
+        <div class="dataBoxValue">45.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+      <div class="dataBox dataBoxFill" style="top: 320px;left: 260px;">
+        <div class="dataBoxValue">35.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+      <div class="dataBox" style="top: 10px;left: 10px;">
+        <div class="dataBoxValue">01.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+      <div class="dataBox" style="top: 65px;left: 10px;">
+        <div class="dataBoxValue">35.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+      <div class="dataBox" style="top: 505px; left: 10px;">
+        <div class="dataBoxValue">01.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+      <div class="dataBox" style="top: 560px; left: 10px;">
+        <div class="dataBoxValue">35.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+      <div class="dataBox" style="top: 10px;left: 510px;">
+        <div class="dataBoxValue">01.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+      <div class="dataBox" style="top: 65px;left: 510px;">
+        <div class="dataBoxValue">35.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+      <div class="dataBox" style="top: 505px; left: 510px;">
+        <div class="dataBoxValue">01.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+      <div class="dataBox" style="top: 560px; left: 510px;">
+        <div class="dataBoxValue">35.2</div>
+        <div class="dataBoxUnits">kn</div>
+        <div class="dataBoxTitle">twa</div>
+      </div>
+    </div>
+  </body>
+</html>
