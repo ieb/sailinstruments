@@ -19,7 +19,9 @@
         awa: 1,
         leeway: 1,
         gwd: 1,
-        otack: 1        
+        otack: 1,
+        twaHistory: 2,
+        awaHistory: 2  
       }
 
       var current = {
@@ -48,10 +50,15 @@
       var damping = 10;
 
       function updateValue(event) {
-        current[event.target.name] = event.target.value;
+        current[event.target.name] = +event.target.value;
       }
 
 
+      function updateDamping(event) {
+        damping = +event.target.value;
+      }
+
+      var calls = 0;
       var updateFn = function() {
         // maintain an IIR filter between the current value and the state.
         for(var p in state ) {
@@ -59,15 +66,20 @@
             state[p] = state[p] - state[p]/damping + current[p]/damping;
           } 
         }
-        for(var h in state ) {
-          if ( h.endsWith("History" )) {
-            var p = h.substr(0,h.length-"History".length);
-            state[h].unshift(state[p]);
-            while (state[h].length > 100 ) {
-              state[h].pop();
-            }        
-          } 
-          historyUpdate = true;
+        if (calls%20 == 0) {
+          for(var h in state ) {
+            if ( h.endsWith("History" )) {
+              var p = h.substr(0,h.length-"History".length);
+              state[h].unshift(state[p]);
+              while (state[h].length > 100 ) {
+                state[h].pop();
+              }        
+            } 
+          }
+        }
+        calls++;
+        if ( calls === 1000) {
+          calls = 0;
         }
         setTimeout(updateFn, 100);
       }
@@ -75,26 +87,35 @@
       updateFn();
 
       function isRedrawRequired(props) {
-        var require = false;
         for(var i in props) {
           var p = props[i];
           if ( p.endsWith("History" ) ) {
-            if ( historyUpdate ) {
-              require = true;
+            if ( drawState[p] === undefined ||  drawState[p].length !== state[p].length) {
+               return true;
+            } else {
+              for(var j = 0; j < state[p].length; j++ ) {
+                if (state[p][j].toFixed(sig[p]) !== drawState[p][j].toFixed(sig[p]) ) {
+                  return true;
+                }
+              }
             }
           } else {
             if (drawState[p] === undefined || drawState[p] !== +state[p].toFixed(sig[p]) ) {
-              console.log("Triggered redraw due to ",p);
-              require = true;
+              return true;
             }            
           }
         }
-        return require;
+        return false;
       }
       function saveDrawState() {
         for(var p in state) {
           if ( p.endsWith("History" )) {
-            drawState[p] = state[p];
+            if ( drawState[p] === undefined) {
+              drawState[p] = [];
+            }
+            for(var j = 0; j < state[p].length; j++ ) {
+              drawState[p][j] = state[p][j];
+            }
           } else {
             if (drawState[p] === undefined || drawState[p] !== +state[p].toFixed(sig[p]) ) {
               drawState[p] = +(state[p].toFixed(sig[p]));
@@ -106,15 +127,19 @@
 
       function draw() {
         if ( isRedrawRequired([ "hdg" ])) {
+          console.log("redraw");
           drawCompas(-state.hdg);          
         }
         if ( isRedrawRequired([ "boatUp" ])) {
+          console.log("redraw");
           drawRose(state.boatUp);
         }
         if ( isRedrawRequired([ "boatUp", "twa" ,"awa", "leeway", "twaHistory", "awaHistory" ])) {
+          console.log("redraw");
           drawRosePointers(state.boatUp, state.twa ,state.awa, state.leeway, state.twaHistory, state.awaHistory);
         }
         if ( isRedrawRequired([ "hdg", "gwd" ,"otack" ])) {
+          console.log("redraw");
           drawCompasPointers(-state.hdg, state.gwd, state.otack);
         }
         saveDrawState();
@@ -481,7 +506,7 @@
       <label>leeway <input name="leeway" type="number" value="0" onChange="return updateValue(event);" /></label>
       <label>gwd <input name="gwd" type="number" value="0" onChange="return updateValue(event);" /></label>
       <label>otack <input name="otack" type="number" value="0" onChange="return updateValue(event);" /></label>
-      <label>damping <input name="damping" type="number" value="10" onChange="if ( event.target.value > 2 ) damping = event.target.value;" /></label>
+      <label>damping <input name="damping" type="number" value="10" onChange="return updateDamping(event);" /></label>
     </form>
     <div class="instrumentContainer"  >
       <canvas id="compas" width="620" height="620"></canvas>

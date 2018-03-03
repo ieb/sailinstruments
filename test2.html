@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Canvas tutorial</title>
+    <script src="node_modules/d3/build/d3.js"></script>
+    <script type="text/javascript">
+
+      var fontFamily = "sans-serif";
+      var twaHistory = [ 90, 80, 70, 75, 80 ];
+      var awaHistory = [ 95, 85, 75, 80, 85 ];
+
+
+      // significant figures.
+      var sig = {
+        hdg: 1,
+        boatUp: 1,
+        twa: 1,
+        awa: 1,
+        leeway: 1,
+        gwd: 1,
+        otack: 1,
+        twaHistory: 2,
+        awaHistory: 2  
+      }
+
+      var current = {
+        hdg: 0,
+        boatUp: 0,
+        twa: 0,
+        awa: 0,
+        leeway: 0,
+        gwd: 0,
+        otack: 0,
+        twaHistory: [],        
+        awaHistory: []
+      }
+      var state = {
+        hdg: 0,
+        boatUp: 0,
+        twa: 0,
+        awa: 0,
+        leeway: 0,
+        gwd: 0,
+        otack: 0,
+        twaHistory: [],        
+        awaHistory: []
+      };
+      var drawState = {};
+      var damping = 10;
+
+      function updateValue(event) {
+        current[event.target.name] = +event.target.value;
+      }
+
+
+      function updateDamping(event) {
+        damping = +event.target.value;
+      }
+
+      var calls = 0;
+      var updateFn = function() {
+        // maintain an IIR filter between the current value and the state.
+        for(var p in state ) {
+          if ( !p.endsWith("History" )) {
+            state[p] = state[p] - state[p]/damping + current[p]/damping;
+          } 
+        }
+        if (calls%20 == 0) {
+          for(var h in state ) {
+            if ( h.endsWith("History" )) {
+              var p = h.substr(0,h.length-"History".length);
+              state[h].unshift(state[p]);
+              while (state[h].length > 100 ) {
+                state[h].pop();
+              }        
+            } 
+          }
+        }
+        calls++;
+        if ( calls === 1000) {
+          calls = 0;
+        }
+        setTimeout(updateFn, 100);
+      }
+
+      updateFn();
+
+      function isRedrawRequired(props) {
+        for(var i in props) {
+          var p = props[i];
+          if ( p.endsWith("History" ) ) {
+            if ( drawState[p] === undefined ||  drawState[p].length !== state[p].length) {
+               return true;
+            } else {
+              for(var j = 0; j < state[p].length; j++ ) {
+                if (state[p][j].toFixed(sig[p]) !== drawState[p][j].toFixed(sig[p]) ) {
+                  return true;
+                }
+              }
+            }
+          } else {
+            if (drawState[p] === undefined || drawState[p] !== +state[p].toFixed(sig[p]) ) {
+              return true;
+            }            
+          }
+        }
+        return false;
+      }
+      function saveDrawState() {
+        for(var p in state) {
+          if ( p.endsWith("History" )) {
+            if ( drawState[p] === undefined) {
+              drawState[p] = [];
+            }
+            for(var j = 0; j < state[p].length; j++ ) {
+              drawState[p][j] = state[p][j];
+            }
+          } else {
+            if (drawState[p] === undefined || drawState[p] !== +state[p].toFixed(sig[p]) ) {
+              drawState[p] = +(state[p].toFixed(sig[p]));
+            }            
+          }
+        }
+        historyUpdate = false;
+      }
+
+      function draw() {
+        drawPolar(0);
+        drawPolarRings(0, 12);
+        var twah = [ 44, 42, 46, 32, 35, 43];
+        var stwh = [ 7.5, 7.7, 7.2, 5.4, 6.8];
+        var polarCurve = [
+          {stw:0, twa:0},
+          {stw:2, twa:10},
+          {stw:8, twa:35},
+          {stw:9, twa:60},
+          {stw:10, twa:90},
+          {stw:11, twa:120},
+          {stw:12, twa:141},
+          {stw:8, twa:160},
+          {stw:6, twa:180}
+        ];
+        maxStw = getMaxStw(polarCurve);
+        drawPolarHistory(0, maxStw, 45, 8, 34, 7.2, twah, stwh, polarCurve);
+      }
+      function clearArea( ctx, canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+
+      function getMaxStw(polarCurve) {
+        // var polarCurve = this.app.calculations.polarPerformance.performanceForSpeed(knToMsC(tws));
+        // polarCurve is [ { tws: < rad >, stw: <m/s>}]
+        // needs to be [[x,y]]
+        var plot = [];
+        var maxStw = 0;
+        for (var i = 0; i < polarCurve.length; i++) {
+          if ( polarCurve[i].stw > maxStw ) {
+            maxStw = polarCurve[i].stw;
+          }
+        }
+        // fix the max based on lookup to keep the display more stable.
+        /*
+        if ( maxStw > this.state.maxStw ) {
+          // must be increased
+          var m = (Math.floor((maxStw*1.2)/2)+1)*2;
+          maxStw = m;
+        } else if ( maxStw < this.state.maxStw*0.6 ) {
+          // must be decreased.
+          var m = (Math.floor((maxStw*1.2)/2)+1)*2;
+          maxStw = m;
+        } else {
+          maxStw = this.state.maxStw;
+        }
+        */
+        return (Math.floor((maxStw*1.2)/2)+1)*2;
+
+      }
+
+
+      function drawPolarCurve(ctx, scale, polarCurve, color) {
+        const radialLine = d3.radialLine().curve(d3.curveBasis);
+
+        // the outer ring is at 240 from the center.
+        var a = [];
+        for (var i = 0; i < polarCurve.length; i++) {
+          a.push([polarCurve[i].twa*Math.PI/180, polarCurve[i].stw*scale]);
+        };
+        for (var i = polarCurve.length-1; i >= 0; i--) {
+          a.push([(Math.PI*2)-polarCurve[i].twa*Math.PI/180, polarCurve[i].stw*scale]);
+        };
+        ctx.beginPath();
+        radialLine.context(ctx)(a);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = color;
+        ctx.stroke();
+      }
+
+
+
+      function drawPolarVector(ctx, a,s,color) {
+          ctx.save();
+          ctx.fillStyle = color;
+          ctx.lineStyle = color;
+          ctx.lineWidth = 1;
+          ctx.rotate(a*Math.PI/180);
+          ctx.beginPath();
+          ctx.moveTo(0,0);
+          ctx.lineTo(0,-s);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(0,-s,5,0,2*Math.PI,true);
+          ctx.fill();
+          ctx.restore();
+      }
+
+
+      function drawPolarHistory(angle, maxValue, twa, stw, ttwa, tstw, twah, stwh, polarCurve) {
+        var canvas = document.getElementById('polarHistory');
+        if (canvas.getContext) {
+          var ctx = canvas.getContext('2d');
+          ctx.save();
+          clearArea(ctx, canvas);
+          ctx.translate(310,310);
+          // outer rose rotation.
+          ctx.rotate(angle*Math.PI/180);
+
+          var scale = 240/maxValue;
+
+          drawPolarVector(ctx, twa, stw*scale, "blue");
+          drawPolarVector(ctx, ttwa, tstw*scale, "black");
+          drawPolarCurve(ctx, scale, polarCurve, "black")
+
+          for ( var i = 0; i < twah.length; i++) {
+            ctx.save();
+            ctx.rotate(twah[i]*Math.PI/180);
+            ctx.beginPath();
+            var s = stwh[i]*scale;
+            ctx.arc(0,-s,5,0,2*Math.PI,true);
+            ctx.fillStyle = "rgba(0,0,255,"+(twah.length-i)/twah.length+")";
+            ctx.fill();
+            ctx.restore();
+          }
+
+          ctx.restore();
+        }
+
+      }
+
+
+
+
+      function drawPolarRings(angle, maxValue) {
+        var canvas = document.getElementById('polarRings');
+        if (canvas.getContext) {
+          var ctx = canvas.getContext('2d');
+          ctx.save();
+
+          clearArea(ctx, canvas);
+          ctx.translate(310,310);
+
+          // outer rose rotation.
+          ctx.rotate(angle*Math.PI/180);
+
+          var step = 2;
+          if ( maxValue < 5 ) {
+            step = 1;
+          }
+          ctx.font = '15px '+fontFamily;
+          ctx.textAlign = 'center';
+
+          var scale = 240/maxValue;
+
+          for ( var i = step; i <= maxValue; i+= step) {
+            var radius = scale * i;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, 2*Math.PI, false);
+            ctx.stroke();
+            ctx.fillStyle = "black";
+            ctx.fillText(i.toString(), 0, -radius+15);
+          }
+
+
+          ctx.restore();
+        }
+      }
+
+
+      function drawPolar(angle) {
+        var canvas = document.getElementById('polar');
+        if (canvas.getContext) {
+          var ctx = canvas.getContext('2d');
+
+          const majorTick = new Path2D("M 0 -252 L 0 -240 M 0 240 L 0 252");
+          const minorTick = new Path2D("M 0 -247 L 0 -240 M 0 240 L 0 247");
+          const subMinorTick = new Path2D("M 0 -245 L 0 -240 M 0 240 L 0 245");
+          const radialSectorLine = new Path2D("M 0 -240 L 0 -10 M 0 10 L 0 240");
+          const radial180Line = new Path2D("M 0 10 L 0 240");
+
+
+ 
+
+          ctx.save();
+
+          {
+            clearArea(ctx, canvas);
+            ctx.translate(310,310);
+
+            // outer rose rotation.
+            ctx.rotate(angle*Math.PI/180);
+
+
+            ctx.beginPath();
+            ctx.arc(0, 0, 240, 0, 2*Math.PI, false);
+            ctx.stroke();
+
+
+
+            // draw ticks
+            ctx.save();
+            {
+              for(var i = 0; i < 180; i++) {
+                if ( i%10 == 0) {
+                  ctx.lineWidth = 2;
+                  ctx.stroke(majorTick);
+                } else if ( i%5 == 0) {
+                  ctx.lineWidth = 1;
+                  ctx.stroke(minorTick);
+                } else {
+                //  ctx.lineWidth = 0.5;
+                //  ctx.stroke(subMinorTick);
+                }
+                ctx.rotate(Math.PI/180);
+              }            
+            }
+            ctx.restore();
+                      
+            // draw the numbers
+            ctx.save();
+            ctx.font = '15px '+fontFamily;
+            ctx.textAlign = 'center';
+            ctx.lineWidth = 0.5;
+            ctx.stroke(radial180Line);
+            for(var i = 10; i < 180; i+=10) {
+                ctx.rotate(10*Math.PI/180);
+                ctx.fillText(i.toString(), 0, -255);
+                ctx.stroke(radialSectorLine);
+            }
+            ctx.restore();
+            ctx.save();
+            ctx.font = '15px '+fontFamily;
+            ctx.textAlign = 'center';
+            for(var i = 10; i < 180; i+=10) {
+                ctx.rotate(-10*Math.PI/180);
+                ctx.fillText(i.toString(), 0, -255);
+            }
+            ctx.rotate(-10*Math.PI/180);
+            ctx.fillText(180, 0, -255);
+            ctx.restore();
+
+          }
+          ctx.restore(); // reset to no rotation.
+        }
+      }
+    </script>
+    <style type="text/css">
+      .instrumentContainer {
+        font-family: sans-serif;
+
+      }
+      .instrumentContainer > canvas { 
+        border: 1px 
+        solid black;
+        position: absolute;
+        top: 0px;
+        left: 0px; 
+      }
+      .dataBoxFill {
+        background: rgba(215,215,215,0.7);      
+      }
+
+      .dataBox {
+        position: absolute;
+        width: 100px;
+        height: 50px;
+        border-radius: 5px;   
+        border: 1px solid black;
+      }
+      .dataBoxValue {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        text-align: center;
+        font-size: 30px;
+      }
+      .dataBoxUnits {
+        position: absolute;
+        bottom:  2px;
+        right:  2px; 
+        font-size: 14px;
+      }
+      .dataBoxTitle {
+        position: absolute;
+        bottom:  2px;
+        left:  2px; 
+        font-size: 14px;
+      }
+      .inputForm {
+        position: absolute;
+        right: 0px;
+      }
+      .inputForm > label {
+        display: block;
+      }
+    </style>
+  </head>
+  <body onload="draw();">
+    <form class="inputForm" onSubmit="return false;">
+      <label>awa <input name="awa" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>twa <input name="twa" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>hdg <input name="hdg" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>boatUp <input name="boatUp" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>leeway <input name="leeway" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>gwd <input name="gwd" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>otack <input name="otack" type="number" value="0" onChange="return updateValue(event);" /></label>
+      <label>damping <input name="damping" type="number" value="10" onChange="return updateDamping(event);" /></label>
+    </form>
+    <div class="instrumentContainer"  >
+      <canvas id="polar" width="620" height="620"></canvas>
+      <canvas id="polarRings" width="620" height="620"></canvas>
+      <canvas id="polarHistory" width="620" height="620"></canvas>
+    </div>
+  </body>
+</html>
