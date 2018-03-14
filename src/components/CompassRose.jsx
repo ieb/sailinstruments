@@ -2,7 +2,7 @@
 "use strict";
 
 import React from 'react';
-import utils from './utils.js'
+import utils from './utils.jsx'
 
 class CompassRose extends React.Component {
 

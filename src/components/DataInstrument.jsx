@@ -5,7 +5,7 @@ import React from 'react';
 import InstrumentContainer from './InstrumentContainer.jsx';
 import DataBox from './DataBox.jsx';
 import Qty  from 'js-quantities';
-import utils from './utils.js';
+import utils from './utils.jsx';
 
 
 class DataInstrument extends React.Component {

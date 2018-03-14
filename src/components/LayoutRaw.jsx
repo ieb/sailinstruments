@@ -2,7 +2,7 @@
 "use strict";
 
 import React from 'react';
-import utils from './utils.js'
+import utils from './utils.jsx'
 import _ from 'lodash';
 
 class LayoutRaw extends React.Component {
@@ -34,6 +34,23 @@ class LayoutRaw extends React.Component {
     };
   }
 
+
+    static getDefaultProperties(app) {
+    return {
+        updaterate: 1000,
+        dataPath: app.sourceId+".navigation.speedThroughWater",
+        units: "kn",
+        title: "stw"
+    }
+  }
+
+  static generateComponent(props, app) {
+    return (
+        <LayoutRaw app={app}  />
+        );
+  }
+
+
   componentDidMount() {
     if ( !this.bound ) {
       this.bound = true;  
@@ -58,6 +75,11 @@ class LayoutRaw extends React.Component {
         });
     }
   }
+
+  
+
+
+
   submit(event) {
     if ( this.state.valid ) {
       var validation = [];
@@ -121,8 +143,8 @@ class LayoutRaw extends React.Component {
 
   render() {
     return (
-      <form onSubmit={this.submit} >
-      <textarea value={this.state.layoutData} onChange={this.change} rows="80" cols="132" ></textarea>
+      <form onSubmit={this.submit}>
+      <textarea value={this.state.layoutData} onChange={this.change} rows="44" cols="110" ></textarea>
       <div>
       {this.state.message}
       </div>

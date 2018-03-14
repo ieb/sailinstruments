@@ -1,7 +1,7 @@
 /*jshint node:true */
 "use strict";
 
-import utils from './utils.js';
+import utils from './utils.jsx';
 
 
 

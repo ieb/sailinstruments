@@ -14,33 +14,51 @@ class DataBox extends React.Component {
    */
   constructor(props) {
     super(props);
-    this.props = props;
     this.app = props.app;
+
     this.state = {
         value : 0,
         title: props.title,
         units: props.units,
-        translate: props.translate,
         withBox: props.withBox || false,
         updaterate : props.updaterate || 1000
     };
-    this.setPaths(this.props);
+    this.props = {};
+    this.setProps(props);
+    this.props = props;
     this.update = this.update.bind(this);
   }
 
   static getDefaultProperties(app) {
     return {
         updaterate: 1000,
-        translate: "0,0",
         dataPath: app.sourceId+".navigation.speedThroughWater",
         units: "kn",
         title: "stw"
     }
   }
 
+  setProps(props) {
+    if ( this.props.withBox ) {
+      this.outerClassName = "dataBox dataBoxFill";
+    } else {
+      this.outerClassName = "dataBox";      
+    }
+    var top = props.top || 0;
+    var left = props.left || 0;
+    this.possition = {
+      top: top+"px",
+      left: left+"px"
+    }
+    this.setPaths(props);
+
+  }
+
   setPaths(props) {
-    this.dataPath = this.props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
-    this.dataStream = this.app.stats.addPath(this.dataPath);
+    if ( this.props.dataPath === undefined || props.dataPath !== this.props.dataPath) {
+      this.dataPath = this.props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
+      this.dataStream = this.app.stats.addPath(this.dataPath);      
+    }
   }
 
 
@@ -53,12 +71,7 @@ class DataBox extends React.Component {
         update = true;
       }
     }
-    for(var k in nextProps ) {
-      if (k.endsWith("Path") && nextProps[k] !== this[k] ) {
-        this.setPaths(nextProps);
-        break;
-      }
-    }
+    this.setProps(nextProps);
     if ( update ) {
         this.setState(newState);
     }
@@ -86,13 +99,12 @@ class DataBox extends React.Component {
   }
 
   render() {
-    var transform="translate ("+this.state.translate+")";
     return (
-      <g transform={transform}  className="data-box" >
-          {this.state.withBox && <rect width="120" height="50" x="-60" y="-37" rx="5" ry="5"  ></rect>}
-          <text x="0" y="0" textAnchor="middle" fontSize="38" >{this.state.value}</text>
-          <text x="55" y="10" textAnchor="end" fontSize="15" >{this.state.title}</text>
-      </g>
+      <div className={this.outerClassName} style={this.possition} >
+        <div className="dataBoxValue">{this.state.value}</div>
+        <div className="dataBoxUnits">{this.state.units}</div>
+        <div className="dataBoxTitle">{this.state.title}</div>
+      </div>
       );
   }
 

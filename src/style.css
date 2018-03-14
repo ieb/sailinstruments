@@ -288,8 +288,8 @@
   position: absolute;
   width: 20px;
   height: 20px;
-  bottom: 0;
-  right: 0;
+  bottom: -6px;
+  right: -6px;
   cursor: se-resize;
 }
 
@@ -457,12 +457,14 @@
 .cellControls {
     position: absolute;
     font-size: 10px;
-    right: 1px;
-    top: 1px;
+    right: -8px;
+    top: -2px;
+    z-index: 1;
 }
 
 .cellControls > button {
-    border: none;    
+    border: none;  
+    background-color: transparent; 
 }
 
 .settingsForm {
@@ -488,5 +490,73 @@
 .settingsForm select {
    position: absolute;
    left: 10em;
+}
+
+
+/* Canvas based instruments */
+
+
+.instrumentContainer {
+  font-family: sans-serif;
+
+}
+.instrumentContainer canvas { 
+  border: 1px 
+  solid black;
+  position: absolute;
+  top: 0px;
+  left: 0px; 
+}
+.dataBoxFill {
+  background: rgba(215,215,215,0.7);      
+}
+
+.dataBox {
+  position: absolute;
+  width: 100px;
+  height: 50px;
+  border-radius: 5px;   
+  border: 1px solid black;
+  font-size: 30px;
+  font-family: sans-serif;
+}
+
+.dataBoxFull {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;   
+  border: 1px solid black;
+  font-size: 93px;
+  font-family: sans-serif;
+}
+
+.dataBoxValue {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  text-align: center;
+}
+
+
+.dataBoxUnits {
+  position: absolute;
+  bottom:  2px;
+  right:  2px; 
+  font-size: 14px;
+}
+.dataBoxTitle {
+  position: absolute;
+  bottom:  2px;
+  left:  2px; 
+  font-size: 14px;
+}
+.inputForm {
+  position: absolute;
+  right: 0px;
+}
+.inputForm > label {
+  display: block;
 }
 

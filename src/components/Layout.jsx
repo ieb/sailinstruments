@@ -4,13 +4,14 @@
 import React from 'react';
 import  ReactGridLayout from 'react-grid-layout';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import WindInstrument from './WindInstrument.jsx';
-import PolarInstrument from './PolarInstrument.jsx';
-import DataInstrument from './DataInstrument.jsx';
+import WindInstrument from './WindInstrument2.jsx';
+import PolarInstrument from './PolarInstrument2.jsx';
+import DataInstrument from './DataInstrument2.jsx';
 import InlineEdit from './InlineEdit.jsx';
 import ConfigureCell from './ConfigureCell.jsx';
+import LayoutRaw from './LayoutRaw.jsx';
 import _ from "lodash";
-import utils from './utils.js';
+import utils from './utils.jsx';
 import './react-tabs.css';
 
 
@@ -24,7 +25,8 @@ class Layout extends React.Component {
     this.namedComponents = {
       WindInstrument: WindInstrument,
       PolarInstrument: PolarInstrument,
-      DataInstrument: DataInstrument
+      DataInstrument: DataInstrument,
+      LayoutRaw: LayoutRaw
     };
     // register the layout with the app so that components can be registered.
     this.app.registerLayout(this);
@@ -80,9 +82,9 @@ class Layout extends React.Component {
       {
         layout : [],
         key: this.key,
-        cols: 10,
-        rowHeight: 120,
-        width: 1200,
+        cols: 20,
+        rowHeight: 60,
+        width: 1270,
         title: 'unamed'        
       });
     this.setState({tabs: newTabs});
@@ -296,6 +298,7 @@ class Layout extends React.Component {
               <button onClick={(e) => { this.onAddClick(tab, "DataInstrument", 2, 1)}}>Add Databox</button>
               <button onClick={(e) => { this.onAddClick(tab, "WindInstrument", 10, 10)}}>Add Wind Instrument</button>
               <button onClick={(e) => { this.onAddClick(tab, "PolarInstrument", 10, 10)}}>Add Polar Instrument</button>
+              <button onClick={(e) => { this.onAddClick(tab, "LayoutRaw", 10, 10)}}>Add Layout Editor</button>
               <button onClick={(e) => { this.removeTab(tab)}}>Remove Tab</button>
             </div>
           </div>

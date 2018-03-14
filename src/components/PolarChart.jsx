@@ -3,7 +3,7 @@
 
 import React from 'react';
 import * as d3 from 'd3';
-import utils from './utils.js'
+import utils from './utils.jsx'
 import Qty  from 'js-quantities';
 
 
