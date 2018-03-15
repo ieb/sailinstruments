@@ -68,17 +68,20 @@ class CompassRose extends React.Component {
     var update = false;
     for(var k in this.state) {
       if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
+        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
         newState[k] = nextProps[k];
         update = true;
       }
     }
     for(var k in nextProps ) {
       if (k.endsWith("Path") && nextProps[k] !== this[k] ) {
+        console.log("Setting Path ", nextProps);
         this.setPaths(nextProps);
         break;
       }
     }
     if ( update ) {
+        console.log("Setting State", { old: this.stat, newState: newState});
         this.setState(newState);
     }
   }
@@ -101,7 +104,7 @@ class CompassRose extends React.Component {
       this.cstate.oppositeTackDirection = utils.convertDeg(this.oppTrackDirStream.value);
       this.cstate.groundWindDirection = utils.convertDeg(this.twdStream.value);
       this.cstate.hdm = utils.convertDeg(this.hdmStream.value);
-      if ( this.state.headup ) {
+      if ( this.state.northup ) {
         this.cstate.boatUp = 0;
       } else {
         this.cstate.boatUp = -this.cstate.hdm;

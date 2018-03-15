@@ -258,9 +258,7 @@ class Layout extends React.Component {
 
 
   renderCell(tab, cell) {
-    console.log("Rendering Updated Cell ", cell);
     var component = this.namedComponents[cell.contents.name].generateComponent(cell.contents.props, this.app);
-    console.log("New Element is ", component);
     return (
         <div key={cell.i} >
         <div className="cellControls" >
@@ -282,7 +280,6 @@ class Layout extends React.Component {
       var cell = tab.layout[i];
       renderedLayout.push(this.renderCell(tab, cell));
     };
-    console.log("Layout ", renderedLayout);
     return renderedLayout;
   }
 
@@ -338,7 +335,6 @@ class Layout extends React.Component {
     return tabs;
   }
   renderPanel(tab) {
-    console.log("Rendering tab ", tab);
     return  (<TabPanel key={tab.key}>
           { (this.state.configuringTab === tab) && (<ConfigureCell 
               onDone={this.doneConfigureCell} 

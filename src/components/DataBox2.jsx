@@ -55,8 +55,9 @@ class DataBox extends React.Component {
   }
 
   setPaths(props) {
-    if ( this.props.dataPath === undefined || props.dataPath !== this.props.dataPath) {
-      this.dataPath = this.props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
+    if ( this.dataStream === undefined || this.dataPath === undefined || props.dataPath !== this.dataPath) {
+      this.dataPath = props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
+      console.log("Updateing datapath ", this.dataPath);
       this.dataStream = this.app.stats.addPath(this.dataPath);      
     }
   }
@@ -67,12 +68,14 @@ class DataBox extends React.Component {
     var update = false;
     for(var k in this.state) {
       if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
+        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
         newState[k] = nextProps[k];
         update = true;
       }
     }
     this.setProps(nextProps);
     if ( update ) {
+        console.log("Setting State", { old: this.stat, newState: newState});
         this.setState(newState);
     }
   }

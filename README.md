@@ -30,25 +30,18 @@ In addition the layout and settings can be configured. These are currently saved
 
 ## Done
 
-* Basic sailing instrument with magnetic and boat rose, twa,awa,target twa, gwd, next tack, and history.
-* Full polar with full set of calculations.
-* Polar visualisation, with history of actual performance.
-* Settings - allow each component to show a modal settings page.
-* Grid system - be able to create a layout with multiple plages without having to change the code.
-* Draw VMG performance on the polar, beacause a helm may sail a better VMG in the conditions fast and low that hitting the polar target wind angle and sailing slow. - The polar chart does this for up and downwind. VMG to waypoint might need more info, however the radial lines make it possible to see where the best VMG is to any heading at a specific wind strength.
-* Persist layout to local storage, or to a end point - only works when app is loded from a server, state saved locally.
-* Convert from SVG to HTML5 Canvas.
-
-## In progress
-
-* Add strip chart components.
-* Expand stats capabilities, (standard deviation, moving averages)
-
-
-## Todo
-
-* calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
-* Import or input list of waypoints.
-* Visualise sail plan against polar.
-* Calculate TWA, TWS, Polar speed, VMG, tack, vmg, sail selection on each leg.
-* Sail selection on next leg - based on BTW or List of waypoints.
+- [X] Basic sailing instrument with magnetic and boat rose, twa,awa,target twa, gwd, next tack, and history.
+- [X] Full polar with full set of calculations.
+- [X] Polar visualisation, with history of actual performance.
+- [X] Settings - allow each component to show a modal settings page.
+- [X] Grid system - be able to create a layout with multiple plages without having to change the code.
+- [X] Draw VMG performance on the polar, beacause a helm may sail a better VMG in the conditions fast and low that hitting the polar target wind angle and sailing slow. - The polar chart does this for up and downwind. VMG to waypoint might need more info, however the radial lines make it possible to see where the best VMG is to any heading at a specific wind strength.
+- [X] Persist layout to local storage, or to a end point - only works when app is loded from a server, state saved locally.
+- [X] Convert from SVG to HTML5 Canvas.
+- [ ] Add strip chart components.
+- [ ] Expand stats capabilities, (standard deviation, moving averages)
+- [ ] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
+- [ ] Import or input list of waypoints.
+- [ ] Visualise sail plan against polar.
+- [ ]Calculate TWA, TWS, Polar speed, VMG, tack, vmg, sail selection on each leg.
+- [ ] Sail selection on next leg - based on BTW or List of waypoints.

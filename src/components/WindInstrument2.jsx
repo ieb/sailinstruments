@@ -27,7 +27,6 @@ class WindInstrument extends React.Component {
   }
 
   static generateComponent(props, app) {
-    console.log("Generate WindInstument Element with ",props);
     return (
         <WindInstrument northup={props.northup} updaterate={props.updaterate} app={app} />
         );
@@ -38,11 +37,13 @@ class WindInstrument extends React.Component {
     var update = false;
     for(var k in this.state) {
       if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
+        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
         newState[k] = nextProps[k];
         update = true;
       }
     }
     if ( update ) {
+        console.log("Setting State", { old: this.stat, newState: newState});
         this.setState(newState);
     }
   }
