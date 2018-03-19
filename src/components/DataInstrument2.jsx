@@ -20,7 +20,11 @@ class DataInstrument extends React.Component {
         title: props.title,
         units: props.units,
         withBox: props.withBox || false,
-        updaterate : props.updaterate || 1000
+        updaterate : +props.updaterate || 1000,
+        damping: props.damping || 4
+    };
+    this.cstate = {
+      value: 0
     };
     this.props = {};
     this.setProps(props);
@@ -31,6 +35,7 @@ class DataInstrument extends React.Component {
   static getDefaultProperties(app) {
     return {
         updaterate: 1000,
+        damping: 2,
         dataPath: app.sourceId+".navigation.speedThroughWater",
         units: "kn",
         title: "stw"
@@ -45,6 +50,7 @@ class DataInstrument extends React.Component {
           dataPath={props.dataPath}
           units={props.units}
           title={props.title}
+          damping={props.damping}
           app={app}  />
         );
   }
@@ -79,8 +85,13 @@ class DataInstrument extends React.Component {
     var update = false;
     for(var k in this.state) {
       if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
-        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
-        newState[k] = nextProps[k];
+        var type = typeof this.state[k];
+        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps, type:type});
+        if ( typeof this.state[k] === 'number') {
+          newState[k] = +nextProps[k];
+        } else {
+          newState[k] = nextProps[k];
+        }
         update = true;
       }
     }
@@ -105,8 +116,9 @@ class DataInstrument extends React.Component {
 
   update() {
     if (this.bound ) {
+      this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
       this.setState({
-        value: utils.getDisplay(this.state.units)(this.dataStream.value)
+        value: utils.getDisplay(this.state.units)(this.cstate.value)
       });
       setTimeout(this.update, this.state.updaterate);
     }

@@ -7,23 +7,23 @@ const radToDeg = Qty.swiftConverter('rad', 'deg');
 const msToKn = Qty.swiftConverter('m/s', 'kn');
 
 const radToDegF  = function(x) {
-  return radToDeg(x).toFixed(0);
+  return +radToDeg(x).toFixed(0);
 }
 const msToKnF = function(x) {
   var v = msToKn(x);
   if (v < 10) {
-    return v.toFixed(2);
+    return +v.toFixed(2);
   } else {
-    return v.toFixed(1);
+    return +v.toFixed(1);
   }
 }
 
 const percentF = function(x) {
   var v = x * 100;
   if (v < 10) {
-    return v.toFixed(1);
+    return +v.toFixed(1);
   } else {
-    return v.toFixed(0);
+    return +v.toFixed(0);
   }
 }
 
@@ -71,6 +71,26 @@ class Utils {
     }
   }
 
+  static compareRad(a,b) {
+    return Utils.convertDeg(a) !== Utils.convertDeg(b);
+  }
+
+  static compareDeg(a,b) {
+    return a.toFixed(0) !== b.toFixed(0);
+  }
+
+  static compareMs(a,b) {
+    return Utils.convertKn(a) !== Utils.convertKn(b);
+  }
+
+  static compareKn(a,b) {
+    return a.toFixed(2) !== b.toFixed(2);
+  }
+
+  static compareIgnore(a,b) {
+    return false;
+  }
+
   static convertDegA(a) {
     var ad = [];
     for (var i = a.length - 1; i >= 0; i--) {
@@ -96,7 +116,7 @@ class Utils {
 
 
   static getDisplay(units) {
-    if ( units === "deg" ){
+    if ( units === "deg"  ){
         return radToDegF;
     } else if ( units === "kn" ) {
         return msToKnF;
@@ -108,7 +128,7 @@ class Utils {
   }
 
   static getSymbol(units) {
-    if ( units === "deg" ){
+    if ( units === "deg"  ){
         return "deg"
     } else if ( units === "kn" ) {
         return "kn";
@@ -152,7 +172,7 @@ class Utils {
 
 
 
-  static saveDrawState(state, drawState, sig) {
+  static saveDrawState(state, drawState) {
     for(var p in state) {
       try {
         if ( Array.isArray(state[p])) {
@@ -163,18 +183,13 @@ class Utils {
             drawState[p][j] = state[p][j];
           }
         } else if ( state[p] !== undefined ) {
-          if (drawState[p] === undefined || drawState[p] !== +state[p].toFixed(sig[p]) ) {
-            drawState[p] = +(state[p].toFixed(sig[p]));
-          }            
+          drawState[p] = state[p];            
         }
       } catch(e) {
         console.error(p,e);
       }
     }
   }
-
-
-
 
   static getRedrawData(cstate, dstate, sig, props) {
     for(var i in props) {
@@ -184,19 +199,76 @@ class Utils {
            return cstate;
         } else {
           for(var j = 0; j < cstate[p].length; j++ ) {
-            if (cstate[p][j].toFixed(sig[p]) !== dstate[p][j].toFixed(sig[p]) ) {
+            if (sig[p](cstate[p][j], dstate[p][j]) ) {
               return cstate;
             }
           }
         }
       } else {
-        if (dstate[p] === undefined || dstate[p] !== +cstate[p].toFixed(sig[p]) ) {
+        if (dstate[p] === undefined || sig[p](dstate[p], cstate[p]) ) {
           return cstate;
         }            
       }
     }
     return undefined;
   }
+
+
+
+  /**
+   *
+   */
+  static iir(v, c, d) {
+    if ( d === 0 || v === undefined ) {
+      if ( isNaN(c) ) {
+        return 0;
+      } else {
+        return c;
+      }
+    } else {
+      if ( isNaN(c)) {
+        return v;
+      } else {
+        return ((v*(d-1))+c)/(d);
+      }
+    }
+  }
+
+  static iirDeg(v, c, d, min, max) {
+    if ( d  === 0 || v == undefined ) {
+      return c;      
+    } else {
+      min = min || 0;
+      max = max || 360;
+      return Utils.iirRad(v*Math.PI/180, c*Math.PI/180, d, min*Math.PI/180, max*Math.PI/180)*180/Math.PI;
+    }
+  }
+
+  static iirRad(v, c, d, min, max) {
+      if ( d === 0 || v === undefined ) {
+        if ( isNaN(c)) {
+          return 0;
+        } else {
+          return c;
+        }
+      }
+      if ( isNaN(c) ) {
+        return v;
+      }
+      min = min || 0;
+      max = max || Math.PI*2;
+      var a = Math.atan2(Utils.iir(Math.sin(v), Math.sin(c), d), Utils.iir(Math.cos(v), Math.cos(c), d));
+      while( a < min ) {
+        a = a + Math.PI*2;
+      }
+      while( a > max ) {
+        a = a - Math.PI*2;
+      }
+      return a;
+  }
+
+
+
 
 
 

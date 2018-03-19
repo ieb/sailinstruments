@@ -16,7 +16,8 @@ class PolarInstrument extends React.Component {
 
   static getDefaultProperties(app) {
     return {
-        updaterate: 1000
+        updaterate: 1000,
+        damping: 2
     }
   }
 
@@ -24,7 +25,8 @@ class PolarInstrument extends React.Component {
     return (
         <PolarInstrument
           updaterate={props.updaterate}
-          app={app}  />
+          app={app} 
+          damping={props.damping} />
         );
   }
 
@@ -34,7 +36,11 @@ class PolarInstrument extends React.Component {
     for(var k in this.state) {
       if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
         console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
-        newState[k] = nextProps[k];
+        if ( typeof this.state[k] === 'number') {
+          newState[k] = +nextProps[k];
+        } else {
+          newState[k] = nextProps[k];
+        }
         update = true;
       }
     }

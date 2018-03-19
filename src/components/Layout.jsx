@@ -292,7 +292,7 @@ class Layout extends React.Component {
               <button onClick={(e) => { this.onTabMenuHide(e, tab) }} >&#9652;</button>
             </div>
             <div className="dropDown" >
-              <button onClick={(e) => { this.onAddClick(tab, "DataInstrument", 2, 1)}}>Add Databox</button>
+              <button onClick={(e) => { this.onAddClick(tab, "DataInstrument", 4, 2)}}>Add Databox</button>
               <button onClick={(e) => { this.onAddClick(tab, "WindInstrument", 10, 10)}}>Add Wind Instrument</button>
               <button onClick={(e) => { this.onAddClick(tab, "PolarInstrument", 10, 10)}}>Add Polar Instrument</button>
               <button onClick={(e) => { this.onAddClick(tab, "LayoutRaw", 10, 10)}}>Add Layout Editor</button>

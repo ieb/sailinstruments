@@ -20,7 +20,8 @@ class BoatRose extends React.Component {
     this.app = props.app;
     this.state = {
         headup: props.headup,
-        updaterate: props.updaterate || 1000
+        updaterate: +props.updaterate || 1000,
+        damping: props.damping || 4
     };
     this.cstate = {};
     this.dstate = {};
@@ -38,15 +39,14 @@ class BoatRose extends React.Component {
     this.draw = this.draw.bind(this);
 
     this.significance = {
-        hdg: 1,
-        boatUp: 1,
-        twa: 1,
-        awa: 1,
-        leeway: 1,
-        gwd: 1,
-        otack: 1,
-        twaHistory: 2,
-        awaHistory: 2  
+        twaHistory: utils.compareRad,
+        awaHistory: utils.compareRad,
+        leewayAngle: utils.compareRad,
+        awa: utils.compareRad,
+        twa: utils.compareRad,
+        vmga: utils.compareRad,
+        hdm: utils.compareRad,
+        boatUp: utils.compareRad
     };
 
   }
@@ -71,7 +71,11 @@ class BoatRose extends React.Component {
     for(var k in this.state) {
       if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
         console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
-        newState[k] = nextProps[k];
+        if ( typeof this.state[k] === 'number') {
+          newState[k] = +nextProps[k];
+        } else {
+          newState[k] = nextProps[k];
+        }
         update = true;
       }
     }
@@ -106,13 +110,13 @@ class BoatRose extends React.Component {
 
   update() {
     if ( this.bound ) {
-      this.cstate.twaHistory = utils.convertDegA(this.twaStream.history);
-      this.cstate.awaHistory = utils.convertDegA(this.awaStream.history);
-      this.cstate.leewayAngle = utils.convertDeg(this.leewayStream.value);
-      this.cstate.awa = utils.convertDeg(this.awaStream.value);
-      this.cstate.twa  = utils.convertDeg(this.twaStream.value);
-      this.cstate.vmga = utils.convertDeg(this.targetAngleStream.value);
-      this.cstate.hdm  =  utils.convertDeg(this.hdmStream.value);
+      this.cstate.twaHistory = _.clone(this.twaStream.history);
+      this.cstate.awaHistory = _.clone(this.awaStream.history);
+      this.cstate.leewayAngle = this.leewayStream.calcIIR(this.cstate.leewayAngle, this.state.damping);
+      this.cstate.awa = this.awaStream.calcIIR(this.cstate.awa, this.state.damping);
+      this.cstate.twa = this.twaStream.calcIIR(this.cstate.twa, this.state.damping);
+      this.cstate.vmga = this.targetAngleStream.calcIIR(this.cstate.vmga, this.state.damping);
+      this.cstate.hdm = this.hdmStream.calcIIR(this.cstate.hdm, this.state.damping);
       if ( this.state.headup ) {
         this.cstate.boatUp = 0;
       } else {
@@ -133,7 +137,7 @@ class BoatRose extends React.Component {
       var save = this.drawRose(); 
       save = this.drawRosePointers() || save;
       if ( save ) {
-        utils.saveDrawState(this.cstate, this.dstate, this.significance);
+        utils.saveDrawState(this.cstate, this.dstate);
       }
       // perhaps we want to control the refresh rate ?
       //var raf = window.requestAnimationFrame(this.draw);      
@@ -161,7 +165,7 @@ class BoatRose extends React.Component {
 
 
           // outer rose rotation.
-          ctx.rotate(redrawData.boatUp*Math.PI/180);
+          ctx.rotate(-redrawData.boatUp);
 
           this.createBoatMarker(ctx, redrawData.twa, 'T', 'blue', 'white', 'black');
           this.createBoatMarker(ctx, redrawData.awa, 'A', 'orange', 'white', 'black');
@@ -178,7 +182,7 @@ class BoatRose extends React.Component {
 
   createBoatMarker(ctx, angle, name, color, lightColor, darkColor) {
     ctx.save();
-    ctx.rotate(Math.PI*angle/180);
+    ctx.rotate(angle);
     ctx.fillStyle = color;
     ctx.lineStyle = color;
     ctx.lineWidth = 0.5;
@@ -208,10 +212,11 @@ class BoatRose extends React.Component {
 
   createRadialHistory(ctx, c, history, color) {
     let a = [];
+    // the most recent is the first element
+    a.push([ c-Math.PI, -200]);      
     for (let i = 0; i < history.length-1; i++) { 
-       a.push([  (history[i]-180)*Math.PI/180, -(i*(200/history.length))]);
+       a.push([ history[i]-Math.PI, -200+(i*(200/history.length))]);
     };
-    a.push([ (c-180)*Math.PI/180, -200]);  
     utils.drawSmoothRadialLine(ctx, a, 1, color);
   }
 
@@ -246,7 +251,7 @@ class BoatRose extends React.Component {
           ctx.translate(310,310);
 
           // outer rose rotation.
-          ctx.rotate(redrawData.boatUp*Math.PI/180);
+          ctx.rotate(-redrawData.boatUp);
 
 
           // draw sectors

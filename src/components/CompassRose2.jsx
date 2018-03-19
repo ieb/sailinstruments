@@ -24,7 +24,8 @@ class CompassRose extends React.Component {
     this.app = props.app;
     this.state = {
         northup: props.northup,
-        updaterate: props.updaterate || 1000
+        updaterate: +props.updaterate || 1000,
+        damping: props.damping || 4
     };
     this.cstate = {};
     this.dstate = {};
@@ -34,15 +35,10 @@ class CompassRose extends React.Component {
     this.roseId = "CompassRose"+instanceId;
     this.rosePointersId = "CompassRosePointer"+instanceId;
     this.significance = {
-        hdg: 1,
-        boatUp: 1,
-        twa: 1,
-        awa: 1,
-        leeway: 1,
-        gwd: 1,
-        otack: 1,
-        twaHistory: 2,
-        awaHistory: 2  
+        oppositeTackDirection: utils.compareRad,
+        groundWindDirection: utils.compareRad,
+        boatUp: utils.compareRad,
+        hdm: utils.compareRad
     };
 
 
@@ -54,10 +50,10 @@ class CompassRose extends React.Component {
 
 
   setPaths(props) {
-    this.twdPath = props.twdPath || this.app.sourceId+".environment.wind.directionTrue";
+    this.gwdPath = props.gwdPath || this.app.sourceId+".environment.wind.directionTrue";
     this.oppTrackDirPath = props.oppTrackDirPath || this.app.sourceId+".performance.headingMagnetic";
     this.hdmPath = props.hdmPath || this.app.sourceId+".navigation.headingMagnetic";
-    this.twdStream = this.app.stats.addPath(this.twdPath);
+    this.groundWindDirectionStream = this.app.stats.addPath(this.gwdPath);
     this.oppTrackDirStream = this.app.stats.addPath(this.oppTrackDirPath);
     this.hdmStream = this.app.stats.addPath(this.hdmPath);
   }
@@ -69,7 +65,11 @@ class CompassRose extends React.Component {
     for(var k in this.state) {
       if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
         console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
-        newState[k] = nextProps[k];
+        if ( typeof this.state[k] === 'number') {
+          newState[k] = +nextProps[k];
+        } else {
+          newState[k] = nextProps[k];
+        }
         update = true;
       }
     }
@@ -101,13 +101,13 @@ class CompassRose extends React.Component {
 
   update() {
     if ( this.bound ) {
-      this.cstate.oppositeTackDirection = utils.convertDeg(this.oppTrackDirStream.value);
-      this.cstate.groundWindDirection = utils.convertDeg(this.twdStream.value);
-      this.cstate.hdm = utils.convertDeg(this.hdmStream.value);
+      this.cstate.oppositeTackDirection = this.oppTrackDirStream.calcIIR(this.cstate.oppositeTackDirection, this.state.damping);
+      this.cstate.groundWindDirection = this.groundWindDirectionStream.calcIIR(this.cstate.groundWindDirection, this.state.damping);
+      this.cstate.hdm = this.hdmStream.calcIIR(this.cstate.hdm, this.state.damping);
       if ( this.state.northup ) {
         this.cstate.boatUp = 0;
       } else {
-        this.cstate.boatUp = -this.cstate.hdm;
+        this.cstate.boatUp = this.cstate.hdm;
       }
       this.draw();           
       setTimeout(this.update, this.state.updaterate); 
@@ -120,7 +120,7 @@ class CompassRose extends React.Component {
       var save =  this.drawCompass();          
       save = this.drawCompassPointers() || save;
       if ( save ) {
-        utils.saveDrawState(this.cstate, this.dstate, this.significance);
+        utils.saveDrawState(this.cstate, this.dstate);
       }
       //var raf = window.requestAnimationFrame(this.draw);
     }
@@ -147,7 +147,7 @@ class CompassRose extends React.Component {
           ctx.translate(310,310);
 
           // outer rose rotation.
-          ctx.rotate(redrawData.boatUp*Math.PI/180);
+          ctx.rotate(-redrawData.boatUp);
 
           this.createCompasMarker(ctx, redrawData.groundWindDirection, 'G', 'green', 'white', 'black');
           this.createCompasMarker(ctx, redrawData.oppTrackDirPath, 'O', 'black', 'white', 'black');
@@ -162,7 +162,7 @@ class CompassRose extends React.Component {
 
   createCompasMarker(ctx, angle, name, color, lightColor, darkColor) {
     ctx.save();
-    ctx.rotate(Math.PI*angle/180);
+    ctx.rotate(angle);
     ctx.fillStyle = color;
     ctx.lineStyle = color;
     ctx.lineWidth = 0.5;
@@ -213,7 +213,7 @@ class CompassRose extends React.Component {
         ctx.translate(310,310);
 
         // outer rose rotation.
-        ctx.rotate(redrawData.boatUp*Math.PI/180);
+        ctx.rotate(-redrawData.boatUp);
 
 
         ctx.save();

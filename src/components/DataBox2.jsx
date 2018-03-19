@@ -18,11 +18,15 @@ class DataBox extends React.Component {
 
     this.state = {
         value : 0,
-        title: props.title,
-        units: props.units,
+        damping:  props.damping || 2,
+        title: props.title || "stw",
+        units: props.units || "kn",
         withBox: props.withBox || false,
-        updaterate : props.updaterate || 1000
+        updaterate : +props.updaterate || 1000
     };
+    this.cstate = {
+      value: 0
+    }
     this.props = {};
     this.setProps(props);
     this.props = props;
@@ -33,6 +37,7 @@ class DataBox extends React.Component {
     return {
         updaterate: 1000,
         dataPath: app.sourceId+".navigation.speedThroughWater",
+        damping: 2,
         units: "kn",
         title: "stw"
     }
@@ -68,8 +73,13 @@ class DataBox extends React.Component {
     var update = false;
     for(var k in this.state) {
       if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
-        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
-        newState[k] = nextProps[k];
+        var type = typeof this.state[k];
+        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps, type:type});
+        if ( typeof this.state[k] === 'number') {
+          newState[k] = +nextProps[k];
+        } else {
+          newState[k] = nextProps[k];
+        }
         update = true;
       }
     }
@@ -94,8 +104,9 @@ class DataBox extends React.Component {
 
   update() {
     if (this.bound ) {
+      this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
       this.setState({
-        value: utils.getDisplay(this.state.units)(this.dataStream.value)
+        value: utils.getDisplay(this.state.units)(this.cstate.value)
       });
       setTimeout(this.update, this.state.updaterate);
     }

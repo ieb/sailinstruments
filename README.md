@@ -28,8 +28,6 @@ In addition the layout and settings can be configured. These are currently saved
 
 # Features
 
-## Done
-
 - [X] Basic sailing instrument with magnetic and boat rose, twa,awa,target twa, gwd, next tack, and history.
 - [X] Full polar with full set of calculations.
 - [X] Polar visualisation, with history of actual performance.
@@ -38,10 +36,11 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Draw VMG performance on the polar, beacause a helm may sail a better VMG in the conditions fast and low that hitting the polar target wind angle and sailing slow. - The polar chart does this for up and downwind. VMG to waypoint might need more info, however the radial lines make it possible to see where the best VMG is to any heading at a specific wind strength.
 - [X] Persist layout to local storage, or to a end point - only works when app is loded from a server, state saved locally.
 - [X] Convert from SVG to HTML5 Canvas.
+- [X] Add Damping, Update rate and IIR filter to every instrument to give smooth output.
 - [ ] Add strip chart components.
 - [ ] Expand stats capabilities, (standard deviation, moving averages)
 - [ ] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
 - [ ] Import or input list of waypoints.
 - [ ] Visualise sail plan against polar.
-- [ ]Calculate TWA, TWS, Polar speed, VMG, tack, vmg, sail selection on each leg.
+- [ ] Calculate TWA, TWS, Polar speed, VMG, tack, vmg, sail selection on each leg.
 - [ ] Sail selection on next leg - based on BTW or List of waypoints.

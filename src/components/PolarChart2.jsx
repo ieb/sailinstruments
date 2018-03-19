@@ -4,6 +4,7 @@
 import React from 'react';
 import utils from './utils.jsx'
 import Qty  from 'js-quantities';
+import _ from "lodash";
 
 
 const msToKnC = Qty.swiftConverter('m/s', 'kn');
@@ -19,7 +20,8 @@ class PolarChart extends React.Component {
     this.app = props.app;
     this.state = {
       headup: true,
-      updaterate: props.updaterate || 1000
+      updaterate: +props.updaterate || 1000,
+      damping: props.damping || 4
     };
 
     this.cstate = {};
@@ -31,20 +33,19 @@ class PolarChart extends React.Component {
     this.polarRingsId = "PolarChartRings"+instanceId;
     this.polarHistoryId = "PolarChartHistory"+instanceId;
     this.significance = {
-        hdg: 1,
-        boatUp: 1,
-        twa: 1,
-        awa: 1,
-        leeway: 1,
-        gwd: 1,
-        otack: 1,
-        twaHistory: 2,
-        awaHistory: 2  
+        maxStw: utils.compareKn,
+        polarCurve: utils.compareIgnore,
+        stw: utils.compareMs,
+        twa: utils.compareRad,
+        targetSpeed: utils.compareMs,
+        targetAngle: utils.compareRad,
+        twaHistory: utils.compareRad,
+        stwHistory: utils.compareMs,
+        boatUp: utils.compareRad,
     };
 
 
     this.setPaths(props);
-
     this.bound = false;
     var self = this;
     this.update = this.update.bind(this);
@@ -79,7 +80,11 @@ class PolarChart extends React.Component {
     for(var k in this.state) {
       if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
         console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
-        newState[k] = nextProps[k];
+        if ( typeof this.state[k] === 'number') {
+          newState[k] = +nextProps[k];
+        } else {
+          newState[k] = nextProps[k];
+        }
         update = true;
       }
     }
@@ -117,26 +122,25 @@ class PolarChart extends React.Component {
 
   update() {
     if (this.bound) {
-      var tws = utils.convertKn(this.twsStream.value);
-
-      if ( tws < 0.01 ) {
-        this.cstate.tws = tws;
-        this.cstate.maxStw = 2;
+      this.cstate.tws = this.twsStream.calcIIR(this.cstate.tws, this.state.damping);
+      if ( this.cstate.tws < 0.01 ) {
+        this.cstate.maxStw = knToMsC(2);
         this.cstate.polarCurve = [];
-        this.cstate.stw = utils.convertKn(this.stwStream.value);
-        this.cstate.twa = utils.convertDeg(this.twaStream.value);
-        this.cstate.targetSpeed = utils.convertKn(this.targetSpeedStream.value);
-        this.cstate.targetAngle = utils.convertDeg(this.targetAngleStream.value);
-        this.cstate.twaHistory = utils.convertDegA(this.twaStream.history);
-        this.cstate.stwHistory = utils.convertKnA(this.stwStream.history);
+        this.cstate.stw = this.stwStream.value;
+        this.cstate.twa = this.twaStream.value;
+        this.cstate.targetSpeed = this.targetSpeedStream.value;
+        this.cstate.targetAngle = this.targetAngleStream.value;
+        // create a copy of the history and convert at the same time
+        this.cstate.twaHistory = _.clone(this.twaStream.history);
+        this.cstate.stwHistory = _.clone(this.stwStream.history);
       } else {
-        var polarCurve = this.app.calculations.polarPerformance.performanceForSpeed(knToMsC(tws));
+        var polarCurve = this.app.calculations.polarPerformance.performanceForSpeed(this.cstate.tws);
         // polarCurve is [ { tws: < rad >, stw: <m/s>}]
         // needs to be [[x,y]]
+        // make the polar curve in deg, kn so the maxMin can be done
         var plot = [];
         var maxStw = 0;
         for (var i = 0; i < polarCurve.length; i++) {
-           polarCurve[i].stw = msToKnC(polarCurve[i].stw);
           if ( polarCurve[i].stw > maxStw ) {
             maxStw = polarCurve[i].stw;
           }
@@ -145,14 +149,12 @@ class PolarChart extends React.Component {
         //
         if ( maxStw > this.cstate.maxStw ) {
           // must be increased
-          var m = (Math.floor((maxStw*1.2)/2)+1)*2;
-          console.log("Increasing ", maxStw, this.cstate.maxStw, m);
-          maxStw = m;
+          var m = (Math.floor((msToKnC(maxStw)*1.2)/2)+1)*2;
+          maxStw = knToMsC(m);
         } else if ( maxStw < this.cstate.maxStw*0.6 ) {
           // must be decreased.
-          var m = (Math.floor((maxStw*1.2)/2)+1)*2;
-          console.log("Decreasing ", maxStw, this.cstate.maxStw, m);
-          maxStw = m;
+          var m = (Math.floor((msToKnC(maxStw)*1.2)/2)+1)*2;
+          maxStw = knToMsC(m);
         } else if ( this.cstate.maxStw !== undefined ) {
           maxStw = this.cstate.maxStw;
         }
@@ -168,19 +170,18 @@ class PolarChart extends React.Component {
         };
         //console.log("Polar curve is ", maxStwn, scalen, polarCurve);
         //console.log("PolarLine is ",a);
-        this.cstate.tws = tws;
-        this.cstate.maxStw = maxStw;
-        this.cstate.polarCurve = a;
-        this.cstate.stw = utils.convertKn(this.stwStream.value);
-        this.cstate.twa = utils.convertDeg(this.twaStream.value);
-        this.cstate.targetSpeed = utils.convertKn(this.targetSpeedStream.value);
-        this.cstate.targetAngle = utils.convertDeg(this.targetAngleStream.value);
-        this.cstate.twaHistory = utils.convertDegA(this.twaStream.history);
-        this.cstate.stwHistory = utils.convertKnA(this.stwStream.history);
+        this.cstate.maxStw = maxStw;  // in ms
+        this.cstate.polarCurve = a; // all in rad, pixels
+        this.cstate.stw = this.stwStream.calcIIR(this.cstate.stw, this.state.damping); 
+        this.cstate.twa = this.twaStream.calcIIR(this.cstate.twa, this.state.damping); 
+        this.cstate.targetSpeed = this.targetSpeedStream.calcIIR(this.cstate.targetSpeed, this.state.damping);
+        this.cstate.targetAngle = this.targetAngleStream.calcIIR(this.cstate.targetAngle, this.state.damping);
+        this.cstate.twaHistory = _.clone(this.twaStream.history);
+        this.cstate.stwHistory = _.clone(this.stwStream.history);
         if ( this.state.headup ) {
           this.cstate.boatUp = 0;
         } else {
-          this.cstate.boatUp = -utils.convertDeg(this.hdmStream.value);
+          this.cstate.boatUp = this.hdmStream.calcIIR(this.cstate.boatUp, this.state.damping); 
         }
                 
       }
@@ -206,7 +207,7 @@ class PolarChart extends React.Component {
       save = this.drawPolarRings() || save;
       save = this.drawPolarHistory() || save;
       if ( save ) {
-        utils.saveDrawState(this.cstate, this.dstate, this.significance);
+        utils.saveDrawState(this.cstate, this.dstate);
       }
       // perhaps we want to control the refresh rate ?
       //var raf = window.requestAnimationFrame(this.draw);      
@@ -222,7 +223,7 @@ class PolarChart extends React.Component {
       ctx.fillStyle = color;
       ctx.lineStyle = color;
       ctx.lineWidth = 1;
-      ctx.rotate(a*Math.PI/180);
+      ctx.rotate(a);
       ctx.beginPath();
       ctx.moveTo(0,0);
       ctx.lineTo(0,-s);
@@ -250,30 +251,19 @@ class PolarChart extends React.Component {
         this.clearArea(ctx, canvas);
         ctx.translate(310,310);
         // outer rose rotation.
-        ctx.rotate(redrawData.boatUp*Math.PI/180);
+        ctx.rotate(-redrawData.boatUp);
 
         var scale = 240/redrawData.maxStw;
 
         ctx.save();
         var a = [];
+        // the most recent is the first element
+        a.push([redrawData.twa, redrawData.stw*scale]);
         for (var i = 0; i < redrawData.twaHistory.length; i++) {
-          a.push([redrawData.twaHistory[i]*Math.PI/180, redrawData.stwHistory[i]*scale]);
+          a.push([redrawData.twaHistory[i], redrawData.stwHistory[i]*scale]);
         };
-        a.push([redrawData.twa*Math.PI/180, redrawData.stw*scale]);
         utils.drawSmoothRadialLine(ctx, a, 2, "rgb(0,255,255)");
         ctx.restore();
-
-        /*
-        for ( var i = 0; i < redrawData.twaHistory.length; i++) {
-          ctx.save();
-          ctx.rotate(redrawData.twaHistory[i]*Math.PI/180);
-          ctx.beginPath();
-          var s = redrawData.stwHistory[i]*scale;
-          ctx.arc(0,-s,3,0,2*Math.PI,true);
-          ctx.fillStyle = "rgba(0,0,150,"+(i)/redrawData.twaHistory.length+")";
-          ctx.fill();
-          ctx.restore();
-        }*/
         this.drawPolarVector(ctx, redrawData.twa, redrawData.stw*scale, "blue");
         this.drawPolarVector(ctx, redrawData.targetAngle, redrawData.targetSpeed*scale, "black");
         utils.drawSmoothRadialLine(ctx, redrawData.polarCurve, 1, "black");
@@ -306,19 +296,21 @@ class PolarChart extends React.Component {
         ctx.translate(310,310);
 
         // outer rose rotation.
-        ctx.rotate(redrawData.boatUp*Math.PI/180);
+        ctx.rotate(-redrawData.boatUp);
 
+
+
+        var maxStwKn = msToKnC(redrawData.maxStw);
+        var scale = 240/maxStwKn;
 
         var step = 2;
-        if ( redrawData.maxStw < 5 ) {
+        if ( maxStwKn < 5 ) {
           step = 1;
         }
         ctx.font = '15px '+this.fontFamily;
         ctx.textAlign = 'center';
 
-        var scale = 240/redrawData.maxStw;
-
-        for ( var i = step; i <= redrawData.maxStw; i+= step) {
+        for ( var i = step; i <= maxStwKn; i+= step) {
           var radius = scale * i;
           ctx.beginPath();
           ctx.arc(0, 0, radius, 0, 2*Math.PI, false);
@@ -365,7 +357,7 @@ class PolarChart extends React.Component {
           ctx.translate(310,310);
 
           // outer rose rotation.
-          ctx.rotate(redrawData.boatUp*Math.PI/180);
+          ctx.rotate(-redrawData.boatUp);
 
 
           ctx.beginPath();
@@ -437,19 +429,6 @@ class PolarChart extends React.Component {
       </div>
     );
   }
-
-/*
-        <g transform="translate(300,300)">
-            <path d={this.generateHistoryLine(0,25,false)}  className="polar-speed-history-25"></path>
-            <path d={this.generateHistoryLine(25,50, false)} className="polar-speed-history-50" ></path>
-            <path d={this.generateHistoryLine(50,75, false)} className="polar-speed-history-75"  ></path>
-            <path d={this.generateHistoryLine(75,100, true)} className="polar-speed-history-100"  ></path>
-        </g>
-*/
-
-
-
-
 
 
 
