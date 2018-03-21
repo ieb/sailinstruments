@@ -44,7 +44,7 @@ class BoatRose extends React.Component {
         leewayAngle: utils.compareRad,
         awa: utils.compareRad,
         twa: utils.compareRad,
-        vmga: utils.compareRad,
+        targetAngle: utils.compareRad,
         hdm: utils.compareRad,
         boatUp: utils.compareRad
     };
@@ -115,7 +115,7 @@ class BoatRose extends React.Component {
       this.cstate.leewayAngle = this.leewayStream.calcIIR(this.cstate.leewayAngle, this.state.damping);
       this.cstate.awa = this.awaStream.calcIIR(this.cstate.awa, this.state.damping);
       this.cstate.twa = this.twaStream.calcIIR(this.cstate.twa, this.state.damping);
-      this.cstate.vmga = this.targetAngleStream.calcIIR(this.cstate.vmga, this.state.damping);
+      this.cstate.targetAngle = this.targetAngleStream.calcIIR(this.cstate.targetAngle, this.state.damping);
       this.cstate.hdm = this.hdmStream.calcIIR(this.cstate.hdm, this.state.damping);
       if ( this.state.headup ) {
         this.cstate.boatUp = 0;
@@ -154,7 +154,7 @@ class BoatRose extends React.Component {
     var redrawData = utils.getRedrawData(this.cstate, 
       this.dstate,
       this.significance, 
-      [ "boatUp", "twa" ,"awa", "leeway", "twaHistory", "awaHistory" ]);
+      [ "boatUp", "twa" ,"awa", "leeway", "twaHistory", "awaHistory", "targetAngle" ]);
     if ( redrawData !== undefined ) {
       var canvas = document.getElementById(this.rosePointersId);
       if (canvas !== null && canvas.getContext ) {
@@ -172,6 +172,7 @@ class BoatRose extends React.Component {
           this.createBoatMarker(ctx, redrawData.leeway, 'L', 'black', 'white', 'black');
           this.createRadialHistory(ctx, redrawData.twa, redrawData.twaHistory, 'blue');
           this.createRadialHistory(ctx, redrawData.awa, redrawData.awaHistory, 'orange');
+          this.createPointer(ctx, redrawData.targetAngle, "v", "black", "white");
         ctx.restore();
         return true;
       }
@@ -179,6 +180,35 @@ class BoatRose extends React.Component {
     return false;
   }
 
+  createPointer(ctx, angle, label, darkColor, lightColor) {
+    ctx.save();
+
+    ctx.rotate(angle);
+    ctx.textAlign = 'center';
+    ctx.font = '15px '+this.fontFamily;
+    ctx.fillStyle = darkColor;
+    ctx.lineStyle = darkColor;
+    ctx.lineWidth = 0.5;    
+    ctx.beginPath();
+    ctx.moveTo(-8,-178);
+    ctx.lineTo(0,-197);
+    ctx.lineTo(8,-178);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(0,-175)
+    ctx.arc(0,-175,8,0,2*Math.PI,true);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.lineWidth = 1;
+    ctx.moveTo(0,-175)
+    ctx.arc(0,-175,7,0,2*Math.PI,true);
+    ctx.fillStyle = lightColor;
+    ctx.fill();
+    ctx.fillStyle = darkColor;
+    ctx.fillText(label,0,-170);
+    ctx.restore();
+  }
 
   createBoatMarker(ctx, angle, name, color, lightColor, darkColor) {
     ctx.save();

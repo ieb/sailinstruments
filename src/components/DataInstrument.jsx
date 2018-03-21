@@ -26,7 +26,7 @@ class DataInstrument extends React.Component {
 
   }
 
-  static getDefaultProperties(app) {
+  static getDefaultProperties(app,  newTab, width, height) {
     return {
         withBox: true,
         updaterate: 1000,

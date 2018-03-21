@@ -5,6 +5,7 @@ import React from 'react';
 import  ReactGridLayout from 'react-grid-layout';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import WindInstrument from './WindInstrument2.jsx';
+import StripChart from './StripChart.jsx';
 import PolarInstrument from './PolarInstrument2.jsx';
 import DataInstrument from './DataInstrument2.jsx';
 import InlineEdit from './InlineEdit.jsx';
@@ -26,7 +27,8 @@ class Layout extends React.Component {
       WindInstrument: WindInstrument,
       PolarInstrument: PolarInstrument,
       DataInstrument: DataInstrument,
-      LayoutRaw: LayoutRaw
+      LayoutRaw: LayoutRaw,
+      StripChart: StripChart
     };
     // register the layout with the app so that components can be registered.
     this.app.registerLayout(this);
@@ -146,7 +148,7 @@ class Layout extends React.Component {
         self.key++;
         var props = {};
         if ( typeof self.namedComponents[componentName].getDefaultProperties === 'function') {
-          props =  self.namedComponents[componentName].getDefaultProperties(this.app);
+          props =  self.namedComponents[componentName].getDefaultProperties(this.app, newTab, width, height);
         } 
         newTab.layout.push({ i: ""+this.key, x:0,  y:0, w:width, h:height, contents: { name: componentName, props: props }});
         return newTab;
@@ -295,6 +297,7 @@ class Layout extends React.Component {
               <button onClick={(e) => { this.onAddClick(tab, "DataInstrument", 4, 2)}}>Add Databox</button>
               <button onClick={(e) => { this.onAddClick(tab, "WindInstrument", 10, 10)}}>Add Wind Instrument</button>
               <button onClick={(e) => { this.onAddClick(tab, "PolarInstrument", 10, 10)}}>Add Polar Instrument</button>
+              <button onClick={(e) => { this.onAddClick(tab, "StripChart", 10, 4)}}>Add Strip Chart</button>
               <button onClick={(e) => { this.onAddClick(tab, "LayoutRaw", 10, 10)}}>Add Layout Editor</button>
               <button onClick={(e) => { this.removeTab(tab)}}>Remove Tab</button>
             </div>

@@ -20,7 +20,7 @@ class WindInstrument extends React.Component {
     };
   }
 
-  static getDefaultProperties(app) {
+  static getDefaultProperties(app,  newTab, width, height) {
     return {
         northup: true,
         updaterate: 1000

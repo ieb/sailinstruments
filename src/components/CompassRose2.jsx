@@ -150,7 +150,7 @@ class CompassRose extends React.Component {
           ctx.rotate(-redrawData.boatUp);
 
           this.createCompasMarker(ctx, redrawData.groundWindDirection, 'G', 'green', 'white', 'black');
-          this.createCompasMarker(ctx, redrawData.oppTrackDirPath, 'O', 'black', 'white', 'black');
+          this.createCompasMarker(ctx, redrawData.oppositeTackDirection, 'O', 'black', 'white', 'black');
 
         ctx.restore();
         return true;

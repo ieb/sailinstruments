@@ -32,7 +32,7 @@ class DataInstrument extends React.Component {
     this.update = this.update.bind(this);
   }
 
-  static getDefaultProperties(app) {
+  static getDefaultProperties(app, newTab, width, height) {
     return {
         updaterate: 1000,
         damping: 2,

@@ -15,7 +15,7 @@ class PolarInstrument extends React.Component {
     };
   }
 
-  static getDefaultProperties(app) {
+  static getDefaultProperties(app,  newTab, width, height) {
     return {
         updaterate: 1000
     }
