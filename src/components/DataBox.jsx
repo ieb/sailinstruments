@@ -43,8 +43,6 @@ class DataBox extends React.Component {
         title: "stw"
     });
   }
-  static updateLayoutContents(app, props, newTab, layout) {
-  }
 
 
 

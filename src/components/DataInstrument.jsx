@@ -43,8 +43,6 @@ class DataInstrument extends React.Component {
     });
   }
 
-  static updateLayoutContents(app, newTab, layout) {
-  }
 
 
   static generateComponent(props, app) {

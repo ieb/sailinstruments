@@ -168,7 +168,8 @@ class Layout extends React.Component {
         for (var j = 0; j < newTab.layout.length; j++) {
           // if the width and height have changed
           var componentName =  newTab.layout[j].contents.name;
-          if ( typeof self.namedComponents[componentName].getDefaultProperties === 'function') {
+          console.log("   Component ", componentName, typeof self.namedComponents[componentName].updateLayoutContents);
+          if ( typeof self.namedComponents[componentName].updateLayoutContents === 'function') {
             self.namedComponents[componentName].updateLayoutContents(this.app, newTab, newTab.layout[j]);
           } 
           layoutByKey[newTab.layout[j].i].contents = newTab.layout[j].contents;

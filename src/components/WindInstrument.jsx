@@ -29,8 +29,6 @@ class WindInstrument extends React.Component {
     });
   }
 
-  static updateLayoutContents(app, newTab, layout) {
-  }
 
   static generateComponent(props, app) {
     return (

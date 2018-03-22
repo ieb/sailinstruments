@@ -64,8 +64,8 @@ class StripChart extends React.Component {
   }
 
   static updateLayoutContents(app, newTab, layout) {
-    layout.contents.props.width = ((newTab.width/newTab.cols)*layout.width)-15;
-    layout.contents.props.height = (newTab.rowHeight)*layout.height+15;
+    layout.contents.props.width = ((newTab.width/newTab.cols)*layout.w)-15;
+    layout.contents.props.height = (newTab.rowHeight)*layout.h+15;
   }
 
 
