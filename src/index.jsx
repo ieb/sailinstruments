@@ -8,7 +8,6 @@ import Calculations from './components/calcs/calculations.jsx';
 import Stats from './components/Stats.jsx';
 import Layout from './components/Layout.jsx';
 import LayoutRaw from './components/LayoutRaw.jsx';
-import DataInstrument from './components/DataInstrument.jsx';
 import GlobalSettings from './components/settings/GlobalSettings.jsx';
 import Qty  from 'js-quantities';
 

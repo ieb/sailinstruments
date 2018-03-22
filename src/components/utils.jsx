@@ -287,6 +287,39 @@ class Utils {
 
 
 
+  static componentWillReceiveProps( obj, nextProps) {
+    var newState = {};
+    var update = false;
+    for(var k in obj.state) {
+      var type = typeof obj.state[k];
+      var newv = nextProps[k];
+      if ( type === 'number' ) {
+        newv = +newv;
+      }
+      if ( nextProps[k] !== undefined && obj.state[k] !== newv) {
+        console.log("Prop Change ", { from: obj.state[k], to: nextProps[k], allNewProps:nextProps, type:type});
+        newState[k] = newv;
+        update = true;
+      }
+    }
+    if ( typeof obj.setPaths === 'function') {
+      for(var k in nextProps ) {
+        if (k.endsWith("Path") && nextProps[k] !== this[k] ) {
+          console.log("Setting Path ", nextProps);
+          obj.setPaths(nextProps);
+          break;
+        }
+      }      
+    }
+    obj.setProps(nextProps);
+    if ( update ) {
+        console.log("Setting State", { old: obj.stat, newState: newState, obj: obj});
+        obj.setState(newState);
+    }
+  }
+
+
+
 
 }
 export default Utils;

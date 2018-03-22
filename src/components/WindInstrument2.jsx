@@ -5,6 +5,8 @@ import React from 'react';
 import CompassRose from './CompassRose2.jsx';
 import BoatRose from './BoatRose2.jsx';
 import DataBox from './DataBox2.jsx';
+import utils from './utils.jsx';
+import _ from "lodash";
 
 class WindInstrument extends React.Component {
 
@@ -19,12 +21,15 @@ class WindInstrument extends React.Component {
     };
   }
 
-  static getDefaultProperties(app,  newTab, width, height) {
-    return {
+  static updateDefaultProperties(app, newTab, layout) {
+    _.defaults(layout.contents.props,{
         northup: true,
         updaterate: 1000,
         damping: 4
-    }
+    });
+  }
+
+  static updateLayoutContents(app, newTab, layout) {
   }
 
   static generateComponent(props, app) {
@@ -33,24 +38,12 @@ class WindInstrument extends React.Component {
         );
   }
 
+  setProps(props) {
+    this.props = props;
+  }
+
   componentWillReceiveProps(nextProps) {
-    var newState = {};
-    var update = false;
-    for(var k in this.state) {
-      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
-        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
-        if ( typeof this.state[k] === 'number') {
-          newState[k] = +nextProps[k];
-        } else {
-          newState[k] = nextProps[k];
-        }
-        update = true;
-      }
-    }
-    if ( update ) {
-        console.log("Setting State", { old: this.stat, newState: newState});
-        this.setState(newState);
-    }
+    utils.componentWillReceiveProps(this, nextProps);
   }
 
 

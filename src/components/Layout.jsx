@@ -146,15 +146,36 @@ class Layout extends React.Component {
       tabs: self.updateItem(self.state.tabs, "key", tab, (newTab) => {
         newTab.layout = newTab.layout.slice();
         self.key++;
-        var props = {};
-        if ( typeof self.namedComponents[componentName].getDefaultProperties === 'function') {
-          props =  self.namedComponents[componentName].getDefaultProperties(this.app, newTab, width, height);
+        var layout = { i: ""+this.key, x:0,  y:0, w:width, h:height, contents: { name: componentName, props: {} } };
+        if ( typeof self.namedComponents[componentName].updateDefaultProperties === 'function') {
+          self.namedComponents[componentName].updateDefaultProperties(this.app, newTab, layout);
         } 
-        newTab.layout.push({ i: ""+this.key, x:0,  y:0, w:width, h:height, contents: { name: componentName, props: props }});
+        newTab.layout.push(layout);
         return newTab;
       }),
       activeMenu: undefined
     });
+  }
+
+  onLayoutChange(layout, tab) {
+    var self = this;
+    self.setState({tabs: self.updateItem(self.state.tabs, "key", tab, (newTab) => {
+        var layoutByKey = {};
+        console.log("Applying ",layout);
+        for (var j = 0; j < layout.length; j++) {
+          layoutByKey[layout[j].i] = layout[j];
+        }
+        for (var j = 0; j < newTab.layout.length; j++) {
+          // if the width and height have changed
+          var componentName =  newTab.layout[j].contents.name;
+          if ( typeof self.namedComponents[componentName].getDefaultProperties === 'function') {
+            self.namedComponents[componentName].updateLayoutContents(this.app, newTab, newTab.layout[j]);
+          } 
+          layoutByKey[newTab.layout[j].i].contents = newTab.layout[j].contents;
+        }        
+        newTab.layout = layout;
+        return newTab;
+    })});
   }
 
 
@@ -238,21 +259,6 @@ class Layout extends React.Component {
   }
 
 
-  onLayoutChange(layout, tab) {
-    var self = this;
-    self.setState({tabs: self.updateItem(self.state.tabs, "key", tab, (newTab) => {
-        var layoutByKey = {};
-        console.log("Applying ",layout);
-        for (var j = 0; j < layout.length; j++) {
-          layoutByKey[layout[j].i] = layout[j];
-        }
-        for (var j = 0; j < newTab.layout.length; j++) {
-          layoutByKey[newTab.layout[j].i].contents = newTab.layout[j].contents;
-        }        
-        newTab.layout = layout;
-        return newTab;
-    })});
-  }
 
   updateLayout(layoutData) {
     this.setState(layoutData);

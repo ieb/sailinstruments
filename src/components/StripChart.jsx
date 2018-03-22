@@ -4,6 +4,7 @@
 import React from 'react';
 import * as d3 from 'd3';
 import utils from './utils.jsx';
+import _ from "lodash";
 
 // This strip chart works and scrolls smoothly, but the cost of rendering is extreemly high
 // consiming at leat 50%, so I need a better way of doing this. Probably using 
@@ -26,15 +27,18 @@ class StripChart extends React.Component {
       datasets : [
         {
           color: 'orange',
-          data: []
+          data: [],
+          fill: false
         },
         {
           color: 'green',
-          data: []
+          data: [],
+          fill: false
         },
         {
           color: 'blue',
-          data: []
+          data: [],
+          fill: false
         },
       ]
     };
@@ -47,20 +51,23 @@ class StripChart extends React.Component {
     this.draw = this.draw.bind(this);
   }
 
-  static getDefaultProperties(app,  newTab, width, height) {
-    var widgetWidth = ((newTab.width/newTab.cols)*width)-15;
-    var widgetHeight = (newTab.rowHeight)*height+15;
-    return {
+  static updateDefaultProperties(app, newTab, layout) {
+    StripChart.updateLayoutContents(app, newTab, layout);
+    _.defaults(layout.contents.props,{
         updaterate: 1000,
         historyLength: 100,
-        width: widgetWidth,
-        height: widgetHeight,
         damping: 2,
         dataPath: app.sourceId+".navigation.speedThroughWater",
         units: "kn",
         title: "stw"
-    }
+    });
   }
+
+  static updateLayoutContents(app, newTab, layout) {
+    layout.contents.props.width = ((newTab.width/newTab.cols)*layout.width)-15;
+    layout.contents.props.height = (newTab.rowHeight)*layout.height+15;
+  }
+
 
   static generateComponent(props, app) {
     return (
@@ -79,10 +86,6 @@ class StripChart extends React.Component {
 
   setProps(props) {
     this.setPaths(this.props);
-
-  }
-
-  setPaths(props) {
     if ( this.dataStream === undefined ||  this.dataPath === undefined || props.dataPath !== this.dataPath) {
       this.dataPath = props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
       console.log("Setting path ", this.dataPath);
@@ -92,25 +95,7 @@ class StripChart extends React.Component {
 
 
   componentWillReceiveProps(nextProps) {
-    var newState = {};
-    var update = false;
-    for(var k in this.state) {
-      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
-        var type = typeof this.state[k];
-        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps, type:type});
-        if ( typeof this.state[k] === 'number') {
-          newState[k] = +nextProps[k];
-        } else {
-          newState[k] = nextProps[k];
-        }
-        update = true;
-      }
-    }
-    this.setProps(nextProps);
-    if ( update ) {
-        console.log("Setting State", { old: this.stat, newState: newState});
-        this.setState(newState);
-    }
+    utils.componentWillReceiveProps(this, nextProps);
   }
 
 
@@ -256,6 +241,7 @@ class StripChart extends React.Component {
         // function
         var t = redrawData.timeSequence;
         var extents = d3.extent(t);
+        var tmin = extents[0];
         extents[0] = new Date(extents[1].getTime()-(this.state.historyLength*this.state.updaterate));
         var x = d3.scaleTime()
             .domain(extents)
@@ -275,8 +261,10 @@ class StripChart extends React.Component {
 
           ctx.beginPath();
 
+// d3.curveBasis
+
           d3.line()
-              .curve(d3.curveBasis)
+              .curve(d3.curveMonotoneX)
               .x(function(d, i) {
                   return x(t[i])
               })
@@ -286,7 +274,19 @@ class StripChart extends React.Component {
               .context(ctx)(group.data);
           ctx.lineWidth = 1;
           ctx.strokeStyle = group.color;
+
           ctx.stroke();
+          if ( group.fill ) {
+            ctx.lineTo(width, height);
+            ctx.lineTo(x(tmin), height);
+            ctx.closePath();
+            ctx.fillStyle = group.color;
+            ctx.globalAlpha = 0.2;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+          }
+          
 
         }
         ctx.restore();

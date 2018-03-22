@@ -3,6 +3,7 @@
 
 import React from 'react';
 import utils from './utils.jsx';
+import _ from "lodash";
 
 class DataInstrument extends React.Component {
   /**
@@ -32,15 +33,19 @@ class DataInstrument extends React.Component {
     this.update = this.update.bind(this);
   }
 
-  static getDefaultProperties(app, newTab, width, height) {
-    return {
-        updaterate: 1000,
+  static updateDefaultProperties(app, newTab, layout) {
+    _.defaults(layout.contents.props,{
+       updaterate: 1000,
         damping: 2,
         dataPath: app.sourceId+".navigation.speedThroughWater",
         units: "kn",
         title: "stw"
-    }
+    });
   }
+
+  static updateLayoutContents(app, newTab, layout) {
+  }
+
 
   static generateComponent(props, app) {
     return (
@@ -67,11 +72,6 @@ class DataInstrument extends React.Component {
       top: top+"px",
       left: left+"px"
     }
-    this.setPaths(this.props);
-
-  }
-
-  setPaths(props) {
     if ( this.dataStream === undefined ||  this.dataPath === undefined || props.dataPath !== this.dataPath) {
       this.dataPath = props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
       console.log("Setting path ", this.dataPath);
@@ -81,25 +81,7 @@ class DataInstrument extends React.Component {
 
 
   componentWillReceiveProps(nextProps) {
-    var newState = {};
-    var update = false;
-    for(var k in this.state) {
-      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
-        var type = typeof this.state[k];
-        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps, type:type});
-        if ( typeof this.state[k] === 'number') {
-          newState[k] = +nextProps[k];
-        } else {
-          newState[k] = nextProps[k];
-        }
-        update = true;
-      }
-    }
-    this.setProps(nextProps);
-    if ( update ) {
-        console.log("Setting State", { old: this.stat, newState: newState});
-        this.setState(newState);
-    }
+    utils.componentWillReceiveProps(this, nextProps);
   }
 
 

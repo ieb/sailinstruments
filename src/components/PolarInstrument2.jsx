@@ -3,6 +3,8 @@
 
 import React from 'react';
 import PolarChart from './PolarChart2.jsx';
+import utils from './utils.jsx';
+import _ from "lodash";
 
 class PolarInstrument extends React.Component {
 
@@ -14,12 +16,16 @@ class PolarInstrument extends React.Component {
     };
   }
 
-  static getDefaultProperties(app,  newTab, width, height) {
-    return {
+  static updateDefaultProperties(app, newTab, layout) {
+    _.defaults(layout.contents.props,{
         updaterate: 1000,
         damping: 2
-    }
+    });
   }
+
+  static updateLayoutContents(app, newTab, layout) {
+  }
+
 
   static generateComponent(props, app) {
     return (
@@ -30,24 +36,12 @@ class PolarInstrument extends React.Component {
         );
   }
 
+  setProps(props) {
+    this.props = props;
+  }
+
   componentWillReceiveProps(nextProps) {
-    var newState = {};
-    var update = false;
-    for(var k in this.state) {
-      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
-        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
-        if ( typeof this.state[k] === 'number') {
-          newState[k] = +nextProps[k];
-        } else {
-          newState[k] = nextProps[k];
-        }
-        update = true;
-      }
-    }
-    if ( update ) {
-        console.log("Setting State", { old: this.stat, newState: newState});
-        this.setState(newState);
-    }
+    utils.componentWillReceiveProps(this, nextProps);
   }
 
 

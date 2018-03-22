@@ -31,12 +31,14 @@ class BoatRose extends React.Component {
     this.rosePointersId = "rosePointer"+instanceId;
     console.log("New BoatRose Headup ", this.state.headup);
 
-    this.setPaths(this.props);
 
     var self = this;
     this.bound = false;
     this.update = this.update.bind(this);
     this.draw = this.draw.bind(this);
+    this.setPaths = this.setPaths.bind(this);
+
+    this.setPaths(this.props);
 
     this.significance = {
         twaHistory: utils.compareRad,
@@ -66,30 +68,7 @@ class BoatRose extends React.Component {
 
 
   componentWillReceiveProps(nextProps) {
-    var newState = {};
-    var update = false;
-    for(var k in this.state) {
-      if ( nextProps[k] !== undefined && this.state[k] !== nextProps[k]) {
-        console.log("Prop Change ", { from: this.state[k], to: nextProps[k], allNewProps:nextProps});
-        if ( typeof this.state[k] === 'number') {
-          newState[k] = +nextProps[k];
-        } else {
-          newState[k] = nextProps[k];
-        }
-        update = true;
-      }
-    }
-    for(var k in nextProps ) {
-      if (k.endsWith("Path") && nextProps[k] !== this[k] ) {
-        console.log("Setting Path ", nextProps);
-        this.setPaths(nextProps);
-        break;
-      }
-    }
-    if ( update ) {
-        console.log("Setting State", { old: this.stat, newState: newState});
-        this.setState(newState);
-    }
+    utils.componentWillReceiveProps( this, nextProps);
   }
 
 
