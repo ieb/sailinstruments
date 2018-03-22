@@ -66,6 +66,11 @@ class BoatRose extends React.Component {
     this.hdmStream = this.app.stats.addPath(this.hdmPath);    
   }
 
+  setProps(props) {
+    this.fontFamily = props.fontFamily || 'sans-serif';
+    this.props = props;
+  }
+
 
   componentWillReceiveProps(nextProps) {
     utils.componentWillReceiveProps( this, nextProps);

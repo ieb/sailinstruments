@@ -35,13 +35,13 @@ class LayoutRaw extends React.Component {
   }
 
 
-    static getDefaultProperties(app,  newTab, width, height) {
-    return {
+  static updateDefaultProperties(app, newTab, layout) {
+    _.defaults(layout.contents.props,{
         updaterate: 1000,
         dataPath: app.sourceId+".navigation.speedThroughWater",
         units: "kn",
         title: "stw"
-    }
+    });
   }
 
   static generateComponent(props, app) {

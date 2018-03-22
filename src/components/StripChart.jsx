@@ -85,7 +85,6 @@ class StripChart extends React.Component {
   }
 
   setProps(props) {
-    this.setPaths(this.props);
     if ( this.dataStream === undefined ||  this.dataPath === undefined || props.dataPath !== this.dataPath) {
       this.dataPath = props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
       console.log("Setting path ", this.dataPath);

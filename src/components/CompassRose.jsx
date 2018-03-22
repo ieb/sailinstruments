@@ -59,6 +59,11 @@ class CompassRose extends React.Component {
     this.hdmStream = this.app.stats.addPath(this.hdmPath);
   }
 
+  setProps(props) {
+    this.props = props;
+  }
+
+
   componentWillReceiveProps(nextProps) {
     utils.componentWillReceiveProps( this, nextProps);
   }
