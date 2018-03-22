@@ -4,10 +4,10 @@
 import React from 'react';
 import  ReactGridLayout from 'react-grid-layout';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import WindInstrument from './WindInstrument2.jsx';
+import WindInstrument from './WindInstrument.jsx';
 import StripChart from './StripChart.jsx';
-import PolarInstrument from './PolarInstrument2.jsx';
-import DataInstrument from './DataInstrument2.jsx';
+import PolarInstrument from './PolarInstrument.jsx';
+import DataInstrument from './DataInstrument.jsx';
 import InlineEdit from './InlineEdit.jsx';
 import ConfigureCell from './ConfigureCell.jsx';
 import LayoutRaw from './LayoutRaw.jsx';

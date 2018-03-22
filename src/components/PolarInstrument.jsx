@@ -2,7 +2,7 @@
 "use strict";
 
 import React from 'react';
-import PolarChart from './PolarChart2.jsx';
+import PolarChart from './PolarChart.jsx';
 import utils from './utils.jsx';
 import _ from "lodash";
 

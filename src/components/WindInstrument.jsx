@@ -2,9 +2,9 @@
 "use strict";
 
 import React from 'react';
-import CompassRose from './CompassRose2.jsx';
-import BoatRose from './BoatRose2.jsx';
-import DataBox from './DataBox2.jsx';
+import CompassRose from './CompassRose.jsx';
+import BoatRose from './BoatRose.jsx';
+import DataBox from './DataBox.jsx';
 import utils from './utils.jsx';
 import _ from "lodash";
 
