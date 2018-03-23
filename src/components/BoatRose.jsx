@@ -39,6 +39,7 @@ class BoatRose extends React.Component {
     this.setPaths = this.setPaths.bind(this);
 
     this.setPaths(this.props);
+    this.container = undefined;
 
     this.significance = {
         twaHistory: utils.compareRad,
@@ -351,7 +352,7 @@ class BoatRose extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="canvasHolder"  >
         <canvas id={this.roseId} width={this.props.width} height={this.props.height}></canvas>
         <canvas id={this.rosePointersId} width={this.props.width} height={this.props.height}></canvas>
       </div>

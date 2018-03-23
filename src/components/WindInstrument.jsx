@@ -22,6 +22,7 @@ class WindInstrument extends React.Component {
   }
 
   static updateDefaultProperties(app, newTab, layout) {
+    layout.content.className="cellContainer";
     _.defaults(layout.contents.props,{
         northup: true,
         updaterate: 1000,
@@ -30,9 +31,14 @@ class WindInstrument extends React.Component {
   }
 
 
+
   static generateComponent(props, app) {
     return (
-        <WindInstrument northup={props.northup} updaterate={props.updaterate} app={app} damping={props.damping} />
+        <WindInstrument 
+            northup={props.northup} 
+            updaterate={props.updaterate} 
+            app={app} 
+            damping={props.damping} />
         );
   }
 
@@ -44,10 +50,26 @@ class WindInstrument extends React.Component {
     utils.componentWillReceiveProps(this, nextProps);
   }
 
+  getScale() {
+    var wscale = 1;
+    if ( this.container === undefined ) {
+      console.log("Container not defined");
+    } else {
+      wscale = this.container.parentElement.offsetWidth/620;
+      console.log({ container: this.container, 
+        offsetWidth:this.container.offsetWidth, 
+        offsetHeight:this.container.offsetHeight, 
+        scale: wscale});
+    }
+    return { 
+      transform: "scale("+wscale+","+wscale+")"
+    };
+  }
+
 
   render() {
     return (
-        <div className="instrumentContainer"  >
+        <div ref={node => this.container = node} className="instrumentContainer" style={this.getScale()}  >
             <CompassRose northup={this.state.northup} app={this.app} 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 

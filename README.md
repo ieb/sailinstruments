@@ -37,7 +37,8 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Persist layout to local storage, or to a end point - only works when app is loded from a server, state saved locally.
 - [X] Convert from SVG to HTML5 Canvas.
 - [X] Add Damping, Update rate and IIR filter to every instrument to give smooth output.
-- [ ] Add strip chart components.
+- [X] Components resize and scale when cells are dragged in the grid.
+- [X] Add strip chart components.
 - [ ] Expand stats capabilities, (standard deviation, moving averages)
 - [ ] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
 - [ ] Import or input list of waypoints.

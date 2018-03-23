@@ -34,6 +34,7 @@ class DataInstrument extends React.Component {
   }
 
   static updateDefaultProperties(app, newTab, layout) {
+    layout.content.className="";
     _.defaults(layout.contents.props,{
        updaterate: 1000,
         damping: 2,
@@ -106,10 +107,12 @@ class DataInstrument extends React.Component {
 
   render() {
     return (
+      <div>
       <div className={this.outerClassName} style={this.possition} >
         <div className="dataBoxValue">{this.state.value}</div>
         <div className="dataBoxUnits">{this.state.units}</div>
         <div className="dataBoxTitle">{this.state.title}</div>
+      </div>
       </div>
       );
   }

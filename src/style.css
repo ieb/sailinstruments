@@ -502,10 +502,23 @@ body {
 
 /* Canvas based instruments */
 
+.cellContainer {
+  position: absolute;
+  top: 0px;
+  left: 0px; 
+  right: 0px;  
+}
 
 .instrumentContainer {
   font-family: sans-serif;
-
+  position: absolute;
+  top: 0px;
+  left: 0px; 
+}
+.canvasHolder {
+  position: absolute;
+  top: 0px;
+  left: 0px; 
 }
 .instrumentContainer canvas { 
   border: 1px 

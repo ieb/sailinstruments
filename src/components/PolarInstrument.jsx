@@ -17,12 +17,19 @@ class PolarInstrument extends React.Component {
   }
 
   static updateDefaultProperties(app, newTab, layout) {
-    _.defaults(layout.contents.props,{
+    layout.content.className="cellContainer";
+     _.defaults(layout.contents.props,{
         updaterate: 1000,
         damping: 2
     });
+    PolarInstrument.updateLayoutContents(app, newTab, layout)
   }
 
+  static updateLayoutContents(app, newTab, layout) {
+    layout.contents.props.width = ((newTab.width/newTab.cols)*layout.w);
+    layout.contents.props.height = (newTab.rowHeight)*layout.h;
+    console.log({ nw: layout.w, nh: layout.h, tw: newTab.width,  th: newTab.rowHeight});
+  }
 
 
   static generateComponent(props, app) {
@@ -30,7 +37,9 @@ class PolarInstrument extends React.Component {
         <PolarInstrument
           updaterate={props.updaterate}
           app={app} 
-          damping={props.damping} />
+          damping={props.damping}
+          width={props.width}
+          height={props.height} />
         );
   }
 
@@ -42,10 +51,27 @@ class PolarInstrument extends React.Component {
     utils.componentWillReceiveProps(this, nextProps);
   }
 
+  getScale() {
+    var wscale = 1;
+    if ( this.container === undefined ) {
+      console.log("Container not defined");
+    } else {
+      wscale = this.container.parentElement.offsetWidth/620;
+      console.log({ container: this.container, 
+        offsetWidth:this.container.offsetWidth, 
+        offsetHeight:this.container.offsetHeight, 
+        scale: wscale});
+    }
+    return { 
+      transform: "scale("+wscale+","+wscale+")"
+    };
+  }
+
+
 
   render() {
     return (
-        <div className="instrumentContainer"  >
+        <div ref={node => this.container = node} className="instrumentContainer" style={this.getScale()}  >
           <PolarChart northup={this.state.northup} app={this.app} updaterate={this.state.updaterate} width="620" height="620" />
         </div>
     );

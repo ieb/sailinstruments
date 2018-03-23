@@ -82,6 +82,7 @@ class StripChart extends React.Component {
           historyLength={props.historyLength}
           app={app}  />
         );
+    
   }
 
   setProps(props) {

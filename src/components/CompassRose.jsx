@@ -41,6 +41,7 @@ class CompassRose extends React.Component {
         hdm: utils.compareRad
     };
 
+    this.container = undefined;
 
     this.setPaths(this.props);
     this.bound = false;
@@ -261,7 +262,7 @@ class CompassRose extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="canvasHolder" >
         <canvas id={this.roseId} width={this.props.width} height={this.props.height}></canvas>
         <canvas id={this.rosePointersId} width={this.props.width} height={this.props.height}></canvas>
       </div>

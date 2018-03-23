@@ -86,7 +86,7 @@ class Layout extends React.Component {
         key: this.key,
         cols: 20,
         rowHeight: 60,
-        width: 1270,
+        width: 1200,
         title: 'unamed'        
       });
     this.setState({tabs: newTabs});
@@ -161,18 +161,19 @@ class Layout extends React.Component {
     var self = this;
     self.setState({tabs: self.updateItem(self.state.tabs, "key", tab, (newTab) => {
         var layoutByKey = {};
-        console.log("Applying ",layout);
         for (var j = 0; j < layout.length; j++) {
           layoutByKey[layout[j].i] = layout[j];
         }
         for (var j = 0; j < newTab.layout.length; j++) {
           // if the width and height have changed
           var componentName =  newTab.layout[j].contents.name;
-          console.log("   Component ", componentName, typeof self.namedComponents[componentName].updateLayoutContents);
+          var newLayout = layoutByKey[newTab.layout[j].i];
+          // copy the existing contents over.
+          newLayout.contents = newTab.layout[j].contents;
+          // update anything else.
           if ( typeof self.namedComponents[componentName].updateLayoutContents === 'function') {
-            self.namedComponents[componentName].updateLayoutContents(this.app, newTab, newTab.layout[j]);
+            self.namedComponents[componentName].updateLayoutContents(this.app, newTab, newLayout);
           } 
-          layoutByKey[newTab.layout[j].i].contents = newTab.layout[j].contents;
         }        
         newTab.layout = layout;
         return newTab;
@@ -270,12 +271,12 @@ class Layout extends React.Component {
     var component = this.namedComponents[cell.contents.name].generateComponent(cell.contents.props, this.app);
     return (
         <div key={cell.i} >
+        <div className={cell.contents.className} onDoubleClick={() => { this.configureCell(tab, cell) }}>
+        {component}
+        </div>
         <div className="cellControls" >
         <button 
           onClick={() => { this.removeCell(tab, cell) }} >&#10754;</button>
-        </div>
-        <div onDoubleClick={() => { this.configureCell(tab, cell) }}>
-        {component}
         </div>
         </div>
     );
@@ -297,9 +298,6 @@ class Layout extends React.Component {
     if (this.state.activeMenu === tab.key ) {
       return (
           <div>
-            <div className="tabControls" >
-              <button onClick={(e) => { this.onTabMenuHide(e, tab) }} >&#9652;</button>
-            </div>
             <div className="dropDown" >
               <button onClick={(e) => { this.onAddClick(tab, "DataInstrument", 4, 2)}}>Add Databox</button>
               <button onClick={(e) => { this.onAddClick(tab, "WindInstrument", 10, 10)}}>Add Wind Instrument</button>
@@ -307,6 +305,9 @@ class Layout extends React.Component {
               <button onClick={(e) => { this.onAddClick(tab, "StripChart", 10, 4)}}>Add Strip Chart</button>
               <button onClick={(e) => { this.onAddClick(tab, "LayoutRaw", 10, 10)}}>Add Layout Editor</button>
               <button onClick={(e) => { this.removeTab(tab)}}>Remove Tab</button>
+            </div>
+            <div className="tabControls" >
+              <button onClick={(e) => { this.onTabMenuHide(e, tab) }} >&#9652;</button>
             </div>
           </div>
         );
