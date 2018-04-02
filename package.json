@@ -39,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ieb/sailinstuments"
+    "url": "https://github.com/ieb/sailinstruments"
   },
   "dependencies": {
     "@signalk/signalk-schema": "^1.0.3",
