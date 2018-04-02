@@ -117,6 +117,8 @@ class LayoutRaw extends React.Component {
     }
     event.preventDefault();
   }
+
+
   change(event) {
     var message = "ok";
     var valid = false;
@@ -132,6 +134,8 @@ class LayoutRaw extends React.Component {
       valid: valid
     });
   }
+
+  
   doReset() {
     this.setState( {
       layoutData : this.state.currentData,

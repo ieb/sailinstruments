@@ -16,10 +16,17 @@ class ConfigureCell extends React.Component {
     for ( var k in this.props.cell.contents.props ) {
       this.state[k] = this.props.cell.contents.props[k];
     }
+    this.formRender = this.props.cell.contents.formRender;
     this.onDone = this.onDone.bind(this);
     this.onCancel = this.onCancel.bind(this);
     this.onValueChange = this.onValueChange.bind(this);
+    this.stateCB = [];
   }
+
+  bindGetState(cb) {
+    this.stateCB.push(cb);
+  }
+
 
   onValueChange(event) {
     var newState = {};
@@ -36,6 +43,9 @@ class ConfigureCell extends React.Component {
     console.log("Done");
     this.setState({_modalIsOpen: false});
     var finalConfig = _.clone(this.state);
+    for (var i = 0; i < this.stateCB.length; i++) {
+      finalConfig = _.merge(finalConfig, this.stateCB[i]());
+    };
     delete(finalConfig._modalIsOpen);
     this.props.onDone(finalConfig);
     event.preventDefault();
@@ -58,7 +68,7 @@ class ConfigureCell extends React.Component {
 
   }
 
-  getPathOptions() {
+  getPathOptions(value) {
     var pathOptions = [];
     for (var k in this.props.app.knownKeys) {
       pathOptions.push((<option key={k} value={k} >{k}</option>));
@@ -67,28 +77,32 @@ class ConfigureCell extends React.Component {
   }
 
   buildFormContent() {
-    var formContent = [];
-    console.log("State is ",this.state);
-    for ( var k in this.state ) {
-      console.log("Rendering ",k,k.charAt(0));
-      if ( k.charAt(0) !== '_' ) {
-        var value = this.state[k];
-        console.log("Value ",value);
-        if ( k.endsWith('Path') ) {
-          formContent.push((<label  key={k} >{k} <select name={k} value={value} onChange={this.onValueChange} >
-            {this.getPathOptions(value)}
-            </select></label>
-            ));
-        } else if ( typeof value === 'boolean') {
-          formContent.push((<label key={k} >{k} <input type="checkbox" name={k} checked={value} onChange={this.onValueChange} /></label>))
+    if ( typeof this.formRender === 'function' ) {
+      return this.formRender(this, this.state);
+    } else {
+      var formContent = [];
+      console.log("State is ",this.state);
+      for ( var k in this.state ) {
+        console.log("Rendering ",k,k.charAt(0));
+        if ( k.charAt(0) !== '_' ) {
+          var value = this.state[k];
+          console.log("Value ",value);
+          if ( k.endsWith('Path') ) {
+              formContent.push((<label  key={k} >{k} <select name={k} value={value} onChange={this.onValueChange} >
+                {this.getPathOptions(value)}
+                </select></label>
+                ));
+          } else if ( typeof value === 'boolean') {
+            formContent.push((<label key={k} >{k} <input type="checkbox" name={k} checked={value} onChange={this.onValueChange} /></label>))
+          } else {
+            formContent.push((<label key={k} >{k} <input type="text" name={k} value={value} onChange={this.onValueChange} /></label>))
+          }
         } else {
-          formContent.push((<label key={k} >{k} <input type="text" name={k} value={value} onChange={this.onValueChange} /></label>))
+          console.log("Ignoring ", k);
         }
-      } else {
-        console.log("Ignoring ", k);
       }
+      return formContent;
     }
-    return formContent;
   }
 
 
@@ -119,7 +133,6 @@ class ConfigureCell extends React.Component {
           </div>
           <div className="settingsCancel" ><button onClick={this.onCancel}>Cancel</button></div> 
           <div className="settingsApply" ><input type="submit" value="Apply" /></div> 
-          {JSON.stringify(this.props.cell)}
         </form>
       </Modal>
     );

@@ -69,6 +69,8 @@ class Layout extends React.Component {
     if ( savedState ) {
       this.state = savedState;
     }
+    this.initialiseTabs(this.state.tabs);
+    // must attach anyFunctions to the saved state.
     this.doneConfigureCell = this.doneConfigureCell.bind(this);
   }
 
@@ -92,6 +94,22 @@ class Layout extends React.Component {
     this.setState({tabs: newTabs});
   }
 
+
+
+  /**
+   * Initialises all components adding default properties, like functions if missing.
+   */
+  initialiseTabs(tabs) {
+    for (var i = 0; i < tabs.length; i++) {
+      var layout = tabs[i].layout;
+      for (var j = 0; j < layout.length; j++) {
+        var componentName =  layout[j].contents.name;
+        if ( typeof this.namedComponents[componentName].updateDefaultProperties === 'function') {
+          this.namedComponents[componentName].updateDefaultProperties(this.app, tabs[i], layout[j]);
+        } 
+      };
+    };
+  }
 
 
   /**

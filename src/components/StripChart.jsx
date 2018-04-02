@@ -5,6 +5,7 @@ import React from 'react';
 import * as d3 from 'd3';
 import utils from './utils.jsx';
 import _ from "lodash";
+import StripChartConfigure from "./StripChartConfigure.jsx";
 
 // This strip chart works and scrolls smoothly, but the cost of rendering is extreemly high
 // consiming at leat 50%, so I need a better way of doing this. Probably using 
@@ -22,44 +23,48 @@ class StripChart extends React.Component {
         updaterate : +props.updaterate || 1000,
         damping: props.damping || 4
     };
-    this.cstate = {
-      timeSequence: [],
-      datasets : [
-        {
-          color: 'orange',
-          data: [],
-          fill: false
-        },
-        {
-          color: 'green',
-          data: [],
-          fill: false
-        },
-        {
-          color: 'blue',
-          data: [],
-          fill: false
-        },
-      ]
-    };
-    this.n = 0;
     this.dstate = {};
-    this.props = {};
+    this.cstate = {};
     this.setProps(props);
     this.props = props;
     this.update = this.update.bind(this);
+    this.setProps = this.setProps.bind(this);
     this.draw = this.draw.bind(this);
   }
 
   static updateDefaultProperties(app, newTab, layout) {
     StripChart.updateLayoutContents(app, newTab, layout);
+    layout.contents.formRender = StripChart.formRender;
     _.defaults(layout.contents.props,{
         updaterate: 1000,
         historyLength: 100,
         damping: 2,
-        dataPath: app.sourceId+".navigation.speedThroughWater",
-        units: "kn",
-        title: "stw"
+        datasets: [
+          {
+            color: 'orange',
+            fill: false,
+            enabled: true,
+            path: app.sourceId+".navigation.speedThroughWater",
+            units: "kn",
+            label: "aws"
+          },
+          {
+            color: 'green',
+            fill: false,
+            enabled: false,
+            path: app.sourceId+".navigation.speedThroughWater",
+            units: "kn",
+            label: "aws"
+          },
+          {
+            color: 'blue',
+            fill: false,
+            enabled: false,
+            path: app.sourceId+".navigation.speedThroughWater",
+            units: "kn",
+            label: "aws"
+          }
+        ]           
     });
   }
 
@@ -73,28 +78,56 @@ class StripChart extends React.Component {
     return (
         <StripChart  
           updaterate={props.updaterate}
-          dataPath={props.dataPath}
           units={props.units}
           title={props.title}
           width={props.width}
           height={props.height}
           damping={props.damping}
+          datasets={props.datasets}
           historyLength={props.historyLength}
           app={app}  />
         );
-    
+
+  }
+
+  // return form content.
+  static formRender(configureCell, state) {
+    console.log("calling form render");
+    return (
+        <StripChartConfigure configureCell={configureCell} state={state} />
+      );
   }
 
   setProps(props) {
-    if ( this.dataStream === undefined ||  this.dataPath === undefined || props.dataPath !== this.dataPath) {
-      this.dataPath = props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
-      console.log("Setting path ", this.dataPath);
-      this.dataStream = this.app.stats.addPath(this.dataPath);      
-    }
+    this.cstate = this.cstate || {};
+     _.defaults(this.cstate,{
+      timeSequence: [],
+      datasets: [
+      ]
+    });
+
+    for (var i = 0; i < props.datasets.length; i++) {
+      var group = this.cstate.datasets[i] = this.cstate.datasets[i] || {
+          color: "orange", 
+          enabled:false,
+          fill:false,
+          label:"aws",
+          path:"nmeaFromFile.environment.wind.speedApparent",
+          units:"kn",
+          data: []        
+      };
+      _.merge(group, props.datasets[i]);
+      if ( group.enabled) {
+        group.dataStream = this.app.stats.addPath(group.path);
+        console.log("Attached to ",group.path);
+      }
+    };
+
   }
 
 
   componentWillReceiveProps(nextProps) {
+    console.log("New props ",  nextProps);
     utils.componentWillReceiveProps(this, nextProps);
   }
 
@@ -121,18 +154,12 @@ class StripChart extends React.Component {
       this.cstate.timeSequence.shift();
     }
     for (var i = 0; i < this.cstate.datasets.length; i++) {
-      if ( i == 0) {
-        this.n++;
-        if ( this.n%10 === 0 ) {
-          this.cstate.datasets[i].data.push(20);
-        } else {
-          this.cstate.datasets[i].data.push(10);          
+      var group = this.cstate.datasets[i];
+      if ( group.enabled) {
+        group.data.push(group.dataStream.value);
+        while ( group.data.length > this.state.historyLength) {
+          group.data.shift();
         }
-      } else {
-        this.cstate.datasets[i].data.push(20 + Math.random() * 100);
-      }
-      while ( this.cstate.datasets[i].data.length > this.state.historyLength) {
-        this.cstate.datasets[i].data.shift();
       }
     };
     if (this.bound ) {
@@ -251,43 +278,42 @@ class StripChart extends React.Component {
 
 
         for (var i = 0; i < redrawData.datasets.length; i++) {
-
           var group = redrawData.datasets[i];
-          var y = d3.scaleLinear()
-              .domain(d3.extent(group.data))
-              .range([height, 0]);
+          if ( group.enabled) {
 
-          this.drawAxis(ctx, y, false, width, height, i, group.color);
+            var y = d3.scaleLinear()
+                .domain(d3.extent(group.data))
+                .range([height, 0]);
 
-          ctx.beginPath();
+            this.drawAxis(ctx, y, false, width, height, i, group.color);
 
-// d3.curveBasis
+            ctx.beginPath();
 
-          d3.line()
-              .curve(d3.curveMonotoneX)
-              .x(function(d, i) {
-                  return x(t[i])
-              })
-              .y(function(d) {
-                  return y(d)
-              })
-              .context(ctx)(group.data);
-          ctx.lineWidth = 1;
-          ctx.strokeStyle = group.color;
+  // d3.curveBasis
 
-          ctx.stroke();
-          if ( group.fill ) {
-            ctx.lineTo(width, height);
-            ctx.lineTo(x(tmin), height);
-            ctx.closePath();
-            ctx.fillStyle = group.color;
-            ctx.globalAlpha = 0.2;
-            ctx.fill();
-            ctx.globalAlpha = 1;
+            d3.line()
+                .curve(d3.curveMonotoneX)
+                .x(function(d, i) {
+                    return x(t[i])
+                })
+                .y(function(d) {
+                    return y(d)
+                })
+                .context(ctx)(group.data);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = group.color;
 
-          }
-          
-
+            ctx.stroke();
+            if ( group.fill ) {
+              ctx.lineTo(width, height);
+              ctx.lineTo(x(tmin), height);
+              ctx.closePath();
+              ctx.fillStyle = group.color;
+              ctx.globalAlpha = 0.2;
+              ctx.fill();
+              ctx.globalAlpha = 1;
+            }
+          }          
         }
         ctx.restore();
       }

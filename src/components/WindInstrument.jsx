@@ -22,7 +22,7 @@ class WindInstrument extends React.Component {
   }
 
   static updateDefaultProperties(app, newTab, layout) {
-    layout.content.className="cellContainer";
+    layout.contents.className="cellContainer";
     _.defaults(layout.contents.props,{
         northup: true,
         updaterate: 1000,

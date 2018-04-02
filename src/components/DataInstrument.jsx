@@ -34,7 +34,7 @@ class DataInstrument extends React.Component {
   }
 
   static updateDefaultProperties(app, newTab, layout) {
-    layout.content.className="";
+    layout.contents.className="";
     _.defaults(layout.contents.props,{
        updaterate: 1000,
         damping: 2,

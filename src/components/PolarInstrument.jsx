@@ -17,7 +17,7 @@ class PolarInstrument extends React.Component {
   }
 
   static updateDefaultProperties(app, newTab, layout) {
-    layout.content.className="cellContainer";
+    layout.contents.className="cellContainer";
      _.defaults(layout.contents.props,{
         updaterate: 1000,
         damping: 2

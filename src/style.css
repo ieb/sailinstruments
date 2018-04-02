@@ -482,21 +482,22 @@ body {
     top: 90px;
     bottom: 90px;
     padding: 10px;
+    overflow: auto;
 }
 
-.settingsForm > label {
+.settingsForm label {
   display: block;
-  padding: 3px;
+  padding: 3px
 }
 
 .settingsForm input  {
    position: absolute;
-   left: 10em;
+   left: 13em;
 }
 
 .settingsForm select {
    position: absolute;
-   left: 10em;
+   left: 13em;
 }
 
 
@@ -605,5 +606,14 @@ body {
     fill: none;
     stroke: black;
     stroke-width: 1.5;
+}
+
+
+.settingsGroup {
+  margin: 10px;
+}
+
+.settingsGroup > div {
+  margin-left: 20px;
 }
 

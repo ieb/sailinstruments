@@ -156,6 +156,7 @@ class Utils {
   }
 
 
+
   static saveLocalData(key, data) {
     var localStorageData = Utils.loadLocalData();
     localStorageData[key] = data;
