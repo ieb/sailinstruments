@@ -1,5 +1,5 @@
 {
-  "name": "sailinstuments",
+  "name": "@ieb/sailinstruments",
   "version": "1.0.0",
   "description": "SignalK instruments designed for sailing.",
   "main": "index.js",
@@ -39,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ieb/sailinstruments"
+    "url": "https://github.com/ieb/sailinstuments"
   },
   "dependencies": {
     "@signalk/signalk-schema": "^1.0.3",
