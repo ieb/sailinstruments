@@ -12,7 +12,6 @@ class SignalKClientConnector {
     this.databus = props.databus;
     this.client = undefined;
     this.autoconnect = props.autoconnect;
-    this.connectHost = props.connectHost || "localhost:3000";
     this.sourceType = props.sourceType || "signalk";
     this.connectionError = "";
     this.onStartConnect = this.onStartConnect.bind(this);
@@ -22,8 +21,14 @@ class SignalKClientConnector {
     this.handleDisconnect = this.handleDisconnect.bind(this);
     this.handleError = this.handleError.bind(this);
     this.handleClose = this.handleClose.bind(this);
+
+    // default to the same server the UI was loaded from.
+    var url = window.location.hostname+":"+window.location.port;
+    if ( window.location.protocol.startsWith("file:")) {
+      url = "localhost:3000";  // assume there is a sk server on localhost.
+    }
     if (this.autoconnect) {
-      this.doConnect();
+      this.doConnect(url);
     }
   }
 
@@ -50,26 +55,22 @@ class SignalKClientConnector {
     
   }
 
-  doConnect() {
-      console.log("Connecting to signalk");
-      this.client = new SignalkClient();
-      this.connection =  this.client.connectDelta(this.connectHost,
-          this.handleDeltaMessage, 
-          this.handleConnect,
-          this.handleDisconnect,
-          this.handleError,
-          this.handleClose);
-    if (this.sourceType === "signalk" ) {
-    } else if ( this.sourceType === "internal" ) {
-      //this.client = new InternalDemo(this.state.connectHost,
-      //    this.handleDeltaMessage, 
-      //    this.handleConnect,
-      //    this.handleDisconnect,
-      //    this.handleError,
-      //    this.handleClose
-      //  );
+  doConnect(connectHost) {
+    console.log("Connecting to signalk at ",connectHost);
+    if ( this.connection !== undefined ) {
+      this.connection.close();
     }
-   }
+    if ( this.client == undefined ) {
+      this.client = new SignalkClient();
+    }
+    this.connection =  this.client.connectDelta(connectHost,
+        this.handleDeltaMessage, 
+        this.handleConnect,
+        this.handleDisconnect,
+        this.handleError,
+        this.handleClose);
+    this.url = connectHost;
+  }
 
   doDisconnect() {
     if ( this.connection !== undefined) {

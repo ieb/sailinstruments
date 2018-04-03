@@ -30,6 +30,7 @@ class GlobalSettings extends React.Component {
     this.update({url: this.state.url});
     this.closeModal();
     event.preventDefault();
+    return false;
   }
 
   closeModal() {

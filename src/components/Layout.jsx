@@ -12,7 +12,7 @@ import InlineEdit from './InlineEdit.jsx';
 import ConfigureCell from './ConfigureCell.jsx';
 import LayoutRaw from './LayoutRaw.jsx';
 import _ from "lodash";
-import utils from './utils.jsx';
+import utils from './utils.jsx'; 
 import './react-tabs.css';
 
 

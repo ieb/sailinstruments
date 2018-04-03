@@ -43,7 +43,7 @@ module.exports = {
      rules: [
       {
         test: /\.(jsx|js)$/,
-        exclude: /(node_modules|bower_components)/,
+        exclude: /^(node_modules|bower_components)/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -54,7 +54,7 @@ module.exports = {
       },
       {
         test: /\.(jsx|js)$/,
-        include: /node_modules\/ws/,
+        include: /^node_modules\/ws/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -65,7 +65,7 @@ module.exports = {
       },
        {
          test: /\.css$/,
-         exclude: /(node_modules|bower_components)/,
+         exclude: /^(node_modules|bower_components)/,
          use: [
            'style-loader',
            'css-loader'
@@ -73,28 +73,28 @@ module.exports = {
        },
        {
          test: /\.(png|svg|jpg|gif)$/,
-         exclude: /(node_modules|bower_components)/,
+         exclude: /^(node_modules|bower_components)/,
          use: [
            'file-loader'
          ]
        },
        {
          test: /\.(woff|woff2|eot|ttf|otf)$/,
-         exclude: /(node_modules|bower_components)/,
+         exclude: /^(node_modules|bower_components)/,
          use: [
            'file-loader'
          ]
        },
        {
          test: /\.(csv|tsv)$/,
-         exclude: /(node_modules|bower_components)/,
+         exclude: /^(node_modules|bower_components)/,
          use: [
            'csv-loader'
          ]
        },
        {
          test: /\.xml$/,
-         exclude: /(node_modules|bower_components)/,
+         exclude: /^(node_modules|bower_components)/,
          use: [
            'xml-loader'
          ]

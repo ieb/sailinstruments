@@ -46,8 +46,7 @@ class App extends React.Component {
         this.databus = new StreamBundle();
         this.clientConnector = new SignalKClientConnector({
            databus : this.databus,
-           autoconnect: true,
-           connectHost : "localhost:3000" 
+           autoconnect: true 
         });
         this.sourceId = this.props.sourceId;
         this.knownKeys = {};
@@ -55,7 +54,6 @@ class App extends React.Component {
         this.settings = undefined;
         var self = this;
         this.state = {
-           url : "http://localhost:3000"
         };
       
         var isUnkownKey = function(source) {
@@ -106,9 +104,12 @@ class App extends React.Component {
     var self = this;
     this.setState({ settings: React.createElement(GlobalSettings, 
       { 
-        url: this.state.url, 
+        url: self.clientConnector.url, 
         update: (update) => {
-          self.setState({url: update.url});
+          if ( self.clientConnector.url !== update.url) {
+            self.clientConnector.doConnect(update.url);
+          }
+          self.setState({settings: ""});
         } ,
         remove: () => {
           self.setState({settings: ""});
