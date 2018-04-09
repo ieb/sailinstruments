@@ -23,9 +23,12 @@ class SignalKClientConnector {
     this.handleClose = this.handleClose.bind(this);
 
     // default to the same server the UI was loaded from.
+
     var url = window.location.hostname+":"+window.location.port;
     if ( window.location.protocol.startsWith("file:")) {
       url = "localhost:3000";  // assume there is a sk server on localhost.
+    } else if ( url.endsWith(":") ) {
+      url = url.substring(0,url.length-1);
     }
     if (this.autoconnect) {
       this.doConnect(url);
