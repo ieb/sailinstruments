@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config webpack.prod.js",
     "watch": "webpack --watch --config webpack.dev.js",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "postinstall": "postinstall-build dist"
   },
   "keywords": [
     "signal k",
@@ -36,13 +37,7 @@
     "webpack": "^3.10.0",
     "webpack-bundle-analyzer": "^2.9.2",
     "webpack-merge": "^4.1.1",
-    "xml-loader": "^1.2.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ieb/sailinstruments"
-  },
-  "dependencies": {
+    "xml-loader": "^1.2.1",
     "@signalk/signalk-schema": "^1.0.3",
     "babel-preset-es2015": "^6.24.1",
     "baconjs": "^1.0.1",
@@ -54,5 +49,12 @@
     "react-grid-layout": "^0.16.3",
     "react-modal": "^3.1.12",
     "react-tabs": "^2.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ieb/sailinstruments"
+  },
+  "dependencies": {
+    "postinstall-build": "^5.0.1"
   }
 }

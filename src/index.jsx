@@ -43,12 +43,13 @@ class App extends React.Component {
   constructor(props) {
         super(props);
         this.props = props;
+        this.sourcePriority = props.sourcePriority;
+        this.defaultSourceId = props.defaultSourceId;
         this.databus = new StreamBundle();
         this.clientConnector = new SignalKClientConnector({
            databus : this.databus,
            autoconnect: true 
         });
-        this.sourceId = this.props.sourceId;
         this.knownKeys = {};
         this.layout = undefined;
         this.settings = undefined;
@@ -59,17 +60,14 @@ class App extends React.Component {
         var isUnkownKey = function(source) {
             return typeof self.knownKeys[source.key] === 'undefined';
         }.bind(this);
-        console.log("A1");
         this.databus.allSources.filter(isUnkownKey).onValue(this.handlePossiblyNewSource.bind(this));
-        console.log("A2");
-
-        this.calculations = new Calculations(this.databus, this.sourceId);
+        this.getPreferedSource = this.getPreferedSource.bind(this);
+        this.calculations = new Calculations(this.databus, this.getPreferedSource);
         this.stats = new Stats({
           historyTime: 20000,
           historyPeriod: 1000,
           app: this
         });
-        console.log("A3");
         this.openGlobalSettings = this.openGlobalSettings.bind(this);
         this.addTab = this.addTab.bind(this);
   }
@@ -79,9 +77,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-        console.log("A4");
     this.calculations.connect();
-        console.log("A5");
   }
 
   componentWillUnmount() {
@@ -100,15 +96,48 @@ class App extends React.Component {
 
 
 
+  /**
+   * Gets a prefered source for the named path.
+   * Normally a user would configure the precise source with sourceId,
+   */
+  getPreferedSource(path) {
+    // scan through all available sources, to find a list of matches.
+    // if no match is found then default 
+    var topKey = this.defaultSourceId+"."+path;
+    var topKeyPriority = 10000;
+    for (var key in this.knownKeys) {
+      var source = this.knownKeys[key];
+      if ( path == source.path ) {
+        var priority = this.sourcePriority.indexOf(source.sourceId);
+        if (priority === -1) {
+          // not in priority list, give lowest priority ie biggest number.
+          priority = this.sourcePriority.length+100;
+        }
+        if ( topKeyPriority > priority ) {
+          topKey = key;
+          topKeyPriority = priority;
+        }
+      }
+    }
+    return topKey;
+  }
+
+
+// perhaps this wants to be in the layout ?
+
   openGlobalSettings() {
     var self = this;
     this.setState({ settings: React.createElement(GlobalSettings, 
       { 
         url: self.clientConnector.url, 
+        defaultSourceId: self.defaultSourceId,
+        sourcePriority: self.sourcePriority,
         update: (update) => {
           if ( self.clientConnector.url !== update.url) {
             self.clientConnector.doConnect(update.url);
           }
+          self.defaultSourceId = update.defaultSourceId;
+          self.sourcePriority = update.sourcePriority;
           self.setState({settings: ""});
         } ,
         remove: () => {
@@ -141,6 +170,6 @@ class App extends React.Component {
 
 //  <Calculations  databus={this.databus} sourceId="nmeaFromFile.II" />
 
-const element = <App sourceId="nmeaFromFile" ></App>;    
+const element = <App defaultSourceId="nmeaFromFile"  sourcePriority="" ></App>;    
 
 render(element, document.getElementById("react"));

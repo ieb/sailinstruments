@@ -8,7 +8,6 @@ import _ from 'lodash';
 class LayoutRaw extends React.Component {
   /**
    * <DataBox translate="50,5" 
-   *      sourceId="sourceId" 
    *      path="path",
    *      displayvalue="function(x) { return x; }"
    *      title"awa"
@@ -28,21 +27,11 @@ class LayoutRaw extends React.Component {
     this.change = this.change.bind(this);
     this.doReset = this.doReset.bind(this);
     this.layoutDataStream = {
-        sourceId: "internal",
         paramPath: "layoutData",
         update: this.update
     };
   }
 
-
-  static updateDefaultProperties(app, newTab, layout) {
-    _.defaults(layout.contents.props,{
-        updaterate: 1000,
-        dataPath: app.sourceId+".navigation.speedThroughWater",
-        units: "kn",
-        title: "stw"
-    });
-  }
 
   static generateComponent(props, app) {
     return (

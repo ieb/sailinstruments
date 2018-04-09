@@ -52,9 +52,9 @@ class CompassRose extends React.Component {
 
 
   setPaths(props) {
-    this.gwdPath = props.gwdPath || this.app.sourceId+".environment.wind.directionTrue";
-    this.oppTrackDirPath = props.oppTrackDirPath || this.app.sourceId+".performance.headingMagnetic";
-    this.hdmPath = props.hdmPath || this.app.sourceId+".navigation.headingMagnetic";
+    this.gwdPath = props.gwdPath || this.app.getPreferedSource("environment.wind.directionTrue");
+    this.oppTrackDirPath = props.oppTrackDirPath || this.app.getPreferedSource("performance.headingMagnetic");
+    this.hdmPath = props.hdmPath || this.app.getPreferedSource("navigation.headingMagnetic");
     this.groundWindDirectionStream = this.app.stats.addPath(this.gwdPath);
     this.oppTrackDirStream = this.app.stats.addPath(this.oppTrackDirPath);
     this.hdmStream = this.app.stats.addPath(this.hdmPath);

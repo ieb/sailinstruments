@@ -42,6 +42,8 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Components resize and scale when cells are dragged in the grid.
 - [X] Add strip chart components.
 - [X] Made strip charts configurable with upto 3 traces and variable history.
+- [X] Fix sourceId so that we dont have to define it. There is a default and list of perfered sourceIds, used when the component starts.
+- [ ] Fix global config screen.
 - [ ] Expand stats capabilities, (standard deviation, moving averages)
 - [ ] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
 - [ ] Import or input list of waypoints.

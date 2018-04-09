@@ -16,9 +16,9 @@ import vmg from './vmg.js';
 class Calculations  {
 
 
-  constructor(databus, sourceId, polar) {
+  constructor(databus, getPreferedSource, polar) {
     this.databus = databus;
-    this.sourceId = sourceId;
+    this.getPreferedSource = getPreferedSource;
     // so that we can get access outside.
     this.polarPerformance = performance(polar);
     this.calculations = [
@@ -48,8 +48,7 @@ class Calculations  {
     return Bacon.combineWith(
           calculation.calculator,
           calculation.derivedFrom.map(function(path) {
-            // build an array of args based on the list of derivedFrom.
-            return self.databus.getBusForSourcePath(self.sourceId,path);
+            return self.databus.getBusForSourcePath(self.getPreferedSource(path));
           })
         ).changes()
         .debounceImmediate(100)
@@ -73,7 +72,7 @@ class Calculations  {
           .onValue(values => {
             // push the output back onto the bus.
             values.forEach(function(pathValue) {
-              self.databus.push(self.sourceId, pathValue);
+              self.databus.push("calculated", pathValue);
             });
           });
 

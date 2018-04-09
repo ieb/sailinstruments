@@ -55,11 +55,11 @@ class BoatRose extends React.Component {
   }
 
   setPaths(props) {
-    this.leewayPath = props.leewayPath || this.app.sourceId+".performance.leeway";
-    this.awaPath = props.awaPath || this.app.sourceId+".environment.wind.angleApparent";
-    this.twaPath = props.twaPath || this.app.sourceId+".environment.wind.angleTrue";
-    this.targetAnglePath = props.targetAnglePath || this.app.sourceId+".performance.targetAngle";
-    this.hdmPath = props.hdmPath || this.app.sourceId+".navigation.headingMagnetic"
+    this.leewayPath = props.leewayPath || this.app.getPreferedSource("performance.leeway");
+    this.awaPath = props.awaPath || this.app.getPreferedSource("environment.wind.angleApparent");
+    this.twaPath = props.twaPath || this.app.getPreferedSource("environment.wind.angleTrue");
+    this.targetAnglePath = props.targetAnglePath || this.app.getPreferedSource("performance.targetAngle");
+    this.hdmPath = props.hdmPath || this.app.getPreferedSource("navigation.headingMagnetic")
     this.leewayStream = this.app.stats.addPath(this.leewayPath);
     this.awaStream = this.app.stats.addPath(this.awaPath, true);
     this.twaStream = this.app.stats.addPath(this.twaPath, true);

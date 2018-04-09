@@ -8,7 +8,6 @@ import _ from "lodash";
 class DataInstrument extends React.Component {
   /**
    * <DataBox translate="50,5" 
-   *      sourceId="sourceId" 
    *      path="path",
    *      displayvalue="function(x) { return x; }"
    *      title"awa"
@@ -38,7 +37,7 @@ class DataInstrument extends React.Component {
     _.defaults(layout.contents.props,{
        updaterate: 1000,
         damping: 2,
-        dataPath: app.sourceId+".navigation.speedThroughWater",
+        dataPath: app.getPreferedSource("navigation.speedThroughWater"),
         units: "kn",
         title: "stw"
     });
@@ -72,7 +71,7 @@ class DataInstrument extends React.Component {
       left: left+"px"
     }
     if ( this.dataStream === undefined ||  this.dataPath === undefined || props.dataPath !== this.dataPath) {
-      this.dataPath = props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
+      this.dataPath = props.dataPath || this.app.getPreferedSource("navigation.speedThroughWater");
       console.log("Setting path ", this.dataPath);
       this.dataStream = this.app.stats.addPath(this.dataPath);      
     }

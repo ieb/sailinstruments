@@ -8,7 +8,6 @@ import _ from "lodash";
 class DataBox extends React.Component {
   /**
    * <DataBox translate="50,5" 
-   *      sourceId="sourceId" 
    *      path="path",
    *      displayvalue="function(x) { return x; }"
    *      title"awa"
@@ -37,7 +36,7 @@ class DataBox extends React.Component {
   static updateDefaultProperties(app, newTab, layout) {
     _.defaults(layout.contents.props,{
         updaterate: 1000,
-        dataPath: app.sourceId+".navigation.speedThroughWater",
+        dataPath: app.getPreferedSource("navigation.speedThroughWater"),
         damping: 2,
         units: "kn",
         title: "stw"
@@ -59,7 +58,7 @@ class DataBox extends React.Component {
       left: left+"px"
     }
     if ( this.dataStream === undefined || this.dataPath === undefined || props.dataPath !== this.dataPath) {
-      this.dataPath = props.dataPath || this.app.sourceId+".navigation.speedThroughWater";
+      this.dataPath = props.dataPath || this.app.getPreferedSource("navigation.speedThroughWater");
       console.log("Updateing datapath ", this.dataPath);
       this.dataStream = this.app.stats.addPath(this.dataPath);      
     }

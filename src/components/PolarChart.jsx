@@ -57,13 +57,13 @@ class PolarChart extends React.Component {
 
 
   setPaths(props) {
-    this.hdmPath = this.props.hdmPath || this.app.sourceId+".navigation.headingMagnetic";
-    this.otherTackDirPath = this.props.otherTackDirPath || this.app.sourceId+".performance.headingMagnetic";
-    this.twsPath = this.props.twsPath || this.app.sourceId+".environment.wind.speedTrue";
-    this.twaPath = this.props.twaPath || this.app.sourceId+".environment.wind.angleTrue";
-    this.stwPath = this.props.stwPath || this.app.sourceId+".navigation.speedThroughWater";
-    this.targetSpeedPath = this.props.targetSpeedPath || this.app.sourceId+".performance.targetSpeed";
-    this.targetAnglePath = this.props.targetAnglePath || this.app.sourceId+".performance.targetAngle";
+    this.hdmPath = this.props.hdmPath || this.app.getPreferedSource("navigation.headingMagnetic");
+    this.otherTackDirPath = this.props.otherTackDirPath || this.app.getPreferedSource("performance.headingMagnetic");
+    this.twsPath = this.props.twsPath || this.app.getPreferedSource("environment.wind.speedTrue");
+    this.twaPath = this.props.twaPath || this.app.getPreferedSource("environment.wind.angleTrue");
+    this.stwPath = this.props.stwPath || this.app.getPreferedSource("navigation.speedThroughWater");
+    this.targetSpeedPath = this.props.targetSpeedPath || this.app.getPreferedSource("performance.targetSpeed");
+    this.targetAnglePath = this.props.targetAnglePath || this.app.getPreferedSource("performance.targetAngle");
 
     this.hdmStream = this.app.stats.addPath(this.hdmPath);
     this.otherTackDirStream = this.app.stats.addPath(this.otherTackDirPath);

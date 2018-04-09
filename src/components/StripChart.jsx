@@ -44,7 +44,7 @@ class StripChart extends React.Component {
             color: 'orange',
             fill: false,
             enabled: true,
-            path: app.sourceId+".navigation.speedThroughWater",
+            path: app.getPreferedSource("navigation.speedThroughWater"),
             units: "kn",
             label: "aws"
           },
@@ -52,7 +52,7 @@ class StripChart extends React.Component {
             color: 'green',
             fill: false,
             enabled: false,
-            path: app.sourceId+".navigation.speedThroughWater",
+            path: app.getPreferedSource("navigation.speedThroughWater"),
             units: "kn",
             label: "aws"
           },
@@ -60,7 +60,7 @@ class StripChart extends React.Component {
             color: 'blue',
             fill: false,
             enabled: false,
-            path: app.sourceId+".navigation.speedThroughWater",
+            path: app.getPreferedSource("navigation.speedThroughWater"),
             units: "kn",
             label: "aws"
           }
