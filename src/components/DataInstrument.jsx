@@ -3,6 +3,7 @@
 
 import React from 'react';
 import utils from './utils.jsx';
+import units from './units.js';
 import _ from "lodash";
 
 class DataInstrument extends React.Component {
@@ -15,10 +16,14 @@ class DataInstrument extends React.Component {
   constructor(props) {
     super(props);
     this.app = props.app;
+    this.props = {};
+    this.setProps(props);
+    this.props = props;
+    var display = units.displayForFullPath(0, this.dataPath);
     this.state = {
         value : 0,
-        title: props.title,
-        units: props.units,
+        title: display.title,
+        units: display.units,
         withBox: props.withBox || false,
         updaterate : +props.updaterate || 1000,
         damping: props.damping || 4
@@ -26,9 +31,6 @@ class DataInstrument extends React.Component {
     this.cstate = {
       value: 0
     };
-    this.props = {};
-    this.setProps(props);
-    this.props = props;
     this.update = this.update.bind(this);
   }
 
@@ -38,8 +40,6 @@ class DataInstrument extends React.Component {
        updaterate: 1000,
         damping: 2,
         dataPath: app.getPreferedSource("navigation.speedThroughWater"),
-        units: "kn",
-        title: "stw"
     });
   }
 
@@ -51,8 +51,6 @@ class DataInstrument extends React.Component {
           updaterate={props.updaterate}
           translate={props.translate}
           dataPath={props.dataPath}
-          units={props.units}
-          title={props.title}
           damping={props.damping}
           app={app}  />
         );
@@ -97,9 +95,8 @@ class DataInstrument extends React.Component {
   update() {
     if (this.bound ) {
       this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
-      this.setState({
-        value: utils.getDisplay(this.state.units)(this.cstate.value)
-      });
+      var display = units.displayForFullPath(this.cstate.value, this.dataPath);
+      this.setState(display);
       setTimeout(this.update, this.state.updaterate);
     }
   }
