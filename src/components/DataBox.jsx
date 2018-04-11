@@ -3,6 +3,7 @@
 
 import React from 'react';
 import utils from './utils.jsx';
+import units from './units.js';
 import _ from "lodash";
 
 class DataBox extends React.Component {
@@ -15,31 +16,30 @@ class DataBox extends React.Component {
   constructor(props) {
     super(props);
     this.app = props.app;
+    this.props = {};
+    this.setProps(props);
+    this.props = props;
+    var display = units.displayForFullPath(0, this.dataPath);
 
     this.state = {
         value : 0,
         damping:  props.damping || 2,
-        title: props.title || "stw",
-        units: props.units || "kn",
+        title: display.title,
+        units: display.units,
         withBox: props.withBox || false,
         updaterate : +props.updaterate || 1000
     };
     this.cstate = {
       value: 0
     }
-    this.props = {};
-    this.setProps(props);
-    this.props = props;
     this.update = this.update.bind(this);
   }
 
   static updateDefaultProperties(app, newTab, layout) {
     _.defaults(layout.contents.props,{
         updaterate: 1000,
-        dataPath: app.getPreferedSource("navigation.speedThroughWater"),
-        damping: 2,
-        units: "kn",
-        title: "stw"
+        dataPath: "_preferred.navigation.speedThroughWater",
+        damping: 2
     });
   }
 
@@ -58,7 +58,7 @@ class DataBox extends React.Component {
       left: left+"px"
     }
     if ( this.dataStream === undefined || this.dataPath === undefined || props.dataPath !== this.dataPath) {
-      this.dataPath = props.dataPath || this.app.getPreferedSource("navigation.speedThroughWater");
+      this.dataPath = props.dataPath || "_preferred.navigation.speedThroughWater";
       console.log("Updateing datapath ", this.dataPath);
       this.dataStream = this.app.stats.addPath(this.dataPath);      
     }
@@ -85,9 +85,8 @@ class DataBox extends React.Component {
   update() {
     if (this.bound ) {
       this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
-      this.setState({
-        value: utils.getDisplay(this.state.units)(this.cstate.value)
-      });
+      var display = units.displayForFullPath(this.cstate.value, this.dataPath);
+      this.setState(display);
       setTimeout(this.update, this.state.updaterate);
     }
   }

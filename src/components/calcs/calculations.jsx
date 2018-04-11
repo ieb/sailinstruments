@@ -16,9 +16,8 @@ import vmg from './vmg.js';
 class Calculations  {
 
 
-  constructor(databus, getPreferedSource, polar) {
+  constructor(databus, polar) {
     this.databus = databus;
-    this.getPreferedSource = getPreferedSource;
     // so that we can get access outside.
     this.polarPerformance = performance(polar);
     this.calculations = [
@@ -43,12 +42,21 @@ class Calculations  {
     });
   }
 
+
+
   subscribe(calculation) {
     var self = this;
     return Bacon.combineWith(
           calculation.calculator,
           calculation.derivedFrom.map(function(path) {
-            return self.databus.getBusForSourcePath(self.getPreferedSource(path));
+            // this is problematic. 
+            // when there are no streams present, the code has no idea what the source will be
+            // so the getpreferredSource will be _auto, but nothing connects to that.
+            // so nothing arrives here. The solution is to use a catch all that gets the data
+            // for the path, based on preference, ignoring the sourceId, and locks that to that sourceId.
+            // TODO: look at how many events are comming off the buss and 
+            var bus = self.databus.getBusForSourcePath("_preferred", path);
+            return bus;
           })
         ).changes()
         .debounceImmediate(100)

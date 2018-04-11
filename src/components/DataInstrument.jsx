@@ -39,7 +39,7 @@ class DataInstrument extends React.Component {
     _.defaults(layout.contents.props,{
        updaterate: 1000,
         damping: 2,
-        dataPath: app.getPreferedSource("navigation.speedThroughWater"),
+        dataPath: "_preferred.navigation.speedThroughWater",
     });
   }
 
@@ -69,7 +69,7 @@ class DataInstrument extends React.Component {
       left: left+"px"
     }
     if ( this.dataStream === undefined ||  this.dataPath === undefined || props.dataPath !== this.dataPath) {
-      this.dataPath = props.dataPath || this.app.getPreferedSource("navigation.speedThroughWater");
+      this.dataPath = props.dataPath || "_preferred.navigation.speedThroughWater";
       console.log("Setting path ", this.dataPath);
       this.dataStream = this.app.stats.addPath(this.dataPath);      
     }

@@ -21,6 +21,9 @@ stream.
 Key is a 'standard' single string representation  of source id
 and path produced with signalkSchema.keyForSourceIdPath.
 
+There is a _preferred sourceId that contains values from a stream in preferred order
+with a idle timeout of 30s.
+
 */
 
 
@@ -40,10 +43,10 @@ var conversions = {
   "rad": Qty.swiftConverter('rad', 'deg')
 }
 
-function StreamBundle(sourceMappings) {
-  this.sourceMappings = sourceMappings;
-  this.buses = {};
-  this.streams = {};
+function StreamBundle() {
+  this.buses = {}; // the raw buses
+  this.streams = {}; // a stream object that provides a debounced object.
+  this.sourceIdPreferences = []; // set this to change the priorities.
   this.pathValues = new Bacon.Bus();
   this.allSources = new Bacon.Bus();
 }
@@ -71,8 +74,15 @@ StreamBundle.prototype.push = function(sourceId, pathValue) {
 
   this.getBusForSourcePath(sourceId, pathValue.path).push(pathValue.value);
 
+  // also push the value onto the preferred bus, if this sourceId is currently perfered.
+  
+  var autoBus = this.getBusForAutoPath(sourceId, pathValue.path);
+  if ( autoBus !== undefined ) {
+    autoBus.push(pathValue.value);
+  }
+  
   var key = signalkSchema.keyForSourceIdPath(sourceId, pathValue.path);
-//  console.log("Updating ", sourceId, pathValue.path, pathValue.value );
+  //  console.log("Updating ", sourceId, pathValue.path, pathValue.value );
   this.allSources.push({
     sourceId: sourceId,
     path: pathValue.path,
@@ -81,10 +91,48 @@ StreamBundle.prototype.push = function(sourceId, pathValue) {
   });
 }
 
+StreamBundle.prototype.getSourcePreference = function(sourceId) {
+  var i = this.sourceIdPreferences.indexOf(sourceId);
+  if ( i == -1 ) {
+    i = 1000;
+  }
+  return i;
+}
+
+
+/**
+ * this gets the preferred bus for the path, but only if the
+ * supplied sourceId is the same, or of a higher proprity.
+ */
+StreamBundle.prototype.getBusForAutoPath = function(sourceId, path) {
+  var chosenBus = undefined;
+  var bus = this.getBusForSourcePath("_preferred", path);
+  var now = Date.now();
+  if ( bus.lockedSourceId ===  undefined ) {
+    chosenBus = bus;
+  } else if (this.getSourcePreference(sourceId) < this.getSourcePreference(bus.lockedSourceId)) {
+    // higher priority sourceId, lock it
+    chosenBus = bus;
+  } else if ( bus.lockedSourceId === sourceId ) {
+    chosenBus = bus;
+  } else if (now > bus.lockedSourceExpires ) {
+    chosenBus = bus;
+  }
+  if (chosenBus !== undefined) {
+    // bus is not locked, so lock it.
+    chosenBus.lockedSourceId = sourceId;
+    chosenBus.lockedSourceExpires = now + 30000;
+
+  }
+
+  return chosenBus;
+}
+
 StreamBundle.prototype.getBusForSourcePath = function(sourceId, path) {
   var key = signalkSchema.keyForSourceIdPath(sourceId, path);
   var result = this.buses[key];
   if(!result) {
+    console.log("New Bus for ", { key: key, sourceId:sourceId, path:path});
     result = this.buses[key] = new Bacon.Bus();
   }
   return result;
@@ -95,13 +143,9 @@ StreamBundle.prototype.getStreamForSourcePath = function(sourceId, path) {
   var key = signalkSchema.keyForSourceIdPath(sourceId, path);
   var result = this.streams[key];
   if(!result) {
+    console.log("New Stream for ", { key: key, sourceId:sourceId, path:path});
     var bus = this.getBusForSourcePath(sourceId, path);
     result = bus.debounceImmediate(200);
-    /*    const units = signalkSchema.getUnits('vessels.foo.' + path)
-    if(units && conversions[units]) {
-      result = result.map(conversions[units]);
-    }
-    */
     result = this.streams[key] = result.toProperty();
   }
   return result;

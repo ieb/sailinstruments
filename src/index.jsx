@@ -61,8 +61,7 @@ class App extends React.Component {
             return typeof self.knownKeys[source.key] === 'undefined';
         }.bind(this);
         this.databus.allSources.filter(isUnkownKey).onValue(this.handlePossiblyNewSource.bind(this));
-        this.getPreferedSource = this.getPreferedSource.bind(this);
-        this.calculations = new Calculations(this.databus, this.getPreferedSource);
+        this.calculations = new Calculations(this.databus);
         this.stats = new Stats({
           historyTime: 20000,
           historyPeriod: 1000,
@@ -73,7 +72,7 @@ class App extends React.Component {
   }
   handlePossiblyNewSource(newSource) {
     this.knownKeys[newSource.key] = newSource;
-    // console.log("Added NewSource ", newSource.key, " to ", this.knownKeys);
+    console.log("Added NewSource ", newSource.key, " to ", this.knownKeys);
   }
 
   componentDidMount() {
@@ -96,31 +95,6 @@ class App extends React.Component {
 
 
 
-  /**
-   * Gets a prefered source for the named path.
-   * Normally a user would configure the precise source with sourceId,
-   */
-  getPreferedSource(path) {
-    // scan through all available sources, to find a list of matches.
-    // if no match is found then default 
-    var topKey = this.defaultSourceId+"."+path;
-    var topKeyPriority = 10000;
-    for (var key in this.knownKeys) {
-      var source = this.knownKeys[key];
-      if ( path == source.path ) {
-        var priority = this.sourcePriority.indexOf(source.sourceId);
-        if (priority === -1) {
-          // not in priority list, give lowest priority ie biggest number.
-          priority = this.sourcePriority.length+100;
-        }
-        if ( topKeyPriority > priority ) {
-          topKey = key;
-          topKeyPriority = priority;
-        }
-      }
-    }
-    return topKey;
-  }
 
 
 // perhaps this wants to be in the layout ?
@@ -172,4 +146,6 @@ class App extends React.Component {
 
 const element = <App defaultSourceId="nmeaFromFile"  sourcePriority="" ></App>;    
 
+console.log("Now Running");
+document.body.className = "running";
 render(element, document.getElementById("react"));

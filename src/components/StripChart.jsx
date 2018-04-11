@@ -44,25 +44,19 @@ class StripChart extends React.Component {
             color: 'orange',
             fill: false,
             enabled: true,
-            path: app.getPreferedSource("navigation.speedThroughWater"),
-            units: "kn",
-            label: "aws"
+            path: "_preferred.navigation.speedThroughWater"
           },
           {
             color: 'green',
             fill: false,
             enabled: false,
-            path: app.getPreferedSource("navigation.speedThroughWater"),
-            units: "kn",
-            label: "aws"
+            path: "_preferred.navigation.speedThroughWater"
           },
           {
             color: 'blue',
             fill: false,
             enabled: false,
-            path: app.getPreferedSource("navigation.speedThroughWater"),
-            units: "kn",
-            label: "aws"
+            path: "_preferred.navigation.speedThroughWater"
           }
         ]           
     });
@@ -111,9 +105,7 @@ class StripChart extends React.Component {
           color: "orange", 
           enabled:false,
           fill:false,
-          label:"aws",
           path:"nmeaFromFile.environment.wind.speedApparent",
-          units:"kn",
           data: []        
       };
       _.merge(group, props.datasets[i]);

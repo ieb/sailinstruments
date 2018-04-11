@@ -83,7 +83,7 @@ class WindInstrument extends React.Component {
                 damping={this.state.damping} 
                 withBox={true}
                 app={this.app}
-                dataPath={this.app.getPreferedSource("navigation.speedThroughWater")}
+                dataPath="_preferred.navigation.speedThroughWater"
                 units="kn"
                 title="stw" />
             <DataBox  top="320" left="260"
@@ -91,35 +91,35 @@ class WindInstrument extends React.Component {
                 damping={this.state.damping} 
                 withBox={true} 
                 app={this.app}
-                dataPath={this.app.getPreferedSource("environment.wind.speedApparent")}
+                dataPath="_preferred.environment.wind.speedApparent"
                 units="kn"
                 title="aws" />
             <DataBox top="10" left="10"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath={this.app.getPreferedSource("performance.polarSpeed")}
+                dataPath="_preferred.performance.polarSpeed"
                 units="kn"
                 title="polar stw" />
             <DataBox top="65" left="10"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath={this.app.getPreferedSource("performance.polarSpeedRatio")}
+                dataPath="_preferred.performance.polarSpeedRatio"
                 units="%"
                 title="polar %" />
             <DataBox top="505" left="10" 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath={this.app.getPreferedSource("performance.targetAngle")}
+                dataPath="_preferred.performance.targetAngle"
                 units="deg"
                 title="target twa" />
             <DataBox top="560" left="10"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath={this.app.getPreferedSource("performance.targetSpeed")}
+                dataPath="_preferred.performance.targetSpeed"
                 units="kn"
                 title="target stw" />
 
@@ -127,28 +127,28 @@ class WindInstrument extends React.Component {
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath={this.app.getPreferedSource("performance.headingMagnetic")}
+                dataPath="_preferred.performance.headingMagnetic"
                 units="deg"
                 title="tack dir" />
             <DataBox top="65" left="510"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath={this.app.getPreferedSource("performance.ignore")}
+                dataPath="_preferred.performance.ignore"
                 units="deg"
                 title="box number 6" />
             <DataBox top="505" left="510" 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath={this.app.getPreferedSource("performance.leeway")}
+                dataPath="_preferred.performance.leeway"
                 units="deg"
                 title="leeway" />
             <DataBox top="560" left="510"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath={this.app.getPreferedSource("performance.ignore")}
+                dataPath="_preferred.performance.ignore"
                 units="kn"
                 title="box number 8" />
         </div>

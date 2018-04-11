@@ -5,13 +5,29 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1">
     <title>Sail Instruments</title>
+<style>
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+body.loading {
+  background-color:  #4682b4;
+}
+
+
+.loading .loader {
+}
+
+.running .loader {
+  display: none;
+}
+
+</style>
   </head>
-  <body>
+  <body class="loading" >
     <div id="react" >
     </div>
-    <footer style="text-align:center">
-      <hr/>
-      <p><a href="https://github.com/ieb/sailinstruments">Signal K Sailing Instruments</a></p>
-    </footer>
+    <div class="loader"> Loading, please wait ... </div>
   </body>
 </html>

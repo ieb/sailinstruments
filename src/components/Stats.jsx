@@ -55,7 +55,7 @@ class Stats  {
 
   getSourceId(path) {
     if (path.charAt(0) === '.') {
-      return this.app.getPreferedSource(path.substring(1));
+      return "_preferred"+path.substring(1);
     } else {
       return path.split('.')[0];
     }

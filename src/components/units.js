@@ -4,7 +4,6 @@
 const Qty  = require('js-quantities');
 
 
-
 module.exports = function(){
 
   var conversions = {
@@ -61,6 +60,11 @@ module.exports = function(){
     },
     "rad" : {
       "deg": Qty.swiftConverter('rad', 'deg'),
+    },
+    "ratio" : {
+      "%" : function(r) {
+        return r*100;
+      }
     }
   }
 
@@ -104,9 +108,13 @@ module.exports = function(){
     if ( unit === displayUnit) {
       return asIs;
     }
-    var c = Qty.swiftConverter(unit,displayUnit);
-    if ( c !== undefined) {
-      return c;
+    try {
+      var c = Qty.swiftConverter(unit,displayUnit);
+      if ( c !== undefined) {
+        return c;
+      }      
+    } catch (e) {
+      console.error("Failed to get converter ", unit, displayUnit);
     }
     return asIs;
   }
@@ -114,6 +122,7 @@ module.exports = function(){
   // some of this is borrowed form IntrumentPanel which looks like the right way to do it as most or all
   // the items are defined in the SkignalK schema.
   var schema = require('@signalk/signalk-schema');
+  var schema_i18n = require('./schema_i18n.json');
 
 
   for (var key in schema.metadata) {
@@ -121,7 +130,7 @@ module.exports = function(){
   }
 
   const getLabelForPath = function(path) {
-    var i18nElement = schema.i18n.en[path];
+    var i18nElement = schema_i18n.en[path] || schema.i18n.en[path] 
     return i18nElement ?
       i18nElement.shortName || i18nElement.longName || "??" :
       path
@@ -331,8 +340,12 @@ module.exports = function(){
     var precision = getPrecisionForUnit(unit,displayUnit);
     var label = getLabelForPath(path);
     return {
+      path: path,
+      precision: precision,
+      conversion: conversion,
       units: displayUnit,
       title: label,
+      measurement: value,
       value: precision(conversion(value)),
     }
   }
