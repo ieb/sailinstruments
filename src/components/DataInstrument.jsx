@@ -18,6 +18,7 @@ class DataInstrument extends React.Component {
     this.app = props.app;
     this.props = {};
     this.setProps(props);
+    this.streamSwitched = true;
     this.props = props;
     var display = units.displayForFullPath(0, this.dataPath);
     this.state = {
@@ -71,7 +72,8 @@ class DataInstrument extends React.Component {
     if ( this.dataStream === undefined ||  this.dataPath === undefined || props.dataPath !== this.dataPath) {
       this.dataPath = props.dataPath || "_preferred.navigation.speedThroughWater";
       console.log("Setting path ", this.dataPath);
-      this.dataStream = this.app.stats.addPath(this.dataPath);      
+      this.dataStream = this.app.stats.addPath(this.dataPath);   
+      this.streamSwitched = true;
     }
   }
 
@@ -94,8 +96,21 @@ class DataInstrument extends React.Component {
 
   update() {
     if (this.bound ) {
-      this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
+      if ( this.streamSwitched ) {
+        this.cstate.value = this.dataStream.value;
+        this.streamSwitched = false;
+      } else {
+        this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
+      }
       var display = units.displayForFullPath(this.cstate.value, this.dataPath);
+      if (this.dataPath.endsWith("datetime") || this.dataPath.endsWith("position")) {
+        console.log({ path:this.dataPath, dstream:this.dataStream, csvalue: this.cstate.value, dvalue: display});
+      }
+      display.style = {};
+      var finalDisplayLength = (""+display.value).length;
+      if (finalDisplayLength > 5) {
+        display.style["font-size"] = "25px";
+      }
       this.setState(display);
       setTimeout(this.update, this.state.updaterate);
     }
@@ -105,7 +120,7 @@ class DataInstrument extends React.Component {
     return (
       <div>
       <div className={this.outerClassName} style={this.possition} >
-        <div className="dataBoxValue">{this.state.value}</div>
+        <div className="dataBoxValue" style={this.state.style} >{this.state.value}</div>
         <div className="dataBoxUnits">{this.state.units}</div>
         <div className="dataBoxTitle">{this.state.title}</div>
       </div>

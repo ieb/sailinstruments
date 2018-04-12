@@ -88,18 +88,20 @@ module.exports = function(){
     }
     return value;
   }
+  const asIs = function(value) {
+    return value;
+  }
 
   const precision = {
-    "deg" : precisionAngle
+    "deg" : precisionAngle,
+    "datetime": asIs,
+    "latlon": asIs
   }
 
   const getPrecisionForUnit = function(unit, displayUnit) {
     return precision[displayUnit] || precisionNumber;
   }
 
-  const asIs = function(value) {
-    return value;
-  }
 
   const getConversionsForUnit = function(unit, displayUnit) {
     if ( conversions[unit] !== undefined && conversions[unit][displayUnit] !== undefined ) {
@@ -122,7 +124,7 @@ module.exports = function(){
   // some of this is borrowed form IntrumentPanel which looks like the right way to do it as most or all
   // the items are defined in the SkignalK schema.
   var schema = require('@signalk/signalk-schema');
-  var schema_i18n = require('./schema_i18n.json');
+  var schemaPatch = require('./schema_patch.json');
 
 
   for (var key in schema.metadata) {
@@ -130,13 +132,16 @@ module.exports = function(){
   }
 
   const getLabelForPath = function(path) {
-    var i18nElement = schema_i18n.en[path] || schema.i18n.en[path] 
+    var i18nElement = schemaPatch.i18n.en[path] || schema.i18n.en[path] 
     return i18nElement ?
       i18nElement.shortName || i18nElement.longName || "??" :
       path
   }
 
   const getUnitForPath = function(path) {
+    if ( schemaPatch.metadata[path] !== undefined && schemaPatch.metadata[path].unit !== undefined ) {
+      return schemaPatch.metadata[path].unit;
+    }
     return schema.getUnits('vessels.foo.' + path);
   }
 
@@ -335,6 +340,9 @@ module.exports = function(){
 
   const displayForPath = function(value, path) {
     var unit = getUnitForPath(path);
+    // if this didnt depend on value, it could be static, but the distance
+    // units do depend on value and atpresent units is not a function.
+    // probably doesnt cot much to do this all as its lookups.
     var displayUnit = getDisplayUnitForPath(value, path, unit);
     var conversion = getConversionsForUnit(unit,displayUnit);
     var precision = getPrecisionForUnit(unit,displayUnit);
@@ -345,6 +353,7 @@ module.exports = function(){
       conversion: conversion,
       units: displayUnit,
       title: label,
+      measurementUnit: unit,
       measurement: value,
       value: precision(conversion(value)),
     }
@@ -353,6 +362,7 @@ module.exports = function(){
 
   return {
     displayForFullPath: displayForFullPath,
+    getUnitForPath: getUnitForPath,
     displayUnits: displayUnits
   }
 

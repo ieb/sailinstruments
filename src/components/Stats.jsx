@@ -2,6 +2,7 @@
 "use strict";
 
 import utils from './utils.jsx';
+import units from './units.js';
 
 
 
@@ -22,23 +23,28 @@ class Stats  {
     this.setHistoryPeriod(props.historyTime);
     this.valueStreams = {};
     this.defaultIRRCalculator = this.defaultIRRCalculator.bind(this);
+    this.defaultValueCalculator = this.defaultValueCalculator.bind(this);
     this.iirRadRelative = this.iirRadRelative.bind(this);
     this.iirRadAbs = this.iirRadAbs.bind(this);
+    this.iirNone = this.iirNone.bind(this);
+    this.getDateTimeValue = this.getDateTimeValue.bind(this);
+    this.getPositionValue = this.getPositionValue.bind(this);
     // there isnt anything in the schema that will tell use the 
     // min max of a field, so this have to be done here.
     this.iirCalculators = {
         "navigation.magneticVariation" : this.iirRadRelative,
-        "navigation.headingTrue" : this.iirRadAbs,
-        "navigation.headingMagnetic" : this.iirRadAbs,
-        "performance.tackMagnetic" : this.iirRadAbs,
-        "performance.tackTrue" : this.iirRadAbs,
-        "performance.headingMagnetic" : this.iirRadAbs,
-        "performance.headingTrue" : this.iirRadAbs,
         "performance.targetAngle" : this.iirRadRelative,
         "environment.wind.angleTrueWater" : this.iirRadRelative,
         "environment.wind.angleApparent" : this.iirRadRelative,
-        "environment.wind.directionTrue" : this.iirRadAbs,
-        "environment.wind.angleTrue" : this.iirRadRelative
+        "environment.wind.angleTrue" : this.iirRadRelative,
+        "rad": this.iirRadAbs,
+        "datetime": this.iirNone,
+        "position": this.iirNone
+    }
+
+    this.valueCalculators = {
+        "datetime": this.getDateTimeValue,
+        "position": this.getPositionValue
     }
 
 
@@ -65,10 +71,31 @@ class Stats  {
   }
 
   getCalcIIR(paramPath) {
-    if ( this.iirCalculators[paramPath] === undefined ) {
-      return this.defaultIRRCalculator;
+    if ( this.iirCalculators[paramPath] !== undefined ) {
+      return this.iirCalculators[paramPath];
     }
-    return this.iirCalculators[paramPath];
+    var unit = units.getUnitForPath(paramPath);
+    if ( this.iirCalculators[unit] !== undefined) {
+      return this.iirCalculators[unit];
+    }
+    return this.defaultIRRCalculator;
+  }
+
+  getCalcValue(paramPath) {
+    if ( this.valueCalculators[paramPath] !== undefined ) {
+      return this.valueCalculators[paramPath];
+    }
+    var unit = units.getUnitForPath(paramPath);
+    console.log({ paramPath: paramPath, unit: unit});
+    if ( this.valueCalculators[unit] !== undefined) {
+      return this.valueCalculators[unit];
+    }
+    return this.defaultValueCalculator;
+
+  }
+
+  defaultValueCalculator(v) {
+    return v;
   }
 
   // v is the accumulator in the same raw units.
@@ -82,6 +109,19 @@ class Stats  {
   iirRadAbs(v,c,d) {
     return utils.iirRad(v,c,d,0, 2*Math.PI);
   }
+  iirNone(v,c,d) {
+    return c;
+  }
+
+  getPositionValue(v) {
+    console.log(typeof v, v);
+    return v;
+  }
+  getDateTimeValue(v) {
+    console.log(typeof v, v);
+    return v;
+  }
+
 
 
   addPath(path, withHistory) {
@@ -93,15 +133,18 @@ class Stats  {
         h = [];
       }
       var calcIIR = this.getCalcIIR(paramPath);
+      var calcValue = this.getCalcValue(paramPath);
       var vs = this.valueStreams[path] = {
         sourceId: sourceId,
         paramPath: paramPath,
         value: 0,
+        calcIIRF: calcIIR,
+        calcValueF: calcValue,
         calcIIR: (v,d) => {
             return calcIIR(v, vs.value, d);
         },
         update: (v) => {
-          vs.value = v;
+          vs.value = calcValue(v);
         },
         history: h
       };

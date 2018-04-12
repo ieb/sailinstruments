@@ -1,0 +1,94 @@
+{
+  "i18n": {
+      "en": {
+
+        "@metadata": {
+          "locale": "en",
+          "documentation": "Additional or replacement messages."
+        },
+        "performance.polarSpeed": {
+          "shortName": "polar stw",
+          "longName": "Polar Speed Through Water"
+        },
+        "performance.polarSpeedRatio": {
+          "shortName": "polar %",
+          "longName": "Polar Speed Ratio"
+        },
+        "performance.targetAngle": {
+          "shortName": "target twa",
+          "longName": "Polar target true wind angle"
+        },
+        "performance.targetSpeed": {
+          "shortName": "target stw",
+          "longName": "Polar target speed through water"
+        },
+        "performance.headingMagnetic": {
+          "shortName": "polar hdm",
+          "longName": "Polar heading magnetic"
+        },
+        "performance.headingTrue": {
+          "shortName": "polar heading true",
+          "longName": "Polar hdt"
+        },
+        "performance.leeway": {
+          "shortName": "leeway",
+          "longName": "Leeway angle"
+        },
+        "performance.ignore": {
+          "shortName": "-",
+          "longName": "Unused"
+        },
+        "performance.tackMagnetic": {
+          "shortName": "tack hdm",
+          "longName": "Other tack magnetic"
+        },
+        "performance.tackTrue": {
+          "shortName": "tack hdt",
+          "longName": "Other tack true"
+        },
+        "performance.targetVelocityMadeGood": {
+          "shortName": "target vmg",
+          "longName": "Target VMG"
+        },
+        "performance.velocityMadeGood": {
+          "shortName": "vmg",
+          "longName": "Velocity made good, -ve is downwind."
+        },
+        "performance.velocityMadeGoodRatio": {
+          "shortName": "vmg %",
+          "longName": "Velocity made good ratio"
+        },
+        "environment.water.temperature": {
+          "shortName": "wtemp",
+          "longName": "Water temperature"
+        },
+        "navigation.datetime": {
+          "shortName": "UTC",
+          "longName": "UTC"
+        }
+     }
+  },
+  "metadata": {
+    "environment.wind.angleTrue": {
+      "unit": "rad"   
+    },
+    "performance.headingMagnetic": {
+      "unit": "rad"
+    },    
+    "performance.headingTrue": {
+      "unit": "rad"
+    },    
+    "performance.targetVelocityMadeGood": {
+      "unit": "m/s"
+    },
+    "performance.targetVelocityMadeGoodRatio": {
+      "unit": "ratio"
+    },
+    "navigation.datetime": {
+      "unit": "datetime"
+    },
+    "navigation.position": {
+      "unit": "latlon"
+    }
+  }
+}

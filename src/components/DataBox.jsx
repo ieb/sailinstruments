@@ -18,6 +18,7 @@ class DataBox extends React.Component {
     this.app = props.app;
     this.props = {};
     this.setProps(props);
+    this.streamSwitched = true;
     this.props = props;
     var display = units.displayForFullPath(0, this.dataPath);
 
@@ -32,6 +33,7 @@ class DataBox extends React.Component {
     this.cstate = {
       value: 0
     }
+
     this.update = this.update.bind(this);
   }
 
@@ -60,7 +62,8 @@ class DataBox extends React.Component {
     if ( this.dataStream === undefined || this.dataPath === undefined || props.dataPath !== this.dataPath) {
       this.dataPath = props.dataPath || "_preferred.navigation.speedThroughWater";
       console.log("Updateing datapath ", this.dataPath);
-      this.dataStream = this.app.stats.addPath(this.dataPath);      
+      this.dataStream = this.app.stats.addPath(this.dataPath);  
+      this.streamSwitched = true;    
     }
   }
 
@@ -84,7 +87,12 @@ class DataBox extends React.Component {
 
   update() {
     if (this.bound ) {
-      this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
+      if ( this.streamSwitched ) {
+        this.cstate.value = this.dataStream.value;
+        this.streamSwitched = false;
+      } else {
+        this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
+      }
       var display = units.displayForFullPath(this.cstate.value, this.dataPath);
       this.setState(display);
       setTimeout(this.update, this.state.updaterate);
