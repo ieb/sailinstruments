@@ -2,6 +2,7 @@
 "use strict";
 
 const Qty  = require('js-quantities');
+import React from 'react';
 
 
 module.exports = function(){
@@ -65,7 +66,31 @@ module.exports = function(){
       "%" : function(r) {
         return r*100;
       }
+    },
+    "latlon" : {
+      "dm" : function(v) {
+        return (
+          <div>
+          {toDM(v.latitude,true)}
+          {toDM(v.longitude,false)}
+          </div>
+          );
+      }
     }
+  }
+
+  // display lay lon in the form 000 00.000N
+  const toDM = function(p, ns) {
+    var sign = ns?"N":"E";
+    if ( p < 0 ) {
+      sign = ns?"S":"W";
+      p = -p;
+    }
+    var d = Math.trunc(p);
+    var m = (p-d)*60;
+    var md = m-Math.trunc(m);
+
+    return (<div>{("000"+d).slice(-3)}&#176;{("00"+m.toFixed(0)).slice(-2)}&#180;{(""+md.toFixed(3)).slice(1)} {sign}</div>);
   }
 
   const precisionNumber = function(value){
@@ -302,6 +327,10 @@ module.exports = function(){
       },
       units: "s",
       title: "ratio"
+    },
+    "latlon" : {
+      units: "dm",
+      title: "latlon"
     }
   };
 

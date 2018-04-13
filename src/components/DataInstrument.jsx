@@ -3,7 +3,7 @@
 
 import React from 'react';
 import utils from './utils.jsx';
-import units from './units.js';
+import units from './units.jsx';
 import _ from "lodash";
 
 class DataInstrument extends React.Component {
@@ -17,8 +17,8 @@ class DataInstrument extends React.Component {
     super(props);
     this.app = props.app;
     this.props = {};
+    this.updateWithValue = this.updateWithValue.bind(this);
     this.setProps(props);
-    this.streamSwitched = true;
     this.props = props;
     var display = units.displayForFullPath(0, this.dataPath);
     this.state = {
@@ -29,10 +29,6 @@ class DataInstrument extends React.Component {
         updaterate : +props.updaterate || 1000,
         damping: props.damping || 4
     };
-    this.cstate = {
-      value: 0
-    };
-    this.update = this.update.bind(this);
   }
 
   static updateDefaultProperties(app, newTab, layout) {
@@ -69,12 +65,36 @@ class DataInstrument extends React.Component {
       top: top+"px",
       left: left+"px"
     }
-    if ( this.dataStream === undefined ||  this.dataPath === undefined || props.dataPath !== this.dataPath) {
+
+    if ( this.dataPath === undefined || props.dataPath !== this.dataPath || props.updaterate !== this.updaterate ) {
       this.dataPath = props.dataPath || "_preferred.navigation.speedThroughWater";
-      console.log("Setting path ", this.dataPath);
-      this.dataStream = this.app.stats.addPath(this.dataPath);   
-      this.streamSwitched = true;
+      this.updaterate = props.updaterate;
+      this.rebindStream();
     }
+  }
+
+  rebindStream() {
+    if (this.unsubscribe !== undefined) {
+      this.unsubscribe();
+    }
+    // might want to put damping in here. dataStream has calcIIRF
+    // however, with an unpredictable update rate IIR doesnt work as well.
+    var cvalue = 0;
+    var lastUpdate = 0;
+    var self = this;
+    var dataStream = this.app.stats.addPath(this.dataPath);
+    this.unsubscribe = dataStream.stream
+        .debounceImmediate(this.updaterate)
+        .onValue((v) => {
+          var n = Date.now();
+          if ( (n-lastUpdate) > 900 ) {
+            cvalue = v;
+          } else {
+            cvalue = dataStream.calcIIRf(cvalue, v, self.state.damping);
+          }
+          lastUpdate = n;
+          self.updateWithValue(cvalue);
+        });
   }
 
 
@@ -86,33 +106,27 @@ class DataInstrument extends React.Component {
   componentDidMount() {
     if ( !this.bound ) {
       this.bound = true;
-      this.update();
+      this.rebindStream();
     }
   }
 
   componentWillUnmount() {
+    if (this.unsubscribe !== undefined) {
+      this.unsubscribe();
+    }
     this.bound = false;
   }
 
-  update() {
-    if (this.bound ) {
-      if ( this.streamSwitched ) {
-        this.cstate.value = this.dataStream.value;
-        this.streamSwitched = false;
-      } else {
-        this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
-      }
-      var display = units.displayForFullPath(this.cstate.value, this.dataPath);
-      if (this.dataPath.endsWith("datetime") || this.dataPath.endsWith("position")) {
-        console.log({ path:this.dataPath, dstream:this.dataStream, csvalue: this.cstate.value, dvalue: display});
-      }
+
+  updateWithValue(value) {
+    if ( this.bound ) {
+      var display = units.displayForFullPath(value, this.dataPath);
       display.style = {};
       var finalDisplayLength = (""+display.value).length;
       if (finalDisplayLength > 5) {
-        display.style["font-size"] = "25px";
+        display.style["fontSize"] = "25px";
       }
       this.setState(display);
-      setTimeout(this.update, this.state.updaterate);
     }
   }
 

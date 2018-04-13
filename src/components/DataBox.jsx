@@ -3,7 +3,7 @@
 
 import React from 'react';
 import utils from './utils.jsx';
-import units from './units.js';
+import units from './units.jsx';
 import _ from "lodash";
 
 class DataBox extends React.Component {
@@ -17,8 +17,8 @@ class DataBox extends React.Component {
     super(props);
     this.app = props.app;
     this.props = {};
+    this.updateWithValue = this.updateWithValue.bind(this);
     this.setProps(props);
-    this.streamSwitched = true;
     this.props = props;
     var display = units.displayForFullPath(0, this.dataPath);
 
@@ -30,11 +30,6 @@ class DataBox extends React.Component {
         withBox: props.withBox || false,
         updaterate : +props.updaterate || 1000
     };
-    this.cstate = {
-      value: 0
-    }
-
-    this.update = this.update.bind(this);
   }
 
   static updateDefaultProperties(app, newTab, layout) {
@@ -59,12 +54,36 @@ class DataBox extends React.Component {
       top: top+"px",
       left: left+"px"
     }
-    if ( this.dataStream === undefined || this.dataPath === undefined || props.dataPath !== this.dataPath) {
+    if ( this.dataPath === undefined || props.dataPath !== this.dataPath || props.updaterate !== this.updaterate ) {
       this.dataPath = props.dataPath || "_preferred.navigation.speedThroughWater";
-      console.log("Updateing datapath ", this.dataPath);
-      this.dataStream = this.app.stats.addPath(this.dataPath);  
-      this.streamSwitched = true;    
+      this.updaterate = props.updaterate;
+      this.rebindStream();
     }
+  }
+
+  rebindStream() {
+    if (this.unsubscribe !== undefined) {
+      this.unsubscribe();
+    }
+    // might want to put damping in here.
+    // damping is only worth it if the rate of update is rapid.
+    // if its not, then there is no point.
+    var cvalue = 0;
+    var lastUpdate = 0;
+    var self = this;
+    var dataStream = this.app.stats.addPath(this.dataPath);
+    this.unsubscribe = dataStream.stream
+        .debounceImmediate(this.updaterate)
+        .onValue((v) => {
+          var n = Date.now();
+          if ( (n-lastUpdate) > 900 ) {
+            cvalue = v;
+          } else {
+            cvalue = dataStream.calcIIRf(cvalue, v, self.state.damping);
+          }
+          lastUpdate = n;
+          self.updateWithValue(cvalue);
+        });
   }
 
 
@@ -77,27 +96,25 @@ class DataBox extends React.Component {
   componentDidMount() {
     if ( !this.bound ) {
       this.bound = true;
-      this.update();
+      this.rebindStream();
     }
   }
 
   componentWillUnmount() {
+    if (this.unsubscribe !== undefined) {
+      this.unsubscribe();
+    }
     this.bound = false;
   }
 
-  update() {
-    if (this.bound ) {
-      if ( this.streamSwitched ) {
-        this.cstate.value = this.dataStream.value;
-        this.streamSwitched = false;
-      } else {
-        this.cstate.value = this.dataStream.calcIIR(this.cstate.value, this.state.damping);
-      }
-      var display = units.displayForFullPath(this.cstate.value, this.dataPath);
+
+  updateWithValue(value) {
+    if ( this.bound ) {
+      var display = units.displayForFullPath(value, this.dataPath);
       this.setState(display);
-      setTimeout(this.update, this.state.updaterate);
     }
   }
+
 
   render() {
     return (

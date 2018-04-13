@@ -54,6 +54,8 @@ class BoatRose extends React.Component {
 
   }
 
+  // performing the updates using the stats component ensures that the 
+  // hustory is maintained. Not quite as flexible as using the datastream directly.
   setPaths(props) {
     this.leewayPath = props.leewayPath || "_preferred.performance.leeway";
     this.awaPath = props.awaPath || "_preferred.environment.wind.angleApparent";

@@ -43,8 +43,10 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Add strip chart components.
 - [X] Made strip charts configurable with upto 3 traces and variable history.
 - [X] Fix sourceId so that we dont have to define it. There is a default and list of perfered sourceIds, used when the component starts.
-- [ ] Make strip chart histories persist so that when navigating betwene tabs, the history is not lost.
-- [ ] Fix display of navigation.position.
+- [X] Make conversions and units work based on the path of the source.
+- [X] Change the subscription and update mechanism to use bacon. (only for some components, proved too complex for ones with history)
+- [X] Fix display of navigation.position.
+- [ ] Make strip chart histories persist so that when navigating between tabs, the history is not lost.
 - [ ] Fix global config screen.
 - [ ] Expand stats capabilities, (standard deviation, moving averages)
 - [ ] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.

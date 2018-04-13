@@ -2,7 +2,7 @@
 "use strict";
 
 import utils from './utils.jsx';
-import units from './units.js';
+import units from './units.jsx';
 
 
 
@@ -124,7 +124,7 @@ class Stats  {
 
 
 
-  addPath(path, withHistory) {
+  addPath(path, withHistory, onValue) {
     var sourceId = this.getSourceId(path);
     var paramPath = this.getPath(path);
     if ( this.valueStreams[path] === undefined) {
@@ -138,13 +138,15 @@ class Stats  {
         sourceId: sourceId,
         paramPath: paramPath,
         value: 0,
-        calcIIRF: calcIIR,
-        calcValueF: calcValue,
+        calcIIRf: calcIIR,
         calcIIR: (v,d) => {
             return calcIIR(v, vs.value, d);
         },
         update: (v) => {
           vs.value = calcValue(v);
+          if (onValue !== undefined ) {
+            onValue(vs.value);
+          }
         },
         history: h
       };
