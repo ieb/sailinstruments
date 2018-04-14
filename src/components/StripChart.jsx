@@ -177,7 +177,7 @@ class StripChart extends React.Component {
             // reverse the order for drawing.
             group.data = group.data.reverse();
             if ( group.display.units === 'deg') {
-              group.extent = this.degExtent(group.data);
+              group.extent = this.degAveraged(group.data);
               group.curcular = true;
             } else {
               group.extent = this.defaultExtent(group.data, group.zerobase);
@@ -192,6 +192,67 @@ class StripChart extends React.Component {
     }
   }
 
+  // make the current value the center
+  degCentered(dataset) {
+    var cvalue = dataset[dataset.length-1];
+    for (var i = 0; i < dataset.length; i++) {
+      dataset[i] = dataset[i] - cvalue;
+      if (dataset[i]  < -180 ) {
+        dataset[i] = dataset[i] + 360;
+      }
+    };
+    var min = _.min(dataset);
+    var max = _.max(dataset);
+
+    min = Math.max(-180,(Math.trunc(min/5)-1)*5);
+    max = Math.min(180,(Math.trunc(max/5)+1)*5);
+
+
+    max = max - min;
+    for (var i = 0; i < dataset.length; i++) {
+      dataset[i] = dataset[i] - min;
+    };
+    cvalue = cvalue-min;
+    min = 0;
+
+    return {  extents: [min, max], offset: cvalue, clamp: [ 0, 360, 360 ] };   
+  }
+
+  degAveraged(dataset) {
+    // perform a circular mean.
+    var sinMean = 0;
+    var cosMean = 0;
+    var clamp = [0,360,360];
+    var relativeclamp = [-180, 180, 360];
+    for (var i = 0; i < dataset.length; i++) {
+      if (dataset[i] < 0) {
+        clamp = relativeclamp;
+        dataset[i] = dataset[i]+360;
+      }
+      sinMean = sinMean + Math.sin(dataset[i]*Math.PI/180);
+      cosMean = cosMean + Math.cos(dataset[i]*Math.PI/180);
+    };
+    sinMean = sinMean/dataset.length;
+    cosMean = cosMean/dataset.length;
+    var mean = Math.atan2(sinMean, cosMean)*180/Math.PI;
+    mean = Math.trunc(mean/10)*10
+    if ( mean < 0 ) {
+      mean = mean + 360;
+    }
+    // shift all the values to center on the mean.
+    for (var i = 0; i < dataset.length; i++) {
+      dataset[i] = dataset[i] - mean;
+      if ( dataset[i] < -180 ) {
+        dataset[i] = dataset[i] + 360;
+      }
+    };
+    var min = _.min(dataset);
+    var max = _.max(dataset);
+
+    min = (Math.trunc(min/5)-1)*5;
+    max = (Math.trunc(max/5)+1)*5;
+    return {  extents: [min, max], offset: mean, clamp: clamp };    
+  }
 
   degExtent(dataset) {
     // perform a circular mean.
@@ -216,7 +277,7 @@ class StripChart extends React.Component {
 
     // all is in the range 0 - 360, if min < mean < max, then the mean is between the values.
     if ( min < mean && mean < max ) {
-      return [ min, max];
+      return { extents: [min, max], offset: 0, clamp: [ 0, 360, 360 ]};
     } else {
       // mean is outside the values which effectively makes the max the min and the min the max.
       // the range and dataset will now go from a negative degree to +ve degree.
@@ -228,7 +289,7 @@ class StripChart extends React.Component {
         }
       };
       max = max-360; 
-      return [ max, min];
+      return { extents: [max, min], offset: 0, clamp: [ 0, 360, 360 ] };
     }
 
   }
@@ -270,7 +331,7 @@ class StripChart extends React.Component {
     } else {
       max = rmax;
     }
-    return [ min, max];
+    return  { extents: [min, max], offset: 0 };
   }
 
 
@@ -291,7 +352,7 @@ class StripChart extends React.Component {
 
 
 
-  drawAxis(ctx, scale, xaxis, width, height, n, color) {
+  drawAxis(ctx, scale, xaxis, width, height, n, color, extent) {
     var majorTicks = scale.ticks(10);
     var minorTicks = scale.ticks(20);
     var subMinorTicks = scale.ticks(100);
@@ -345,10 +406,24 @@ class StripChart extends React.Component {
 
     for (var i = 0; i < majorTicks.length; i++) {
       var tx = scale(majorTicks[i]);
+      var v = majorTicks[i];
+      if ( extent != undefined ) {
+        if ( extent.offset !== undefined ) {
+          v = v + extent.offset;
+        }
+        if ( extent.clamp !== undefined ) {
+          if ( v < extent.clamp[0]) {
+            v = v + extent.clamp[2];
+          }
+          if ( v > extent.clamp[1]) {
+            v = v - extent.clamp[2];
+          }
+        }
+      }
       if ( xaxis ) {
-        ctx.fillText(formater(majorTicks[i]), tx, height-7);
+        ctx.fillText(formater(v), tx, height-7);
       } else {
-        ctx.fillText(formater(majorTicks[i]), offset+7, tx);
+        ctx.fillText(formater(v), offset+7, tx);
       }
     };
   }
@@ -389,10 +464,10 @@ class StripChart extends React.Component {
 
 
             var y = d3.scaleLinear()
-                .domain(group.extent)
+                .domain(group.extent.extents)
                 .range([height, 0]);
 
-            this.drawAxis(ctx, y, false, width, height, i, group.color);
+            this.drawAxis(ctx, y, false, width, height, i, group.color, group.extent);
 
             ctx.beginPath();
 
