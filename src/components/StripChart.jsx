@@ -44,19 +44,19 @@ class StripChart extends React.Component {
             color: 'orange',
             fill: false,
             enabled: true,
-            path: "_preferred.navigation.speedThroughWater"
+            path: "_prefered.navigation.speedThroughWater"
           },
           {
             color: 'green',
             fill: false,
             enabled: false,
-            path: "_preferred.navigation.speedThroughWater"
+            path: "_prefered.navigation.speedThroughWater"
           },
           {
             color: 'blue',
             fill: false,
             enabled: false,
-            path: "_preferred.navigation.speedThroughWater"
+            path: "_prefered.navigation.speedThroughWater"
           }
         ]           
     });
@@ -110,7 +110,7 @@ class StripChart extends React.Component {
       };
       _.merge(group, props.datasets[i]);
       if ( group.enabled) {
-        group.dataStream = this.app.stats.addPath(group.path);
+        group.dataStream = this.app.stats.addPath(group.path, this.state.historyLength);
         console.log("Attached to ",group.path);
       }
     };
@@ -141,23 +141,28 @@ class StripChart extends React.Component {
 
 
   update() {
-    this.cstate.timeSequence.push(new Date());
-    while ( this.cstate.timeSequence.length > this.state.historyLength) {
-      this.cstate.timeSequence.shift();
-    }
-    for (var i = 0; i < this.cstate.datasets.length; i++) {
-      var group = this.cstate.datasets[i];
-      if ( group.enabled) {
-        group.data.push(group.dataStream.value);
-        while ( group.data.length > this.state.historyLength) {
-          group.data.shift();
+    if (this.bound ) {
+      var l = 0;
+      for (var i = 0; i < this.cstate.datasets.length; i++) {
+        var group = this.cstate.datasets[i];
+        if ( group.enabled) {
+          l = Math.max(l, group.dataStream.history.length);
         }
       }
-    };
-    if (this.bound ) {
-      this.draw();
+      l = Math.min(this.state.historyLength, l);
+      if ( l > 0 ) {
+        for (var i = 0; i < this.cstate.datasets.length; i++) {
+          var group = this.cstate.datasets[i];
+          if ( group.enabled) {
+            group.data = group.dataStream.history.slice(0,l).reverse();
+          }
+        };
+        this.cstate.timeSequence = this.app.stats.historyTime.slice(0,l).reverse();
+
+        this.draw();        
+      }
+      setTimeout(this.update, this.state.updaterate);
     }
-    setTimeout(this.update, this.state.updaterate);
   }
 
 

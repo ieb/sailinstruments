@@ -21,6 +21,7 @@ class Stats  {
     this.app = props.app;
     this.historyRate = props.period || 1000;
     this.setHistoryPeriod(props.historyTime);
+    this.historyTime = [];
     this.valueStreams = {};
     this.defaultIRRCalculator = this.defaultIRRCalculator.bind(this);
     this.defaultValueCalculator = this.defaultValueCalculator.bind(this);
@@ -124,12 +125,13 @@ class Stats  {
 
 
 
-  addPath(path, withHistory, onValue) {
+  addPath(path, hl, onValue) {
     var sourceId = this.getSourceId(path);
     var paramPath = this.getPath(path);
     if ( this.valueStreams[path] === undefined) {
       var h = undefined;
-      if (withHistory) {
+      if (hl !== undefined) {
+        hl = Math.max(hl, this.historyLength);
         h = [];
       }
       var calcIIR = this.getCalcIIR(paramPath);
@@ -142,6 +144,7 @@ class Stats  {
         calcIIR: (v,d) => {
             return calcIIR(v, vs.value, d);
         },
+        historyLength: hl,
         update: (v) => {
           vs.value = calcValue(v);
           if (onValue !== undefined ) {
@@ -152,9 +155,12 @@ class Stats  {
       };
       utils.resolve( [this.valueStreams[path]], this.app.databus);
       utils.subscribe([this.valueStreams[path] ], this);
-    } else if ( withHistory ) {
+    } else if ( hl !== undefined ) {
       if ( this.valueStreams[path].history  === undefined ) {
         this.valueStreams[path].history = [];
+        this.valueStreams[path].historyLength = Math.max(hl, this.historyLength);
+      } else {
+        this.valueStreams[path].historyLength = Math.max(hl, this.valueStreams[path].historyLength);
       }
     }
     console.log("Added path ", path);
@@ -162,15 +168,25 @@ class Stats  {
   }
 
   updateHistory() {
+    var n = new Date();
+    var hl = this.historyLength;
     for (var i in  this.valueStreams) {
       var vs = this.valueStreams[i];
+      hl = Math.max(hl,vs.historyLength);
       if ( vs.history !== undefined ) {
         vs.history.unshift(vs.value);
-        while (vs.history.length > this.historyLength ) {
+        while (vs.history.length > vs.historyLength ) {
           vs.history.pop();
         }        
       }
     }
+    // maintain a history of time, mainly for strip charts.
+    this.historyTime.unshift(n);
+    while (this.historyTime.length > hl ) {
+      this.historyTime.pop();
+    }        
+
+
   }
 
 }

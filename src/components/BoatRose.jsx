@@ -63,8 +63,8 @@ class BoatRose extends React.Component {
     this.targetAnglePath = props.targetAnglePath || "calculated.performance.targetAngle";
     this.hdmPath = props.hdmPath || "_preferred.navigation.headingMagnetic";
     this.leewayStream = this.app.stats.addPath(this.leewayPath);
-    this.awaStream = this.app.stats.addPath(this.awaPath, true);
-    this.twaStream = this.app.stats.addPath(this.twaPath, true);
+    this.awaStream = this.app.stats.addPath(this.awaPath, 300);
+    this.twaStream = this.app.stats.addPath(this.twaPath, 300);
     this.targetAngleStream = this.app.stats.addPath(this.targetAnglePath);
     this.hdmStream = this.app.stats.addPath(this.hdmPath);    
   }

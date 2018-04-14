@@ -28,7 +28,7 @@ In addition the layout and settings can be configured. These are currently saved
 
 
 
-# Features
+# Todo list
 
 - [X] Basic sailing instrument with magnetic and boat rose, twa,awa,target twa, gwd, next tack, and history.
 - [X] Full polar with full set of calculations.
@@ -46,7 +46,8 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Make conversions and units work based on the path of the source.
 - [X] Change the subscription and update mechanism to use bacon. (only for some components, proved too complex for ones with history)
 - [X] Fix display of navigation.position.
-- [ ] Make strip chart histories persist so that when navigating between tabs, the history is not lost.
+- [X] Make strip chart histories persist so that when navigating between tabs, the history is not lost.
+- [ ] Fix sizing on polar and wind displays.
 - [ ] Fix global config screen.
 - [ ] Expand stats capabilities, (standard deviation, moving averages)
 - [ ] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
@@ -54,3 +55,25 @@ In addition the layout and settings can be configured. These are currently saved
 - [ ] Visualise sail plan against polar.
 - [ ] Calculate TWA, TWS, Polar speed, VMG, tack, vmg, sail selection on each leg.
 - [ ] Sail selection on next leg - based on BTW or List of waypoints.
+
+
+
+# Research Information for features.
+
+## Sail plan
+
+Each sail needs to be represented as a surface on a TWS vs TWA area, could be optimised into cells with list of preferences.
+http://bl.ocks.org/bycoffe/5575904 d3js allowing drawing a polygons and performing point in polygon.
+
+## Route and Waypoint information - required for next leg planning.
+
+PGN 130064 to 130074  129285 cover the transfer of waypoints and routes, however afaik no MFDs support transfer of waypoints or routes over NMEA2000. Most support transfer using GPX format on SDCards. PGN descriptions for that range are at https://www.nmea.org/content/nmea_standards/messages_pgns.asp and https://github.com/SignalK/n2k-signalk/issues/11
+
+NMEA0183 WPL and RTE sentences deal with route and waypoint transfer.
+
+Navionics Plotter Sync, a proprietary protocol, deals with transfer of routes in GPX format between enabled MFDs and Navionics apps. This requires manual intervention to enable, but is easier than switching SD cards. It might be 
+
+Chromebooks have a SD card reader built in and some Tablets might also, upload of GPX might be viable.
+
+Some MFDs might use standard protocols, eg SMB. LightHouseIII is Linux on ARM with a Qt UI.
+

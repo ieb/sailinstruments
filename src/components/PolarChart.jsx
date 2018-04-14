@@ -68,8 +68,8 @@ class PolarChart extends React.Component {
     this.hdmStream = this.app.stats.addPath(this.hdmPath);
     this.otherTackDirStream = this.app.stats.addPath(this.otherTackDirPath);
     this.twsStream = this.app.stats.addPath(this.twsPath);
-    this.twaStream = this.app.stats.addPath(this.twaPath,true);
-    this.stwStream = this.app.stats.addPath(this.stwPath, true);
+    this.twaStream = this.app.stats.addPath(this.twaPath,300);
+    this.stwStream = this.app.stats.addPath(this.stwPath, 300);
     this.targetSpeedStream = this.app.stats.addPath(this.targetSpeedPath);
     this.targetAngleStream = this.app.stats.addPath(this.targetAnglePath);
   }
