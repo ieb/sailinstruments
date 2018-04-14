@@ -12,12 +12,14 @@ class WindInstrument extends React.Component {
 
   constructor(props) {
     super(props);
-    console.log("New Wind Instrument with Nortup set to ",props.northup);
     this.app = props.app;
     this.props = props;
     this.state = {
       northup: props.northup,
-      updaterate: +props.updaterate
+      updaterate: +props.updaterate,
+      scale: { 
+        transform: "scale(0.5,0.5)"
+      }
     };
   }
 
@@ -26,7 +28,10 @@ class WindInstrument extends React.Component {
     _.defaults(layout.contents.props,{
         northup: true,
         updaterate: 1000,
-        damping: 4
+        damping: 4,
+        scale: { 
+            transform: "scale(0.5,0.5)"
+        }
     });
   }
 
@@ -38,12 +43,15 @@ class WindInstrument extends React.Component {
             northup={props.northup} 
             updaterate={props.updaterate} 
             app={app} 
-            damping={props.damping} />
+            damping={props.damping}
+            scale={{ transform: "scale(0.5,0.5)"}} />
         );
   }
 
-  setProps(props) {
+  setProps(props, newState) {
     this.props = props;
+    newState.scale = this.getScale();
+    return true; 
   }
 
   componentWillReceiveProps(nextProps) {
@@ -52,14 +60,8 @@ class WindInstrument extends React.Component {
 
   getScale() {
     var wscale = 1;
-    if ( this.container === undefined ) {
-      console.log("Container not defined");
-    } else {
+    if ( this.container !== undefined ) {
       wscale = this.container.parentElement.offsetWidth/620;
-      console.log({ container: this.container, 
-        offsetWidth:this.container.offsetWidth, 
-        offsetHeight:this.container.offsetHeight, 
-        scale: wscale});
     }
     return { 
       transform: "scale("+wscale+","+wscale+")"
@@ -67,9 +69,22 @@ class WindInstrument extends React.Component {
   }
 
 
+  componentDidMount() {
+    var self = this;
+    // the values for offsetWitdht are not available immediately.
+    // so allow the browser to render and then rset the css scale. 
+    setTimeout(() => {
+        self.setState({scale: self.getScale()});
+    }, 10);
+  }
+
+  componentWillUnmount() {
+  }
+
+
   render() {
     return (
-        <div ref={node => this.container = node} className="instrumentContainer" style={this.getScale()}  >
+        <div ref={node => this.container = node} className="instrumentContainer" style={this.state.scale}  >
             <CompassRose northup={this.state.northup} app={this.app} 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 

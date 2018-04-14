@@ -155,15 +155,16 @@ class Stats  {
       };
       utils.resolve( [this.valueStreams[path]], this.app.databus);
       utils.subscribe([this.valueStreams[path] ], this);
+      console.log("Added path ", path, this.valueStreams[path]);
     } else if ( hl !== undefined ) {
       if ( this.valueStreams[path].history  === undefined ) {
         this.valueStreams[path].history = [];
         this.valueStreams[path].historyLength = Math.max(hl, this.historyLength);
+        console.log("Added history ", path, this.valueStreams[path]);
       } else {
         this.valueStreams[path].historyLength = Math.max(hl, this.valueStreams[path].historyLength);
       }
     }
-    console.log("Added path ", path);
     return this.valueStreams[path];
   }
 

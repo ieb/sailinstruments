@@ -12,7 +12,10 @@ class PolarInstrument extends React.Component {
     super(props);
     this.app = props.app;
     this.state = {
-      updaterate: props.updaterate
+      updaterate: props.updaterate,
+      scale: { 
+        transform: "scale(0.5,0.5)"
+      }
     };
   }
 
@@ -20,7 +23,10 @@ class PolarInstrument extends React.Component {
     layout.contents.className="cellContainer";
      _.defaults(layout.contents.props,{
         updaterate: 1000,
-        damping: 2
+        damping: 2,
+        scale: { 
+            transform: "scale(0.5,0.5)"
+        }
     });
     PolarInstrument.updateLayoutContents(app, newTab, layout)
   }
@@ -28,7 +34,6 @@ class PolarInstrument extends React.Component {
   static updateLayoutContents(app, newTab, layout) {
     layout.contents.props.width = ((newTab.width/newTab.cols)*layout.w);
     layout.contents.props.height = (newTab.rowHeight)*layout.h;
-    console.log({ nw: layout.w, nh: layout.h, tw: newTab.width,  th: newTab.rowHeight});
   }
 
 
@@ -38,13 +43,15 @@ class PolarInstrument extends React.Component {
           updaterate={props.updaterate}
           app={app} 
           damping={props.damping}
-          width={props.width}
-          height={props.height} />
+          scale={{ transform: "scale(0.5,0.5)"}} />
+
         );
   }
 
-  setProps(props) {
+  setProps(props, newState) {
     this.props = props;
+    newState.scale = this.getScale();
+    return true; 
   }
 
   componentWillReceiveProps(nextProps) {
@@ -53,25 +60,31 @@ class PolarInstrument extends React.Component {
 
   getScale() {
     var wscale = 1;
-    if ( this.container === undefined ) {
-      console.log("Container not defined");
-    } else {
+    if ( this.container !== undefined ) {
       wscale = this.container.parentElement.offsetWidth/620;
-      console.log({ container: this.container, 
-        offsetWidth:this.container.offsetWidth, 
-        offsetHeight:this.container.offsetHeight, 
-        scale: wscale});
     }
     return { 
       transform: "scale("+wscale+","+wscale+")"
     };
   }
 
+  componentDidMount() {
+    var self = this;
+    // the values for offsetWitdht are not available immediately.
+    // so allow the browser to render and then rset the css scale. 
+    setTimeout(() => {
+        self.setState({scale: self.getScale()});
+    }, 10);
+  }
+
+  componentWillUnmount() {
+  }
+
 
 
   render() {
     return (
-        <div ref={node => this.container = node} className="instrumentContainer" style={this.getScale()}  >
+        <div ref={node => this.container = node} className="instrumentContainer" style={this.state.scale}  >
           <PolarChart northup={this.state.northup} app={this.app} updaterate={this.state.updaterate} width="620" height="620" />
         </div>
     );
