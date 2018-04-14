@@ -61,13 +61,9 @@ class StripChartConfigure extends React.Component {
             <input type="checkbox" checked={value.enabled} 
               onChange={(e) => { this.onDataSetChange(e,i,"enabled")}} />
         </label>
-        <label>units
-            <input type="text" value={value.units} 
-            onChange={(e) => { this.onDataSetChange(e,i,"units")}} />
-        </label>
-        <label>label
-          <input type="text" value={value.label} 
-            onChange={(e) => { this.onDataSetChange(e,i,"label")}} />
+        <label>zero base
+            <input type="checkbox" checked={value.zerobase} 
+              onChange={(e) => { this.onDataSetChange(e,i,"zerobase")}} />
         </label>
       </div>);
 

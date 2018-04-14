@@ -4,6 +4,7 @@
 import React from 'react';
 import * as d3 from 'd3';
 import utils from './utils.jsx';
+import units from './units.jsx';
 import _ from "lodash";
 import StripChartConfigure from "./StripChartConfigure.jsx";
 
@@ -44,18 +45,21 @@ class StripChart extends React.Component {
             color: 'orange',
             fill: false,
             enabled: true,
+            zerobase: false,
             path: "_prefered.navigation.speedThroughWater"
           },
           {
             color: 'green',
             fill: false,
             enabled: false,
+            zerobase: false,
             path: "_prefered.navigation.speedThroughWater"
           },
           {
             color: 'blue',
             fill: false,
             enabled: false,
+            zerobase: false,
             path: "_prefered.navigation.speedThroughWater"
           }
         ]           
@@ -94,7 +98,7 @@ class StripChart extends React.Component {
 
   setProps(props) {
     this.cstate = this.cstate || {};
-     _.defaults(this.cstate,{
+    _.defaults(this.cstate,{
       timeSequence: [],
       datasets: [
       ]
@@ -154,7 +158,30 @@ class StripChart extends React.Component {
         for (var i = 0; i < this.cstate.datasets.length; i++) {
           var group = this.cstate.datasets[i];
           if ( group.enabled) {
-            group.data = group.dataStream.history.slice(0,l).reverse();
+            var ds = group.dataStream.history.slice(0,Math.min(l,group.dataStream.history.length));
+            var mean = _.mean(ds);
+            // convert the data.
+            // find the mean value first, then use that to get the display data.
+            group.display = units.displayForFullPath(mean, group.path);
+
+            // the dataset may be partial and started from later than others, so 
+            // save as much as possible, defaulting the remainder to the earliest 
+            // known value
+            group.data = [];
+            for (var j = 0; j < ds.length; j++) {
+              group.data.push(group.display.conversion(ds[j]));
+            }
+            for (var j = ds.length; j < l; j++) {
+              group.data.push(group.data[ds.length-1]);
+            }
+            // reverse the order for drawing.
+            group.data = group.data.reverse();
+            if ( group.display.units === 'deg') {
+              group.extent = this.degExtent(group.data);
+              group.curcular = true;
+            } else {
+              group.extent = this.defaultExtent(group.data, group.zerobase);
+            }
           }
         };
         this.cstate.timeSequence = this.app.stats.historyTime.slice(0,l).reverse();
@@ -164,6 +191,88 @@ class StripChart extends React.Component {
       setTimeout(this.update, this.state.updaterate);
     }
   }
+
+
+  degExtent(dataset) {
+    // perform a circular mean.
+    var sinMean = 0;
+    var cosMean = 0;
+    for (var i = 0; i < dataset.length; i++) {
+      if (dataset[i] < 0) {
+        dataset[i] = dataset[i]+360;
+      }
+      sinMean = sinMean + Math.sin(dataset[i]*Math.PI/180);
+      cosMean = cosMean + Math.cos(dataset[i]*Math.PI/180);
+    };
+    sinMean = sinMean/dataset.length;
+    cosMean = cosMean/dataset.length;
+    var mean = Math.atan2(sinMean, cosMean)*180/Math.PI;
+    // find the extents.
+    var min = _.min(dataset);
+    var max = _.max(dataset);
+    if ( mean < 0 ) {
+      mean = mean+360;
+    }
+
+    // all is in the range 0 - 360, if min < mean < max, then the mean is between the values.
+    if ( min < mean && mean < max ) {
+      return [ min, max];
+    } else {
+      // mean is outside the values which effectively makes the max the min and the min the max.
+      // the range and dataset will now go from a negative degree to +ve degree.
+      // when rendering, the numbers of the scale must be adjusted to make sense depending on 
+      // if this is relative or absolute.
+      for (var i = 0; i < dataset.length; i++) {
+        if ( dataset[i] > max ) {
+          dataset[i] = dataset[i]-360;
+        }
+      };
+      max = max-360; 
+      return [ max, min];
+    }
+
+  }
+
+  range(v,d) {
+    var base = 1;
+    // max should be rounded up
+    for ( var i = 0; i < 10; i++) {
+      if ( v < (30*base) ) {
+        // round up to the next even.
+        return (Math.trunc(v/(2*base))+d)*(2*base);
+      } else if ( v < (50*base) ) {
+        // round up to the next 10.
+        return (Math.trunc(v/(10*base))+d)*(10*base);
+      }
+      base = base*10;
+    }
+    return (Math.trunc(v/(2*base))+d)*(2*base);
+  }
+
+    // the dataset is in the converted form
+  // it is assumed to be linear and will be 0 based.
+  defaultExtent(dataset, zerobase) {
+    var min = _.min(dataset);
+    if ( zerobase && min > 0 ) {
+      min = 0;
+    } else {
+      var rmin = this.range(Math.abs(min),-1);
+      if (min < 0) {
+        min = -rmin;
+      } else {
+        min = rmin;
+      }
+    }
+    var max = _.max(dataset);
+    var rmax = this.range(Math.abs(max),1);
+    if ( max < 0 ) {
+      max = -rmax;
+    } else {
+      max = rmax;
+    }
+    return [ min, max];
+  }
+
 
 
   draw() {
@@ -278,8 +387,9 @@ class StripChart extends React.Component {
           var group = redrawData.datasets[i];
           if ( group.enabled) {
 
+
             var y = d3.scaleLinear()
-                .domain(d3.extent(group.data))
+                .domain(group.extent)
                 .range([height, 0]);
 
             this.drawAxis(ctx, y, false, width, height, i, group.color);
@@ -310,6 +420,15 @@ class StripChart extends React.Component {
               ctx.fill();
               ctx.globalAlpha = 1;
             }
+
+            if ( group.display !== undefined ) {
+              ctx.font = '15px '+this.fontFamily;
+              ctx.textAlign = 'left';
+              ctx.fillText(group.display.title, 5, 15+25*i);
+            }
+
+
+
           }          
         }
         ctx.restore();
