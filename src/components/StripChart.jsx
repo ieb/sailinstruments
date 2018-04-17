@@ -117,6 +117,7 @@ class StripChart extends React.Component {
         group.dataStream = this.app.stats.addPath(group.path, this.state.historyLength);
         console.log("Attached to ",group.path);
       }
+      console.log("Final group", group);
     };
 
   }
@@ -192,31 +193,6 @@ class StripChart extends React.Component {
     }
   }
 
-  // make the current value the center
-  degCentered(dataset) {
-    var cvalue = dataset[dataset.length-1];
-    for (var i = 0; i < dataset.length; i++) {
-      dataset[i] = dataset[i] - cvalue;
-      if (dataset[i]  < -180 ) {
-        dataset[i] = dataset[i] + 360;
-      }
-    };
-    var min = _.min(dataset);
-    var max = _.max(dataset);
-
-    min = Math.max(-180,(Math.trunc(min/5)-1)*5);
-    max = Math.min(180,(Math.trunc(max/5)+1)*5);
-
-
-    max = max - min;
-    for (var i = 0; i < dataset.length; i++) {
-      dataset[i] = dataset[i] - min;
-    };
-    cvalue = cvalue-min;
-    min = 0;
-
-    return {  extents: [min, max], offset: cvalue, clamp: [ 0, 360, 360 ] };   
-  }
 
   degAveraged(dataset) {
     // perform a circular mean.
@@ -244,6 +220,9 @@ class StripChart extends React.Component {
       dataset[i] = dataset[i] - mean;
       if ( dataset[i] < -180 ) {
         dataset[i] = dataset[i] + 360;
+      }
+      if ( dataset[i] > 180 ) {
+        dataset[i] = dataset[i] - 360;
       }
     };
     var min = _.min(dataset);

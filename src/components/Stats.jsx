@@ -170,11 +170,11 @@ class Stats  {
 
   updateHistory() {
     var n = new Date();
-    var hl = this.historyLength;
+    var hl = this.historyLength || 20;
     for (var i in  this.valueStreams) {
       var vs = this.valueStreams[i];
-      hl = Math.max(hl,vs.historyLength);
-      if ( vs.history !== undefined ) {
+      if ( vs.history !== undefined && vs.historyLength != undefined) {
+        hl = Math.max(hl,vs.historyLength);
         vs.history.unshift(vs.value);
         while (vs.history.length > vs.historyLength ) {
           vs.history.pop();
