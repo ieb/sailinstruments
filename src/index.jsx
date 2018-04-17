@@ -8,7 +8,6 @@ import Calculations from './components/calcs/calculations.jsx';
 import Stats from './components/Stats.jsx';
 import Layout from './components/Layout.jsx';
 import LayoutRaw from './components/LayoutRaw.jsx';
-import GlobalSettings from './components/settings/GlobalSettings.jsx';
 import Qty  from 'js-quantities';
 
 import './style.css';
@@ -44,12 +43,12 @@ class App extends React.Component {
         super(props);
         this.props = props;
         this.sourcePriority = props.sourcePriority;
-        this.defaultSourceId = props.defaultSourceId;
         this.databus = new StreamBundle();
         this.clientConnector = new SignalKClientConnector({
            databus : this.databus,
            autoconnect: true 
         });
+
         this.knownKeys = {};
         this.layout = undefined;
         this.settings = undefined;
@@ -99,26 +98,46 @@ class App extends React.Component {
 
 // perhaps this wants to be in the layout ?
 
-  openGlobalSettings() {
-    var self = this;
-    this.setState({ settings: React.createElement(GlobalSettings, 
-      { 
-        url: self.clientConnector.url, 
-        defaultSourceId: self.defaultSourceId,
-        sourcePriority: self.sourcePriority,
-        update: (update) => {
-          if ( self.clientConnector.url !== update.url) {
-            self.clientConnector.doConnect(update.url);
-          }
-          self.defaultSourceId = update.defaultSourceId;
-          self.sourcePriority = update.sourcePriority;
-          self.setState({settings: ""});
-        } ,
-        remove: () => {
-          self.setState({settings: ""});
+  openGlobalSettings(sourcePriority, hostPort, feedback) {
+    if ( this.layout !== undefined ) {
+      sourcePriority = sourcePriority || this.databus.sourceIdPreferences.join(",");
+      hostPort = hostPort || this.clientConnector.hostPort;
+      var knownSource = [];
+      for(var k in this.knownKeys ) {
+        if ( this.knownKeys[k] !== undefined && this.knownKeys[k].sourceId !== undefined)
+        var sourceId = this.knownKeys[k].sourceId;
+        if ( sourceId !== "_preferred" && knownSource.indexOf(sourceId) < 0 ) {
+          knownSource.push(sourceId);
         }
       }
-    ) });
+      this.layout.configureCell("_global", {
+        contents: {
+          props: {
+            hp: {
+              value: hostPort,
+              title: "Signal K Websocket Host:Port",
+              help: "Host and port for the SignalK Websocket"
+            },
+            sourcePriority: {
+              value: sourcePriority,
+              title: "Source Priority list",
+              help: "comma seperated list of source Ids. Prefered should be first. Known sources are "+knownSource.join(",")
+            } 
+          },
+          feedback: feedback
+        },
+        update: (update) => {
+          console.log("Got Update ",update);
+          if ( update.hp.value !== this.clientConnector.hostPort ) {
+            this.clientConnector.doConnect(update.hp.value);
+            this.knownKeys = [];
+          }
+          this.databus.sourceIdPreferences = update.sourcePriority.value.replace(/\s/g,"").split(",");
+          // probably need to save the result in layout.
+          // could try catch and then present feedback.
+        }
+      });
+    } 
   }
 
 
@@ -144,7 +163,7 @@ class App extends React.Component {
 
 //  <Calculations  databus={this.databus} sourceId="nmeaFromFile.II" />
 
-const element = <App defaultSourceId="nmeaFromFile"  sourcePriority="" ></App>;    
+const element = <App sourcePriority="" ></App>;    
 
 console.log("Now Running");
 document.body.className = "running";

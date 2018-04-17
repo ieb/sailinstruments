@@ -16,6 +16,17 @@ import utils from './utils.jsx';
 import './react-tabs.css';
 
 
+/**
+ * This class controls the layout which is saved to the local storage of the client on every change. 
+ * Saving to the local storage allows multiple clients to be run each with their own unique configuration
+ * from the same server, without having to implement complex configuation management on the server.
+ * they layout consists of global properties and a layout containing tabs and cells. All have properties.
+ * valuous screens some controlled by the components manipulate the layout which gets saved and causes 
+ * components to be updated. All changes to the layout are pushed to a bacon bus for components to subscribe 
+ * to if required, for instance, the LayouRaw component subscribes to that bus and displays the raw layout
+ * which can be manually edited. 
+ */
+
 class Layout extends React.Component {
 
   constructor(props) {
@@ -242,24 +253,32 @@ class Layout extends React.Component {
 
   doneConfigureCell(finalConfig) {
     if (finalConfig !== undefined) {
-      console.log("Done configure ", finalConfig);
-      var self = this;
-      var newTabs = self.updateItem(self.state.tabs, "key", self.state.configuringTab, (newTab)=> {
-        newTab.layout = self.updateItem(newTab.layout, "i", self.state.configuringCell, (newCell) => {
-          newCell.contents = _.clone(newCell.contents);
-          newCell.contents.props = _.clone(finalConfig);
-          console.log("Updated  cell",newCell);
-          return newCell;
-        });
-        return newTab;
-      });    
-      console.log("Updated Tabs ", newTabs);
-      this.setState({
-        tabs: newTabs,
-        configuringCell: undefined,
-        configuringTab: undefined
-      });      
-
+      if ( this.state.configuringTab === "_global") {
+        this.state.configuringCell.update(finalConfig);
+        console.log("Done global config", finalConfig);
+        this.setState({
+          configuringCell: undefined,
+          configuringTab: undefined
+        });      
+      } else {
+        console.log("Done configure ", finalConfig);
+        var self = this;
+        var newTabs = self.updateItem(self.state.tabs, "key", self.state.configuringTab, (newTab)=> {
+          newTab.layout = self.updateItem(newTab.layout, "i", self.state.configuringCell, (newCell) => {
+            newCell.contents = _.clone(newCell.contents);
+            newCell.contents.props = _.clone(finalConfig);
+            console.log("Updated  cell",newCell);
+            return newCell;
+          });
+          return newTab;
+        });            
+        console.log("Updated Tabs ", newTabs);
+        this.setState({
+          tabs: newTabs,
+          configuringCell: undefined,
+          configuringTab: undefined
+        });      
+      }
     } else {
       this.setState({
         configuringCell: undefined,
@@ -388,12 +407,20 @@ class Layout extends React.Component {
     return panels;
   }
 
+  renderGlobalConfig() {
+    if (this.state.configuringTab === "_global") {
+      return (<ConfigureCell onDone={this.doneConfigureCell} cell={this.state.configuringCell} app={this.app} />);
+    } 
+    return "";
+  }
+
   render() {
     return (
       <Tabs>
         <TabList>
           {this.renderTabs()}
         </TabList>
+        {this.renderGlobalConfig()}
         {this.renderPanels()}
       </Tabs>
     );

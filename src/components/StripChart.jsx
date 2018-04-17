@@ -21,8 +21,7 @@ class StripChart extends React.Component {
         title: props.title,
         units: props.units,
         historyLength: props.historyLength || 100,
-        updaterate : +props.updaterate || 1000,
-        damping: props.damping || 4
+        updaterate : +props.updaterate || 1000
     };
     this.dstate = {};
     this.cstate = {};
@@ -39,7 +38,6 @@ class StripChart extends React.Component {
     _.defaults(layout.contents.props,{
         updaterate: 1000,
         historyLength: 100,
-        damping: 2,
         datasets: [
           {
             color: 'orange',
@@ -80,7 +78,6 @@ class StripChart extends React.Component {
           title={props.title}
           width={props.width}
           height={props.height}
-          damping={props.damping}
           datasets={props.datasets}
           historyLength={props.historyLength}
           app={app}  />

@@ -17,7 +17,7 @@ class WindInstrument extends React.Component {
     this.state = {
       northup: props.northup,
       updaterate: +props.updaterate,
-      scale: { 
+      _scale: { 
         transform: "scale(0.5,0.5)"
       }
     };
@@ -29,7 +29,7 @@ class WindInstrument extends React.Component {
         northup: true,
         updaterate: 1000,
         damping: 4,
-        scale: { 
+        _scale: { 
             transform: "scale(0.5,0.5)"
         }
     });
@@ -44,13 +44,13 @@ class WindInstrument extends React.Component {
             updaterate={props.updaterate} 
             app={app} 
             damping={props.damping}
-            scale={{ transform: "scale(0.5,0.5)"}} />
+            _scale={{ transform: "scale(0.5,0.5)"}} />
         );
   }
 
   setProps(props, newState) {
     this.props = props;
-    newState.scale = this.getScale();
+    newState._scale = this.getScale();
     return true; 
   }
 
@@ -74,7 +74,7 @@ class WindInstrument extends React.Component {
     // the values for offsetWitdht are not available immediately.
     // so allow the browser to render and then rset the css scale. 
     setTimeout(() => {
-        self.setState({scale: self.getScale()});
+        self.setState({_scale: self.getScale()});
     }, 10);
   }
 
@@ -84,88 +84,68 @@ class WindInstrument extends React.Component {
 
   render() {
     return (
-        <div ref={node => this.container = node} className="instrumentContainer" style={this.state.scale}  >
+        <div ref={node => this.container = node} className="instrumentContainer" style={this.state._scale}  >
             <CompassRose northup={this.state.northup} app={this.app} 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
-                width="620" height="620" />
+                _width="620" _height="620" />
             <BoatRose headup={!this.state.northup} app={this.app} 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
-                width="620" height="620" />
+                _width="620" _height="620" />
             <DataBox top="250" left="260"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 withBox={true}
                 app={this.app}
-                dataPath="_preferred.navigation.speedThroughWater"
-                units="kn"
-                title="stw" />
+                dataPath="_preferred.navigation.speedThroughWater" />
             <DataBox  top="320" left="260"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 withBox={true} 
                 app={this.app}
-                dataPath="_preferred.environment.wind.speedApparent"
-                units="kn"
-                title="aws" />
+                dataPath="_preferred.environment.wind.speedApparent" />
             <DataBox top="10" left="10"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.polarSpeed"
-                units="kn"
-                title="polar stw" />
+                dataPath="_preferred.performance.polarSpeed" />
             <DataBox top="65" left="10"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.polarSpeedRatio"
-                units="%"
-                title="polar %" />
+                dataPath="_preferred.performance.polarSpeedRatio" />
             <DataBox top="505" left="10" 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.targetAngle"
-                units="deg"
-                title="target twa" />
+                dataPath="_preferred.performance.targetAngle" />
             <DataBox top="560" left="10"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.targetSpeed"
-                units="kn"
-                title="target stw" />
+                dataPath="_preferred.performance.targetSpeed" />
 
             <DataBox top="10" left="510"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.headingMagnetic"
-                units="deg"
-                title="tack dir" />
+                dataPath="_preferred.performance.headingMagnetic" />
             <DataBox top="65" left="510"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.ignore"
-                units="deg"
-                title="box number 6" />
+                dataPath="_preferred.performance.ignore" />
             <DataBox top="505" left="510" 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.leeway"
-                units="deg"
-                title="leeway" />
+                dataPath="_preferred.performance.leeway" />
             <DataBox top="560" left="510"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.ignore"
-                units="kn"
-                title="box number 8" />
+                dataPath="_preferred.performance.ignore" />
         </div>
     );
   }

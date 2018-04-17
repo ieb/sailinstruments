@@ -406,9 +406,9 @@ class PolarChart extends React.Component {
   render() {
     return (
       <div className="canvasHolder" >
-        <canvas id={this.polarId} width={this.props.width} height={this.props.height} ></canvas>
-        <canvas id={this.polarRingsId} width={this.props.width} height={this.props.height} ></canvas>
-        <canvas id={this.polarHistoryId} width={this.props.width} height={this.props.height} ></canvas>
+        <canvas id={this.polarId} width={this.props._width} height={this.props._height} ></canvas>
+        <canvas id={this.polarRingsId} width={this.props._width} height={this.props._height} ></canvas>
+        <canvas id={this.polarHistoryId} width={this.props._width} height={this.props._height} ></canvas>
       </div>
     );
   }

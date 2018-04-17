@@ -24,14 +24,14 @@ class SignalKClientConnector {
 
     // default to the same server the UI was loaded from.
 
-    var url = window.location.hostname+":"+window.location.port;
+    var hostPort = window.location.hostname+":"+window.location.port;
     if ( window.location.protocol.startsWith("file:")) {
-      url = "localhost:3000";  // assume there is a sk server on localhost.
-    } else if ( url.endsWith(":") ) {
-      url = url.substring(0,url.length-1);
+      hostPort = "localhost:3000";  // assume there is a sk server on localhost.
+    } else if ( hostPort.endsWith(":") ) {
+      hostPort = hostPort.substring(0,hostPort.length-1);
     }
     if (this.autoconnect) {
-      this.doConnect(url);
+      this.doConnect(hostPort);
     }
   }
 
@@ -59,8 +59,8 @@ class SignalKClientConnector {
   }
 
   doConnect(connectHost) {
-    console.log("Connecting to signalk at ",connectHost);
-    if ( this.connection !== undefined ) {
+    console.log("Connecting to signalk at ",connectHost, this.connection);
+    if ( this.connection !== undefined  ) {
       this.connection.close();
     }
     if ( this.client == undefined ) {
@@ -72,7 +72,7 @@ class SignalKClientConnector {
         this.handleDisconnect,
         this.handleError,
         this.handleClose);
-    this.url = connectHost;
+    this.hostPort = connectHost;
   }
 
   doDisconnect() {

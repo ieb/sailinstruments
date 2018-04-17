@@ -50,21 +50,17 @@ class StripChartConfigure extends React.Component {
     var value = this.state.datasets[i];
     return (
       <div key={k} className="settingsGroup" >
-        Data Set
-        <label>Path
+        <label>Path</label>
             <select value={value.path} 
             onChange={(e) => { this.onDataSetChange(e,i,"path")}} >
             {this.configureCell.getPathOptions(value.path)}
             </select> 
-        </label>
-        <label>enabled
+        <label>enabled</label>
             <input type="checkbox" checked={value.enabled} 
               onChange={(e) => { this.onDataSetChange(e,i,"enabled")}} />
-        </label>
-        <label>zero base
+        <label>zero base</label>
             <input type="checkbox" checked={value.zerobase} 
               onChange={(e) => { this.onDataSetChange(e,i,"zerobase")}} />
-        </label>
       </div>);
 
   }
@@ -83,27 +79,20 @@ class StripChartConfigure extends React.Component {
 
   buildFormContent() {
     var formContent = [];
-    formContent.push((
-      <label key="a">Update Rate (ms)
-        <input type="number" min="100" 
+    formContent.push((<label key="a">Update Rate (ms)</label>));
+    formContent.push((<input key="a1" type="number" min="100" 
           name="updaterate" 
-          value={this.state.updaterate} onChange={this.onChange} />
-      </label>
-      ));
-    formContent.push((
-      <label key="b">History (s)
-        <input type="number" min="10" step="1" 
+          value={this.state.updaterate} onChange={this.onChange} />));
+    formContent.push((<label key="b">History (s)</label>));
+    formContent.push((<input key="b1" type="number" min="10" step="1" 
           name="historyLength"  
-          value={this.state.historyLength} onChange={this.onChange} />
-      </label>
-      ));
-    formContent.push((
-      <label key="c">Damping
-        <input type="number" min="1" step="1" 
+          value={this.state.historyLength} onChange={this.onChange} />));
+    formContent.push((<label key="c">Damping</label>));
+     formContent.push((<input key="c1" type="number" min="1" step="1" 
           name="damping"  
-          value={this.state.damping} onChange={this.onChange} />
-      </label>));
+          value={this.state.damping} onChange={this.onChange} />));
     for (var i = 0; i < this.state.datasets.length; i++) {
+      formContent.push(<label key={"l"+i} >Data Set</label>);
       formContent.push(this.addDataSet(i));
     };
     return formContent;
@@ -111,7 +100,7 @@ class StripChartConfigure extends React.Component {
 
   render() {
     return ( 
-      <div>
+      <div className="settingsForm" >
       {this.buildFormContent()}
       </div>
     )

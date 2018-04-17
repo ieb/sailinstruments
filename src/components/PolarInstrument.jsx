@@ -13,7 +13,7 @@ class PolarInstrument extends React.Component {
     this.app = props.app;
     this.state = {
       updaterate: props.updaterate,
-      scale: { 
+      _scale: { 
         transform: "scale(0.5,0.5)"
       }
     };
@@ -24,7 +24,7 @@ class PolarInstrument extends React.Component {
      _.defaults(layout.contents.props,{
         updaterate: 1000,
         damping: 2,
-        scale: { 
+        _scale: { 
             transform: "scale(0.5,0.5)"
         }
     });
@@ -32,8 +32,8 @@ class PolarInstrument extends React.Component {
   }
 
   static updateLayoutContents(app, newTab, layout) {
-    layout.contents.props.width = ((newTab.width/newTab.cols)*layout.w);
-    layout.contents.props.height = (newTab.rowHeight)*layout.h;
+    layout.contents.props._width = ((newTab.width/newTab.cols)*layout.w);
+    layout.contents.props._height = (newTab.rowHeight)*layout.h;
   }
 
 
@@ -43,14 +43,14 @@ class PolarInstrument extends React.Component {
           updaterate={props.updaterate}
           app={app} 
           damping={props.damping}
-          scale={{ transform: "scale(0.5,0.5)"}} />
+          _scale={{ transform: "scale(0.5,0.5)"}} />
 
         );
   }
 
   setProps(props, newState) {
     this.props = props;
-    newState.scale = this.getScale();
+    newState._scale = this.getScale();
     return true; 
   }
 
@@ -73,7 +73,7 @@ class PolarInstrument extends React.Component {
     // the values for offsetWitdht are not available immediately.
     // so allow the browser to render and then rset the css scale. 
     setTimeout(() => {
-        self.setState({scale: self.getScale()});
+        self.setState({_scale: self.getScale()});
     }, 10);
   }
 
@@ -84,8 +84,8 @@ class PolarInstrument extends React.Component {
 
   render() {
     return (
-        <div ref={node => this.container = node} className="instrumentContainer" style={this.state.scale}  >
-          <PolarChart northup={this.state.northup} app={this.app} updaterate={this.state.updaterate} width="620" height="620" />
+        <div ref={node => this.container = node} className="instrumentContainer" style={this.state._scale}  >
+          <PolarChart northup={this.state.northup} app={this.app} updaterate={this.state.updaterate} _width="620" _height="620" />
         </div>
     );
   }

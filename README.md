@@ -47,8 +47,10 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Change the subscription and update mechanism to use bacon. (only for some components, proved too complex for ones with history)
 - [X] Fix display of navigation.position.
 - [X] Make strip chart histories persist so that when navigating between tabs, the history is not lost.
-- [X Fix sizing on polar and wind displays.
-- [ ] Fix global config screen.
+- [X] Fix sizing on polar and wind displays.
+- [X] Fix memory leak in stripchart taking JS heap from 32MB to 40MB over a 24h period.
+- [X] Fix strip chart scaling so that it deals with circular angles minimal jumps.
+- [X] Fix global config screen.
 - [ ] Expand stats capabilities, (standard deviation, moving averages)
 - [ ] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
 - [ ] Import or input list of waypoints.

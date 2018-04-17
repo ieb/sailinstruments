@@ -263,8 +263,8 @@ class CompassRose extends React.Component {
   render() {
     return (
       <div className="canvasHolder" >
-        <canvas id={this.roseId} width={this.props.width} height={this.props.height}></canvas>
-        <canvas id={this.rosePointersId} width={this.props.width} height={this.props.height}></canvas>
+        <canvas id={this.roseId} width={this.props._width} height={this.props._height}></canvas>
+        <canvas id={this.rosePointersId} width={this.props._width} height={this.props._height}></canvas>
       </div>
   );
   }

@@ -31,10 +31,24 @@ class ConfigureCell extends React.Component {
   onValueChange(event) {
     var newState = {};
     console.log("change event is ", event.target.name, event.target.value);
-    if ( typeof this.state[event.target.name] === "boolean") {
-      newState[event.target.name] = !(this.state[event.target.name]);
+    var value = this.state[event.target.name];
+    if ( value.value === undefined ) {
+      if ( typeof value === "number") {
+        newState[event.target.name] = +value;
+      } else if ( typeof value === "boolean") {
+        newState[event.target.name] = !(value);
+      } else {
+        newState[event.target.name] = event.target.value;
+      }
     } else {
-      newState[event.target.name] = event.target.value;
+      newState[event.target.name] = _.merge({}, value);
+      if ( typeof value === "number") {
+        newState[event.target.name].value = +value;
+      } else if ( typeof value.value === "boolean") {
+        newState[event.target.name].value  = !(value.value);
+      } else {
+        newState[event.target.name].value = event.target.value;
+      }
     }
     this.setState(newState);    
   }
@@ -76,33 +90,58 @@ class ConfigureCell extends React.Component {
     return pathOptions;
   }
 
+
+
   buildFormContent() {
     if ( typeof this.formRender === 'function' ) {
       return this.formRender(this, this.state);
     } else {
+      return (<div className="settingsForm" >{this.internalBuildContent()}</div>);
+    }
+  }
+
+  internalBuildContent() {
       var formContent = [];
       console.log("State is ",this.state);
       for ( var k in this.state ) {
         console.log("Rendering ",k,k.charAt(0));
         if ( k.charAt(0) !== '_' ) {
           var value = this.state[k];
+          if ( value.value === undefined ) {
+            value = {
+              value: this.state[k],
+              title: k,
+              help: ""
+            }
+          }
+          formContent.push((<label key={"lab"+k} >{value.title}</label>));
           console.log("Value ",value);
           if ( k.endsWith('Path') ) {
-              formContent.push((<label  key={k} >{k} <select name={k} value={value} onChange={this.onValueChange} >
-                {this.getPathOptions(value)}
-                </select></label>
+              formContent.push((<select key={k} name={k} value={value.value} onChange={this.onValueChange} >
+                {this.getPathOptions(value.value)}
+                </select>
                 ));
-          } else if ( typeof value === 'boolean') {
-            formContent.push((<label key={k} >{k} <input type="checkbox" name={k} checked={value} onChange={this.onValueChange} /></label>))
+          } else if ( typeof value.value === 'boolean') {
+            formContent.push((<input key={k} type="checkbox" name={k} checked={value.value} onChange={this.onValueChange} />))
+          } else if ( typeof value.value === 'number') {
+            if ( value.min === undefined || value.max === undefined || value.step === undefined) {
+              formContent.push((<input key={k} type="number" name={k} value={value.value} onChange={this.onValueChange} />));
+            } else {
+              formContent.push((<input key={k} type="number" name={k}
+                  min={value.min} max={value.max} step={value.step} 
+                  value={value.value} onChange={this.onValueChange} />));
+            }
           } else {
-            formContent.push((<label key={k} >{k} <input type="text" name={k} value={value} onChange={this.onValueChange} /></label>))
+             formContent.push((<input key={k} type="text" name={k} value={value.value} onChange={this.onValueChange} />))
+          }
+          if ( value.help !== undefined) {
+            formContent.push((<div key={"h"+k} className="help">{value.help}</div>));
           }
         } else {
           console.log("Ignoring ", k);
         }
       }
       return formContent;
-    }
   }
 
 
@@ -128,9 +167,7 @@ class ConfigureCell extends React.Component {
 
         <form onSubmit={this.onDone} >
           <div className="settingsClose" ><button onClick={this.onCancel}>&#10754;</button></div>
-          <div className="settingsForm" >
           {this.buildFormContent()}
-          </div>
           <div className="settingsCancel" ><button onClick={this.onCancel}>Cancel</button></div> 
           <div className="settingsApply" ><input type="submit" value="Apply" /></div> 
         </form>
