@@ -51,10 +51,11 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Fix memory leak in stripchart taking JS heap from 32MB to 40MB over a 24h period.
 - [X] Fix strip chart scaling so that it deals with circular angles minimal jumps.
 - [X] Fix global config screen.
-- [ ] Expand stats capabilities, (standard deviation, moving averages)
+- [X] Allow loading of polars from dist/polars
 - [ ] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
-- [ ] Import or input list of waypoints.
 - [ ] Visualise sail plan against polar.
+- [ ] Import or input list of waypoints.
+- [ ] Expand stats capabilities, (standard deviation, moving averages)
 - [ ] Calculate TWA, TWS, Polar speed, VMG, tack, vmg, sail selection on each leg.
 - [ ] Sail selection on next leg - based on BTW or List of waypoints.
 
@@ -73,9 +74,12 @@ PGN 130064 to 130074  129285 cover the transfer of waypoints and routes, however
 
 NMEA0183 WPL and RTE sentences deal with route and waypoint transfer.
 
-Navionics Plotter Sync, a proprietary protocol, deals with transfer of routes in GPX format between enabled MFDs and Navionics apps. This requires manual intervention to enable, but is easier than switching SD cards. It might be 
-
 Chromebooks have a SD card reader built in and some Tablets might also, upload of GPX might be viable.
 
-Some MFDs might use standard protocols, eg SMB. LightHouseIII is Linux on ARM with a Qt UI.
+Some MFDs might use standard protocols, eg SMB. LightHouseII is Linux on ARM with a Qt UI. ssh and sftp ports are open, GPX normally stored on the SD card, however no user logins available. PlotterSync is closed and proprietary to Navionics bundled
+as a native library inside the MDF and apps. Probably uses ssh or sftp so again, without a user account there is no way of using that.
+
+## Polars
+
+Polars can be put in dist/polars/name.json where name identifies the model of boat. The format needs to be json the same as src/componsnts/calcs/polar/pogo1250.js  (but as json). There is a TODO to allow loading of Polars from the SK schema, however that needs conversion to the internal format to work.
 
