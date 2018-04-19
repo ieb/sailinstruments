@@ -83,6 +83,17 @@ class Layout extends React.Component {
     this.initialiseTabs(this.state.tabs);
     // must attach anyFunctions to the saved state.
     this.doneConfigureCell = this.doneConfigureCell.bind(this);
+
+  }
+
+  getDefaulSocket() {
+    var hostPort = window.location.hostname+":"+window.location.port;
+    if ( window.location.protocol.startsWith("file:")) {
+      hostPort = "localhost:3000";  // assume there is a sk server on localhost.
+    } else if ( hostPort.endsWith(":") ) {
+      hostPort = hostPort.substring(0,hostPort.length-1);
+    }
+    return hostPort;
   }
 
   registerComponent(name, constructor) {
@@ -104,8 +115,6 @@ class Layout extends React.Component {
       });
     this.setState({tabs: newTabs});
   }
-
-
 
   /**
    * Initialises all components adding default properties, like functions if missing.
@@ -228,7 +237,7 @@ class Layout extends React.Component {
   }
 
   componentDidUpdate() {
-    this.app.databus.push("internal", { path: "layoutData", value: this.state});
+    this.app.configBus.push(this.state);
     utils.saveLocalData("layout",this.state);
   }
 
@@ -242,6 +251,17 @@ class Layout extends React.Component {
     }
     event.preventDefault();
   }
+
+  onFinishTabEdit(tab, value) {
+    var self = this;
+    self.setState({tabs: self.updateItem(self.state.tabs, "key", { key: self.state.editing}, (newTab) => {
+        newTab.title = value;
+        return newTab;
+      }),
+      editing: undefined
+    });    
+  }
+
 
   configureCell(tab, cell) {
     console.log("Would configure ", cell);
@@ -287,15 +307,55 @@ class Layout extends React.Component {
     }
   }
 
-  onFinishTabEdit(tab, value) {
+ 
+  configureGlobal() {
     var self = this;
-    self.setState({tabs: self.updateItem(self.state.tabs, "key", { key: self.state.editing}, (newTab) => {
-        newTab.title = value;
-        return newTab;
-      }),
-      editing: undefined
-    });    
+    var sourcePriority = this.state.sourceIdPreferences || [];
+    sourcePriority = sourcePriority.join(",");
+    var polarSourceUri = this.state.polarSourceUri || "pogo1250";
+    var hostPort = this.state.socket || "default";
+    var knownSource = [];
+    var knownKeys = this.app.knownKeys;
+    for(var k in knownKeys ) {
+      if ( knownKeys[k] !== undefined && knownKeys[k].sourceId !== undefined)
+      var sourceId = knownKeys[k].sourceId;
+      if ( sourceId !== "_preferred" && knownSource.indexOf(sourceId) < 0 ) {
+        knownSource.push(sourceId);
+      }
+    }
+    // TODO: get a list of polars rather than have the user work out what they are ?
+    // However, we could also let the user enter any name and load it or not.
+    this.configureCell("_global", {
+      contents: {
+        props: {
+          hp: {
+            value: hostPort,
+            title: "Signal K Websocket Host:Port",
+            help: "Host and port for the SignalK Websocket"
+          },
+          sourcePriority: {
+            value: sourcePriority,
+            title: "Source Priority list",
+            help: "comma seperated list of source Ids. Prefered should be first. Known sources are "+knownSource.join(",")
+          },
+          polarSURL: {
+            value: polarSourceUri,
+            title: "Polar performance source",
+            help: "Name of the polar file, leave blank for default, prefix with sk: for one provided by SignalK, or no prefix for a file in the app"
+          } 
+        }
+      },
+      update: (update) => {
+        console.log("Got Update ",update);
+        self.setState({
+          sourceIdPreferences: update.sourcePriority.value.replace(/\s/g,"").split(","),
+          socket: update.hp.value,
+          polarSourceUri: update.polarSURL.value
+        })
+      }
+    });
   }
+
 
 
 

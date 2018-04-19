@@ -24,14 +24,27 @@ class SignalKClientConnector {
 
     // default to the same server the UI was loaded from.
 
+    if (this.autoconnect) {
+      this.doConnect(this.getDefaultSocket());
+    }
+    this.updateConfig = this.updateConfig.bind(this);
+    props.configStream.onValue(this.updateConfig);
+  }
+
+  getDefaultSocket() {
     var hostPort = window.location.hostname+":"+window.location.port;
     if ( window.location.protocol.startsWith("file:")) {
       hostPort = "localhost:3000";  // assume there is a sk server on localhost.
     } else if ( hostPort.endsWith(":") ) {
       hostPort = hostPort.substring(0,hostPort.length-1);
     }
-    if (this.autoconnect) {
-      this.doConnect(hostPort);
+    return hostPort;    
+  }
+
+  updateConfig(config) {
+    console.log("Got new Config ", config);
+    if (config.socket !== undefined && config.socket !==  this.hostPort ) {
+      this.doConnect(config.socket);
     }
   }
 
@@ -60,7 +73,10 @@ class SignalKClientConnector {
 
   doConnect(connectHost) {
     console.log("Connecting to signalk at ",connectHost, this.connection);
-    if ( this.connection !== undefined  ) {
+    if ( connectHost === "default" || connectHost === undefined ) {
+      connectHost = this.getDefaultSocket();
+    }
+    if ( this.connection !== undefined && typeof this.connection.close === "function" ) {
       this.connection.close();
     }
     if ( this.client == undefined ) {

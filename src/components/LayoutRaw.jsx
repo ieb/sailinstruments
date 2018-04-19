@@ -43,14 +43,16 @@ class LayoutRaw extends React.Component {
   componentDidMount() {
     if ( !this.bound ) {
       this.bound = true;  
-      utils.resolve( [ this.layoutDataStream], this.app.databus);
-      utils.subscribe([ this.layoutDataStream ], this);
+      this.subscription = this.app.configStream.onValue(this.update);
     }
   }
 
   componentWillUnmount() {
     this.bound = false;
-    utils.unsubscribe([ this.layoutDataStream ]);
+    if ( this.subscription !== undefined) {
+      this.subscription.unsubscribe();
+      this.subscription = undefined;
+    }
   }
 
 

@@ -27,11 +27,12 @@ with a idle timeout of 30s.
 */
 
 
-var Bacon = require('baconjs');
-var Qty = require('js-quantities');
-var signalkSchema = require('@signalk/signalk-schema');
+const Bacon = require('baconjs');
+const Qty = require('js-quantities');
+const signalkSchema = require('@signalk/signalk-schema');
+const _ = require("lodash");
 
-var vesselSchema = require('@signalk/signalk-schema/schemas/vessel');
+const vesselSchema = require('@signalk/signalk-schema/schemas/vessel');
 var signalkMainPaths = {};
 for(var prop in vesselSchema.properties) {
   if(typeof vesselSchema.properties[prop] === 'object') {
@@ -43,12 +44,24 @@ var conversions = {
   "rad": Qty.swiftConverter('rad', 'deg')
 }
 
-function StreamBundle() {
+function StreamBundle(props) {
   this.buses = {}; // the raw buses
   this.streams = {}; // a stream object that provides a debounced object.
   this.sourceIdPreferences = []; // set this to change the priorities.
   this.pathValues = new Bacon.Bus();
   this.allSources = new Bacon.Bus();
+
+  this.updateConfig = this.updateConfig.bind(this);
+  props.configStream.onValue(this.updateConfig);
+}
+
+StreamBundle.prototype.updateConfig = function(config) {
+  console.info("Got new Config ", config);
+  if ( config.sourceIdPreferences !== undefined ) {
+    this.sourceIdPreferences = _.clone(config.sourceIdPreferences);
+  } else {
+    this.sourceIdPreferences = [];
+  }
 }
 
 StreamBundle.prototype.handleDelta = function(delta) {
@@ -132,7 +145,7 @@ StreamBundle.prototype.getBusForSourcePath = function(sourceId, path) {
   var key = signalkSchema.keyForSourceIdPath(sourceId, path);
   var result = this.buses[key];
   if(!result) {
-    console.log("New Bus for ", { key: key, sourceId:sourceId, path:path});
+    console.debug("New Bus for ", { key: key, sourceId:sourceId, path:path});
     result = this.buses[key] = new Bacon.Bus();
   }
   return result;
@@ -143,7 +156,7 @@ StreamBundle.prototype.getStreamForSourcePath = function(sourceId, path) {
   var key = signalkSchema.keyForSourceIdPath(sourceId, path);
   var result = this.streams[key];
   if(!result) {
-    console.log("New Stream for ", { key: key, sourceId:sourceId, path:path});
+    console.debug("New Stream for ", { key: key, sourceId:sourceId, path:path});
     var bus = this.getBusForSourcePath(sourceId, path);
     result = bus.debounceImmediate(200);
     result = this.streams[key] = result.toProperty();

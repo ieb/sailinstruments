@@ -161,6 +161,7 @@ class PolarChart extends React.Component {
         this.cstate.targetAngle = this.targetAngleStream.calcIIR(this.cstate.targetAngle, this.state.damping);
         this.cstate.twaHistory = _.clone(this.twaStream.history);
         this.cstate.stwHistory = _.clone(this.stwStream.history);
+        this.cstate.polarName = this.app.calculations.polarPerformance.currentPolarUri;
         if ( this.state.headup ) {
           this.cstate.boatUp = 0;
         } else {
@@ -278,6 +279,11 @@ class PolarChart extends React.Component {
         this.clearArea(ctx, canvas);
         ctx.translate(310,310);
 
+        ctx.font = '20px '+this.fontFamily;
+        ctx.textAlign = 'right';
+        ctx.fillStyle = "black";
+        ctx.fillText(redrawData.polarName, 250, -280);
+
         // outer rose rotation.
         ctx.rotate(-redrawData.boatUp);
 
@@ -304,6 +310,7 @@ class PolarChart extends React.Component {
 
 
         ctx.restore();
+
         return true;
       }
     }

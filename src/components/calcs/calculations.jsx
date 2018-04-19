@@ -16,19 +16,25 @@ import vmg from './vmg.js';
 class Calculations  {
 
 
-  constructor(databus, polar) {
-    this.databus = databus;
+  constructor(props) {
+    this.databus = props.databus;
+    this.updateConfig = this.updateConfig.bind(this);
+    props.configStream.onValue(this.updateConfig);
     // so that we can get access outside.
-    this.polarPerformance = performance(polar);
+    this.polarPerformance = performance(props);
     this.calculations = [
-      cogMagnetic(),
-      groundWind(),
-      trueWind(),
+      cogMagnetic(props),
+      groundWind(props),
+      trueWind(props),
       this.polarPerformance,
-      vmg()
+      vmg(props)
     ];
     this.unsubscribes = [];
     this.connect();
+  }
+
+  updateConfig(config) {
+    console.log("Got new Config ", config);
   }
 
   connect() {

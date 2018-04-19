@@ -6,8 +6,85 @@ const _ = require('lodash')
 
 // for the moment, hard code the polar data.
 
-module.exports = function(polarSource) {
+module.exports = function(props) {
 
+
+  props.configStream.onValue((config) => {
+    loadPolar(config.polarSourceUrl);
+  });
+
+  function loadPolar(updatedPolarUri) {
+    if ( updatedPolarUri !== polarPerf.currentPolarUri || polarPerf.currentPolarUri === undefined) {
+      resolvePolar(updatedPolarUri, (uri, polarSpec) => {
+        if ( polarSpec !== undefined ) {
+          try {
+            finishLoadPolar(uri, polarSpec);
+          } catch(e) {
+            console.error("Error processing polar ",e);
+          }
+          
+        } else {
+          console.error("Error processing polar ",updatedPolarUri, e);
+        }
+      });
+    }
+  }
+  function finishLoadPolar(updatedPolarUri, polar) {
+    if ( polar.twa.length !== polar.stw.length) {
+      throw("Polar STW does not have enough rows for the TWA array. Expected:"+polar.twa.length+" Found:"+polar.stw.length);
+    }
+    for (var i = 0; i < polar.stw.length; i++) {
+      if ( polar.tws.length !== polar.stw[i].length ) {
+            throw("Polar STW row "+i+" does not ave enough columns Expected:"+polar.tws.length+" Found:"+polar.stw.length);
+      }
+    }
+    for (var i = 1; i < polar.twa.length; i++) {
+      if ( polar.twa[i] < polar.twa[i-1] ) {
+        throw("Polar TWA must be in ascending order and match the columns of stw.");
+      }
+    };
+    for (var i = 1; i < polar.tws.length; i++) {
+      if ( polar.tws[i] < polar.tws[i-1] ) {
+        throw("Polar TWA must be in ascending order and match the rows of stw.");
+      }
+    };
+    // Optimisatin,
+    polar = buildFinePolarTable(polar);
+    polarPerf.polar = polar;
+    polarPerf.currentPolarUri = updatedPolarUri;
+  }
+
+  function resolvePolar(polarUri, cb) {
+      if (polarUri === undefined || polarUri === "undefined" || polarUri === "pogo1250" ) {
+        // could provide many differnt polars bundled into the application, using the internal: protocol.
+        // provided there was an easy source to get them from and webkit could be persuaded to load them.
+        polarUri = "pogo1250";
+        console.log("Loading default Polar");
+        cb(polarUri, require('./polar/pogo1250'));
+      } else {
+        // try to load from the dist store of polar files.
+        var url = "polars/"+polarUri+".json";
+        fetch(url)
+            .then(res => res.json(), (error) => {
+                console.log("Error Parsing Polar  ", error);
+                console.log("Polars should in json form in @ieb/sailinginstuments/dist/polars/<name>.json see src/components/calc/polar/* for format ");
+            })
+            .then((polar) => {
+              cb(polarUri, polar);
+              },
+              (error) => {
+                console.log("Error loading polar ", error);
+                console.log("Polars should in json form in @ieb/sailinginstuments/dist/polars/<name>.json ");
+                // TODO: Add loading from SignalK here.
+                // It would need to convert the format into 
+                // the same structure as in pogo1250.js
+                // need to make this 
+                console.log("Error loading polar ", error);
+                cb(polarUri, undefined);
+              }
+            );            
+      }
+  }
   /**
    * find the indexes a below and above the value of b.
    */
@@ -258,30 +335,7 @@ module.exports = function(polarSource) {
     'navigation.headingTrue', 'navigation.magneticVariation'
     ],
     init: function() {
-      // need to find some way of loading a specif polar file
-      var polar = polarSource || require('./polar/pogo1250');
-
-      if ( polar.twa.length !== polar.stw.length) {
-        throw("Polar STW does not have enough rows for the TWA array. Expected:"+polar.twa.length+" Found:"+polar.stw.length);
-      }
-      for (var i = 0; i < polar.stw.length; i++) {
-        if ( polar.tws.length !== polar.stw[i].length ) {
-              throw("Polar STW row "+i+" does not ave enough columns Expected:"+polar.tws.length+" Found:"+polar.stw.length);
-        }
-      }
-      for (var i = 1; i < polar.twa.length; i++) {
-        if ( polar.twa[i] < polar.twa[i-1] ) {
-          throw("Polar TWA must be in ascending order and match the columns of stw.");
-        }
-      };
-      for (var i = 1; i < polar.tws.length; i++) {
-        if ( polar.tws[i] < polar.tws[i-1] ) {
-          throw("Polar TWA must be in ascending order and match the rows of stw.");
-        }
-      };
-      // Optimisatin,
-      polar = buildFinePolarTable(polar);
-      polarPerf.polar = polar;
+      loadPolar();
     },
     performanceForSpeed: function(tws) {
       return calcSpeedCurve(polarPerf.polar, tws);

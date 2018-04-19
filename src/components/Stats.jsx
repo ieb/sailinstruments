@@ -18,7 +18,7 @@ class Stats  {
    */
   constructor(props) {
     this.props = props;
-    this.app = props.app;
+    this.databus = props.databus;
     this.historyRate = props.period || 1000;
     this.setHistoryPeriod(props.historyTime);
     this.historyTime = [];
@@ -54,6 +54,12 @@ class Stats  {
     setInterval(() => {
       self.updateHistory();
     }, self.historyRate || 1000);
+    this.updateConfig = this.updateConfig.bind(this);
+    props.configStream.onValue(this.updateConfig);
+  }
+
+  updateConfig(config) {
+    console.log("Got new Config ", config);
   }
 
   setHistoryPeriod( time) {
@@ -87,7 +93,6 @@ class Stats  {
       return this.valueCalculators[paramPath];
     }
     var unit = units.getUnitForPath(paramPath);
-    console.log({ paramPath: paramPath, unit: unit});
     if ( this.valueCalculators[unit] !== undefined) {
       return this.valueCalculators[unit];
     }
@@ -115,11 +120,9 @@ class Stats  {
   }
 
   getPositionValue(v) {
-    console.log(typeof v, v);
     return v;
   }
   getDateTimeValue(v) {
-    console.log(typeof v, v);
     return v;
   }
 
@@ -153,14 +156,14 @@ class Stats  {
         },
         history: h
       };
-      utils.resolve( [this.valueStreams[path]], this.app.databus);
+      utils.resolve( [this.valueStreams[path]], this.databus);
       utils.subscribe([this.valueStreams[path] ], this);
-      console.log("Added path ", path, this.valueStreams[path]);
+      console.debug("Added path ", path, this.valueStreams[path]);
     } else if ( hl !== undefined ) {
       if ( this.valueStreams[path].history  === undefined ) {
         this.valueStreams[path].history = [];
         this.valueStreams[path].historyLength = Math.max(hl, this.historyLength);
-        console.log("Added history ", path, this.valueStreams[path]);
+        console.debug("Added history ", path, this.valueStreams[path]);
       } else {
         this.valueStreams[path].historyLength = Math.max(hl, this.valueStreams[path].historyLength);
       }
