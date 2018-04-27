@@ -1,14 +1,13 @@
 {
   "name": "@ib236/sailinstruments",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SignalK instruments designed for sailing.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config webpack.prod.js",
     "watch": "webpack --watch --config webpack.dev.js",
-    "prepublishOnly": "npm run build",
-    "postinstall": "postinstall-build dist"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "signal k",
@@ -16,7 +15,7 @@
     "marine",
     "signalk-webapp"
   ],
-  "author": "",
+  "author": "Ian Boston",
   "license": "ISC",
   "devDependencies": {
     "@signalk/client": "^0.2.1",
@@ -54,7 +53,5 @@
     "type": "git",
     "url": "https://github.com/ieb/sailinstruments"
   },
-  "dependencies": {
-    "postinstall-build": "^5.0.1"
-  }
+  "dependencies": {}
 }
