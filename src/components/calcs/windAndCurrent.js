@@ -14,10 +14,10 @@ module.exports = function() {
     return d;
   }
   function calcDirectionAndSpeed(hdm, hdt, v) {
-    var a = Math.atan2(v[0], v[1]);
+    var a = Math.atan2(v[1], v[0]);
     var m = fixDirection(hdm+a);
     var t = fixDirection(hdt+a);
-    var s = Math.sqrt(v[0]*v[0],v[1]*v[1]);
+    var s = Math.sqrt(v[0]*v[0]+v[1]*v[1]);
     return {
       angle: a,
       dirTrue: t,
