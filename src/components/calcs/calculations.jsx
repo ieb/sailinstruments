@@ -3,10 +3,8 @@
 
 import React from 'react';
 import Bacon from 'baconjs';
-import cogMagnetic from './cogMagnetic.js';
-import groundWind from './groundWind.js';
+import windAndCurrent from './windAndCurrent.js';
 import performance from './performance.js';
-import trueWind from './trueWind.js';
 import vmg from './vmg.js';
 
 /**
@@ -23,9 +21,7 @@ class Calculations  {
     // so that we can get access outside.
     this.polarPerformance = performance(props);
     this.calculations = [
-      cogMagnetic(props),
-      groundWind(props),
-      trueWind(props),
+      windAndCurrent(props),
       this.polarPerformance,
       vmg(props)
     ];

@@ -59,7 +59,7 @@ class BoatRose extends React.Component {
   setPaths(props) {
     this.leewayPath = props.leewayPath || "_preferred.performance.leeway";
     this.awaPath = props.awaPath || "_preferred.environment.wind.angleApparent";
-    this.twaPath = props.twaPath || "_preferred.environment.wind.angleTrue";
+    this.twaPath = props.twaPath || "_preferred.environment.wind.angleTrueWater";
     this.targetAnglePath = props.targetAnglePath || "calculated.performance.targetAngle";
     this.hdmPath = props.hdmPath || "_preferred.navigation.headingMagnetic";
     this.leewayStream = this.app.stats.addPath(this.leewayPath);

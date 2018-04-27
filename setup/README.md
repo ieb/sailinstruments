@@ -358,3 +358,71 @@ Which will setup systemd and ~/.signalk/*, these files need modifying.
       }
     }
     EOF
+
+
+
+
+## Influx DB install
+
+    cd /opt
+    wget https://dl.influxdata.com/influxdb/releases/influxdb-1.5.2_linux_armhf.tar.gz
+    tar xvfz influxdb-1.5.2_linux_armhf.tar.gz
+    ln -s influxdb-1.5.2-1 influxdb
+    useradd influxdb
+    groupadd influxdb
+    chown -R influxdb influxdb/var
+    ln -s /opt/influxdb/etc/influxdb /etc/influxdb
+    ln -s /opt/influxdb/etc/logrotate.d/influxdb /etc/logrotate.d/influxdb
+    ln -s /opt/influxdb/usr/lib/influxdb/scripts/influxdb.service /etc/systemd/system/influxdb.service
+    cd /usr/bin/
+    ln -s /opt/influxdb/usr/bin/influx* .
+    cd /opt
+    ln -s /opt/influxdb/var/lib/influxdb /var/lib/influxdb
+    ln -s /opt/influxdb/var/log/influxdb /var/log/influxdb
+    cd /usr/share/man/man1/
+    ln -s /opt/influxdb/usr/share/man/man1/influx* .
+    systemctl daemon-reload
+    systemctl enable influxdb 
+    service influxdb status
+
+
+The Admin UI has been deprevated, use influx on the command line to manipulate. Standard influx ports.
+May want to edit the config to reduce the flush time to 100ms.
+
+    influx
+    create database "luna"
+    create database "collectd"
+    show databases
+
+Connect the SignalK InfluxDB plugin to send data to Influx, then check with measurements.
+
+
+    show measurements
+
+
+Edit collectd to disable rrdtool, battery and irq plugins, removing the config sections.
+Enable network and add the following
+
+    <Plugin network>
+          Server "127.0.0.1" "8096"
+    </Plugin>
+
+Edit /etc/influxdb/influxdb.conf to enable collectd
+
+    [[collectd]]
+      enabled = true
+      bind-address = ":8096"
+      database = "collectd"
+      typesdb = "/usr/share/collectd/types.db"
+
+
+## Grafana install
+
+
+    wget https://github.com/fg2it/grafana-on-raspberry/releases/download/v5.0.4/grafana_5.0.4_armhf.deb
+    dpkg -i grafana_5.0.4_armhf.deb
+
+runs on port 3000 default user is admin:admin
+
+Add a datasource and create dashboards.
+

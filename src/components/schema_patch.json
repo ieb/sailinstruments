@@ -69,7 +69,7 @@
      }
   },
   "metadata": {
-    "environment.wind.angleTrue": {
+    "environment.wind.angleTrueWater": {
       "unit": "rad"   
     },
     "performance.headingMagnetic": {

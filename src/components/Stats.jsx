@@ -37,7 +37,6 @@ class Stats  {
         "performance.targetAngle" : this.iirRadRelative,
         "environment.wind.angleTrueWater" : this.iirRadRelative,
         "environment.wind.angleApparent" : this.iirRadRelative,
-        "environment.wind.angleTrue" : this.iirRadRelative,
         "rad": this.iirRadAbs,
         "datetime": this.iirNone,
         "position": this.iirNone

@@ -52,12 +52,14 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Fix strip chart scaling so that it deals with circular angles minimal jumps.
 - [X] Fix global config screen.
 - [X] Allow loading of polars from dist/polars
-- [ ] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
+- [X] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
 - [ ] Visualise sail plan against polar.
 - [ ] Import or input list of waypoints.
 - [ ] Expand stats capabilities, (standard deviation, moving averages)
 - [ ] Calculate TWA, TWS, Polar speed, VMG, tack, vmg, sail selection on each leg.
 - [ ] Sail selection on next leg - based on BTW or List of waypoints.
+
+
 
 
 
@@ -83,3 +85,19 @@ as a native library inside the MDF and apps. Probably uses ssh or sftp so again,
 
 Polars can be put in dist/polars/name.json where name identifies the model of boat. The format needs to be json the same as src/componsnts/calcs/polar/pogo1250.js  (but as json). There is a TODO to allow loading of Polars from the SK schema, however that needs conversion to the internal format to work.
 
+## Current vectors.
+
+Its simpler than first thought.   
+calculate the drift angle (hdt-cogt)
+convert sog/cogt to a vector relative to the boat (Math.cos(drift)*sog, Math.sin(drift)*sog)
+remove the stw vector (stw,0) give the current vector relative to the boat. find the angle with Math.atan2 and the speed with srt(sum of squares) then rotate back to true.
+Same can be a
+
+
+
+# Other setup
+
+On the server I use the derived data performance plugin and the InfluxDB plugin feeding a stack of InfluxDB with Grafana using Collectd to capture OS level stats on the performance of the Raspberry PI as well as all NMEA2000 data. This allows longer term monitoring of both the Pi operations and boat performance. Here is an example dashboard in Grafana.  For full details on setup look at setup/README.md
+
+
+![Gragana OS Dashboard](GrafanaOSDashBoard.png)

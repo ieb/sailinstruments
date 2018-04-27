@@ -375,6 +375,9 @@ module.exports = function(props) {
         ",thm,",
         radToDeg(track.headingMagnetic).toFixed(2)
         ); */
+
+// TODO: Check that these are correct relative the current schema and fix if not.
+// there may be beat and gybe target angle now, rather than one that switches.
       return [
       { path: 'performance.polarSpeed', value: polarPerformance.polarSpeed},   // polar speed at this twa
       { path: 'performance.polarSpeedRatio', value: polarPerformance.polarSpeedRatio}, // polar speed ratio
