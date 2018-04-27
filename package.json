@@ -1,6 +1,6 @@
 {
   "name": "@ib236/sailinstruments",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "SignalK instruments designed for sailing.",
   "main": "index.js",
   "scripts": {
