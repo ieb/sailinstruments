@@ -30,11 +30,11 @@ class ConfigureCell extends React.Component {
 
   onValueChange(event) {
     var newState = {};
-    console.log("change event is ", event.target.name, event.target.value);
     var value = this.state[event.target.name];
     if ( value.value === undefined ) {
+      console.log("Value undef ", event.target.name, event.target.value);
       if ( typeof value === "number") {
-        newState[event.target.name] = +value;
+        newState[event.target.name] = +event.target.value;
       } else if ( typeof value === "boolean") {
         newState[event.target.name] = !(value);
       } else {
@@ -42,8 +42,9 @@ class ConfigureCell extends React.Component {
       }
     } else {
       newState[event.target.name] = _.merge({}, value);
+      console.log("Value not undef ", event.target.name, event.target.value, value, newState[event.target.name]);
       if ( typeof value === "number") {
-        newState[event.target.name].value = +value;
+        newState[event.target.name].value = +event.target.value;
       } else if ( typeof value.value === "boolean") {
         newState[event.target.name].value  = !(value.value);
       } else {

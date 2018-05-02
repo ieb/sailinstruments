@@ -50,7 +50,7 @@ class LayoutRaw extends React.Component {
   componentWillUnmount() {
     this.bound = false;
     if ( this.subscription !== undefined) {
-      this.subscription.unsubscribe();
+      this.subscription();
       this.subscription = undefined;
     }
   }

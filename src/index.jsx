@@ -91,6 +91,30 @@ class App extends React.Component {
     }
   }
 
+  toggleLock() {
+    this.setState({lock: !this.state.lock});
+  }
+
+  displaySettingsButtons() {
+    if (this.state.lock) {
+      return (
+        <div className="globalSettingsButton">
+          <button onClick={(event) => { this.toggleLock();}}>&#128274;</button>
+          <button>&#9432;</button>
+          <button>&#10753;</button>
+        </div>
+      );
+    } else {
+      return (
+        <div className="globalSettingsButton">
+          <button onClick={(event) => { this.toggleLock();}}>&#128275;</button>
+          <button onClick={(event) => { this.openGlobalSettings(); }}>&#9432;</button>
+          <button onClick={(event) => { this.addTab(); }}>&#10753;</button>
+        </div>
+      );
+    }
+  }
+
 
   render () {
     console.log("Starting to render");
@@ -98,11 +122,8 @@ class App extends React.Component {
         <div>
         <div className="fullbrightness">
             {this.state.settings}
-            <div className="globalSettingsButton">
-              <button onClick={(event) => { this.openGlobalSettings(); }}>&#9432;</button>
-              <button onClick={(event) => { this.addTab(); }}>&#10753;</button>
-            </div>
-            <Layout app={this} />
+            {this.displaySettingsButtons()}
+            <Layout app={this} locked={this.state.lock} />
         </div> 
 
     </div>

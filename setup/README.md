@@ -426,3 +426,66 @@ runs on port 3000 default user is admin:admin
 
 Add a datasource and create dashboards.
 
+
+## Access point
+
+Runing as an Access point with hostapd and dnsmasq.
+
+    apt-get install hostapd dnsmasq -yqq
+
+    cat > /etc/dnsmasq.conf <<EOF
+    interface=wlan0
+    dhcp-range=192.168.4.2,192.168.4.50,255.255.255.0,12h
+    EOF
+
+    cat > /etc/hostapd/hostapd.conf <<EOF
+    interface=wlan0
+    hw_mode=g
+    channel=10
+    auth_algs=1
+    wpa=2
+    wpa_key_mgmt=WPA-PSK
+    wpa_pairwise=CCMP
+    rsn_pairwise=CCMP
+    wpa_passphrase=$APPASS
+    ssid=$APSSID
+    ieee80211n=1
+    wmm_enabled=1
+    ht_capab=[HT40][SHORT-GI-20][DSSS_CCK-40]
+    EOF
+
+    cat >> /etc/network/interfaces <<EOF
+    # Added by rPi Access Point Setup
+    allow-hotplug wlan0
+    iface wlan0 inet static
+        address 192.168.4.1
+        netmask 255.255.255.0
+        network 192.168.4.0
+        broadcast 192.168.4.255
+    EOF
+
+    echo "denyinterfaces wlan0" >> /etc/dhcpcd.conf
+
+
+
+    systemctl enable hostapd
+    systemctl enable dnsmasq
+
+    sudo service hostapd start
+    sudo service dnsmasq start
+
+
+    # enable forwarding, note enxb827ebfa37ba is the name of your ethernet device, which may not be eth0. ifconfig will tell you.
+    # in /etc/sysctl.conf set forwarding
+    # net.ipv4.ip_forward=1
+
+
+    iptables --append FORWARD --in-interface wlan0  -j ACCEPT
+    iptables --table nat --append POSTROUTING --out-interface enxb827ebfa37ba -j MASQUERADE
+
+
+    iptables-save  > /etc/iptables.ipv4.nat 
+
+    # in rc.local add 
+    iptables-restore < /etc/iptables.ipv4.nat
+

@@ -374,6 +374,7 @@ body {
 .globalSettingsButton > button {
     border: none;
     font-size: 16px;
+    outline: none;
 }
 
 .settingsClose {
@@ -384,6 +385,7 @@ body {
 
 .settingsClose > button {
     border: none;
+    outline: none;
 }
 
 .settingsApply {
@@ -421,6 +423,7 @@ body {
     padding-left: 30px;
     padding-right: 30px;
     padding-bottom: 8px;
+    outline: none;
 }
 
 .tabControls {
@@ -435,6 +438,7 @@ body {
     border: none;
     padding-left: 1px;
     padding-right: 1px;
+    outline: none;
 }
 
 .dropDown {
@@ -460,6 +464,7 @@ body {
 .dropDown > button {
     border: none;
     background-color: inherit;
+    outline: none;
 }
 
 
@@ -474,6 +479,7 @@ body {
 .cellControls > button {
     border: none;  
     background-color: transparent; 
+    outline: none;
 }
 
 .settingsForm {

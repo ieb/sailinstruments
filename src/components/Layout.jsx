@@ -113,7 +113,7 @@ class Layout extends React.Component {
         width: 1200,
         title: 'unamed'        
       });
-    this.setState({tabs: newTabs});
+    this.setState({tabs: newTabs});      
   }
 
   /**
@@ -156,15 +156,17 @@ class Layout extends React.Component {
   }
 
   removeCell(tab, cell) {
-    var self = this;
-    self.setState({tabs: self.updateItem(self.state.tabs, "key", tab, (newTab)=> {
-      newTab.layout = self.updateItem(newTab.layout, "i", cell, (newCell) => {
-        console.log("Removing ", newTab.key, cell.i, newCell);
-        return undefined;
-      });
-      console.log("Updated Tab ", newTab);
-      return newTab;
-    })});    
+    if ( !this.props.locked ) {
+      var self = this;
+      self.setState({tabs: self.updateItem(self.state.tabs, "key", tab, (newTab)=> {
+        newTab.layout = self.updateItem(newTab.layout, "i", cell, (newCell) => {
+          console.log("Removing ", newTab.key, cell.i, newCell);
+          return undefined;
+        });
+        console.log("Updated Tab ", newTab);
+        return newTab;
+      })});          
+    }
   }
 
   removeTab(tab) {
@@ -366,17 +368,27 @@ class Layout extends React.Component {
 
   renderCell(tab, cell) {
     var component = this.namedComponents[cell.contents.name].generateComponent(cell.contents.props, this.app);
-    return (
-        <div key={cell.i} >
-        <div className={cell.contents.className} onDoubleClick={() => { this.configureCell(tab, cell) }}>
-        {component}
-        </div>
-        <div className="cellControls" >
-        <button 
-          onClick={() => { this.removeCell(tab, cell) }} >&#10754;</button>
-        </div>
-        </div>
-    );
+    if ( this.props.locked ) {
+      return (
+          <div key={cell.i} >
+          <div className={cell.contents.className} onDoubleClick={() => { this.configureCell(tab, cell) }}>
+          {component}
+          </div>
+          </div>
+      );
+    } else {
+      return (
+          <div key={cell.i} >
+          <div className={cell.contents.className} onDoubleClick={() => { this.configureCell(tab, cell) }}>
+          {component}
+          </div>
+          <div className="cellControls" >
+          <button 
+            onClick={() => { this.removeCell(tab, cell) }} >&#10754;</button>
+          </div>
+          </div>
+      );
+    }
 
   }
 
@@ -392,7 +404,7 @@ class Layout extends React.Component {
 
 
   renderControls(tab) {
-    if (this.state.activeMenu === tab.key ) {
+    if (this.state.activeMenu === tab.key  ) {
       return (
           <div>
             <div className="dropDown" >
@@ -419,7 +431,13 @@ class Layout extends React.Component {
 
 
   renderTab(tab) {
-    if ( this.state.editing === tab.key ) {
+    if ( this.props.locked ) {
+      return (
+        <Tab key={tab.key}  >
+        {tab.title}
+        </Tab>
+      );
+    } else if ( this.state.editing === tab.key ) {
       return (<Tab key={tab.key} >
         <InlineEdit onDone={(value) => {this.onFinishTabEdit(tab, value)}} value={tab.title} /> 
         </Tab>
@@ -453,7 +471,10 @@ class Layout extends React.Component {
             onLayoutChange={(layout) => {this.onLayoutChange(layout, tab)}}
             cols={tab.cols} 
             rowHeight={tab.rowHeight} 
-            width={tab.width}>
+            width={tab.width}
+            isDraggable={!this.props.locked}
+            isResizable={!this.props.locked}
+            >
 
           {this.renderGrid(tab)}
           </ReactGridLayout>

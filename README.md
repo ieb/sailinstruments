@@ -53,6 +53,7 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Fix global config screen.
 - [X] Allow loading of polars from dist/polars
 - [X] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
+- [X] Add configuration lock for touch screens.
 - [ ] Visualise sail plan against polar.
 - [ ] Import or input list of waypoints.
 - [ ] Expand stats capabilities, (standard deviation, moving averages)

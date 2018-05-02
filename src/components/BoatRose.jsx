@@ -230,9 +230,11 @@ class BoatRose extends React.Component {
   createRadialHistory(ctx, c, history, color) {
     let a = [];
     // the most recent is the first element
+    // however, c is an iir and history[0] is the current value
+    // so we probably need to make the first enttry the mean of the iir and history[1],
     a.push([ c-Math.PI, -200]);      
     for (let i = 0; i < history.length-1; i++) { 
-       a.push([ history[i]-Math.PI, -200+(i*(200/history.length))]);
+       a.push([ history[i]-Math.PI, -200+((i+1)*(200/history.length))]);
     };
     utils.drawSmoothRadialLine(ctx, a, 1, color);
   }
