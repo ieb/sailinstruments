@@ -89,6 +89,12 @@
     },
     "navigation.position": {
       "unit": "latlon"
+    },
+    "navigation.attitude": {
+      "unit": "attitude"
+    },
+    "environment.current": {
+      "unit": "watercurrent"
     }
   }
 }

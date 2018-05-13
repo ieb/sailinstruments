@@ -67,6 +67,30 @@ module.exports = function(){
         return r*100;
       }
     },
+    "attitude" : {
+      "att" : function(v) {
+        var deg = Qty.swiftConverter('rad', 'deg');
+        return (
+          <div>
+            <div>Y:{deg(v.yaw).toFixed(1)}</div> 
+            <div>P:{deg(v.pitch).toFixed(1)}</div> 
+            <div>R:{deg(v.roll).toFixed(1)}</div>
+          </div>
+          );
+      }
+    },
+    "watercurrent" : {
+      "watercurrent" : function(v) {
+        var deg = Qty.swiftConverter('rad', 'deg');
+        var kn = Qty.swiftConverter("m/s", "kn");
+        return (
+          <div>
+            <div>set:{precisionAngle(deg(v.setTrue))}</div> 
+            <div>drift:{precisionNumber(kn(v.drift))}</div> 
+          </div>
+          );
+      }
+    },
     "latlon" : {
       "dm" : function(v) {
         return (
@@ -120,7 +144,9 @@ module.exports = function(){
   const precision = {
     "deg" : precisionAngle,
     "datetime": asIs,
-    "latlon": asIs
+    "latlon": asIs,
+    "attitude": asIs,
+    "watercurrent": asIs
   }
 
   const getPrecisionForUnit = function(unit, displayUnit) {
@@ -331,6 +357,14 @@ module.exports = function(){
     "latlon" : {
       units: "dm",
       title: "latlon"
+    },
+    "attitude" : {
+      units: "att",
+      title: "attitude"
+    },
+    "watercurrent" : {
+      units: "watercurrent",
+      title: "Water Current"
     }
   };
 
@@ -345,7 +379,7 @@ module.exports = function(){
       } else {
         disp = displayUnits[unit].default.units;
         var currentValue = getConversionsForUnit(unit,disp)(value);
-        for( var k in m) {
+        for( var k in displayUnits[unit]) {
           if (displayUnits[unit][k].limit !== undefined ) {
             if (currentValue < displayUnits[unit][k].limit) {
               disp = displayUnits[unit][k].units;
