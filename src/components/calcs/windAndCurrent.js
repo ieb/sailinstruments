@@ -93,7 +93,6 @@ module.exports = function() {
       // the app, none are published.
 
 
-
       return [{ path: "environment.wind.directionTrue", value: gwind.dirTrue},
               { path: "environment.wind.directionMagnetic", value: gwind.dirMag},
               { path: "environment.wind.speedGround", value: gwind.speed},
@@ -101,9 +100,7 @@ module.exports = function() {
               { path: "environment.current.drift", value: current.speed},
               { path: "environment.current.setMagnetic", value: current.dirMag},
               { path: "environment.current.setTrue", value: current.dirTrue},
-              { path: "navigation.courseOverGroundMagnetic", value: cogm},
-              { path: "environment.wind.angleTrueWater", value: trueWind.angle},
-              { path: "environment.wind.speedTrue", value: trueWind.speed}
+              { path: "navigation.courseOverGroundMagnetic", value: cogm}
               ]
     }
   };

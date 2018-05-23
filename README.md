@@ -94,6 +94,38 @@ convert sog/cogt to a vector relative to the boat (Math.cos(drift)*sog, Math.sin
 remove the stw vector (stw,0) give the current vector relative to the boat. find the angle with Math.atan2 and the speed with srt(sum of squares) then rotate back to true.
 Same can be a
 
+# Raymarine SeatalkNG
+
+With a Ray iTC5, i70s, EV-100,ACU, MFD the Raymarine Can bus has the following. 
+This application tries to derive its data from these settings so that it works without additional derived data in the server.
+
+
+        environment.water.temperature
+        navigation.magneticVariation
+        steering.autopilot.state auto
+        navigation.gnss.methodQuality GNSS Fix
+        navigation.gnss.horizontalDilution
+        navigation.gnss.type GPS+SBAS/WAAS
+        navigation.gnss.satellites
+        navigation.gnss.integrity eg no Integrity checking
+        environment.depth.belowTransducer
+        navigation.speedThroughWaterReferenceType eg Paddle wheel
+        navigation.speedThroughWater
+        navigation.log
+        navigation.trip.log
+        navigation.datetime eg 2018-05-19T11:02:34.00410Z
+        environment.current eg {"setTrue":3.3878,"drift":0.82}
+        navigation.headingMagnetic
+        navigation.rateOfTurn
+        navigation.attitude
+        steering.rudderAngle
+        steering.autopilot.target.headingMagnetic
+        navigation.speedOverGround
+        navigation.courseOverGroundTrue
+        navigation.position eg N 51.9003° E 1.3122°
+        environment.wind.angleApparent
+        environment.wind.speedApparent
+
 
 
 # Other setup

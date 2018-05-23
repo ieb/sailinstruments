@@ -326,25 +326,44 @@ module.exports = function(props) {
     return otherTrack;
   }
 
+  function calcDerived(awa, aws, stw, headingMagnetic, magneticVariation) {
+      var apparentX = Math.cos(awa) * aws;
+      var apparentY = Math.sin(awa) * aws;
+      return {
+        twa : Math.atan2(apparentY, -stw + apparentX),
+        tws : Math.sqrt(Math.pow(apparentY, 2) + Math.pow(-stw + apparentX, 2)),
+        hdt : fixDirection(headingMagnetic - magneticVariation)
+      };
+  }
+
+
+
+
+
     
   var polarPerf = {
     group: "performance",
     optionKey: 'polarPerformance',
-    title: "Polar Performance using based on tws, twa, stw, hdt and variation",
-    derivedFrom: [ "environment.wind.angleTrueWater", "environment.wind.speedTrue", "navigation.speedThroughWater", 
-    'navigation.headingTrue', 'navigation.magneticVariation'
-    ],
+    title: "Polar Performance using based on aws, awa, stw, hdm and variation",
+    derivedFrom: [ "environment.wind.angleApparent",
+    "environment.wind.speedApparent",
+    "navigation.speedThroughWater",
+    "navigation.headingMagnetic",
+    "navigation.magneticVariation"
+     ],
     init: function() {
       loadPolar();
     },
     performanceForSpeed: function(tws) {
       return calcSpeedCurve(polarPerf.polar, tws);
     },
-    calculator: function(twa, tws, stw, trueHeading, magneticVariation){
+    calculator: function(awa, aws, stw, headingMagnetic, magneticVariation){
       try {
-      var targets = calcTargetAngleSpeed(polarPerf.polar, tws, twa, stw);
-      var polarPerformance = getPerformance(polarPerf.polar, tws,twa, stw, targets);
-      var track = calcOtherTrack(polarPerformance, targets, tws, twa, stw, trueHeading, magneticVariation);
+//        console.log("Got data ", awa, aws, stw, headingMagnetic, magneticVariation);
+        var derived = calcDerived(awa, aws, stw, headingMagnetic, magneticVariation);      
+        var targets = calcTargetAngleSpeed(polarPerf.polar, derived.tws, derived.twa, stw);
+        var polarPerformance = getPerformance(polarPerf.polar, derived.tws,derived.twa, stw, targets);
+        var track = calcOtherTrack(polarPerformance, targets, derived.tws, derived.twa, stw, derived.hdt, magneticVariation);
 
       /*console.log("performance,",
         msToKnots(tws).toFixed(2),
@@ -378,7 +397,7 @@ module.exports = function(props) {
 
 // TODO: Check that these are correct relative the current schema and fix if not.
 // there may be beat and gybe target angle now, rather than one that switches.
-      return [
+      var r =  [
       { path: 'performance.polarSpeed', value: polarPerformance.polarSpeed},   // polar speed at this twa
       { path: 'performance.polarSpeedRatio', value: polarPerformance.polarSpeedRatio}, // polar speed ratio
       { path: 'performance.tackMagnetic', value: track.trackMagnetic}, // other track through water magnetic taking into account leeway 
@@ -389,8 +408,13 @@ module.exports = function(props) {
       { path: 'performance.targetSpeed', value: targets.stw}, // target speed on at best vmg and angle
       { path: 'performance.targetVelocityMadeGood', value: targets.vmg}, // target vmg -ve == downwind
       { path: 'performance.velocityMadeGood', value: polarPerformance.vmg}, // current vmg at polar speed
-      { path: 'performance.polarVelocityMadeGoodRatio', value: polarPerformance.polarVmgRatio} // current vmg vs current polar vmg.
+      { path: 'performance.polarVelocityMadeGoodRatio', value: polarPerformance.polarVmgRatio},
+      { path: 'environment.wind.angleTrueWater', value: derived.twa }, // TWA
+      { path: 'environment.wind.speedTrue', value: derived.tws }, // TWA
+      { path: 'navigation.headingTrue', value: derived.hdt }
             ];
+      //console.log(r);
+      return r;
       } catch (e) {
         console.log(e);
       }

@@ -57,7 +57,7 @@ class BoatRose extends React.Component {
   // performing the updates using the stats component ensures that the 
   // hustory is maintained. Not quite as flexible as using the datastream directly.
   setPaths(props) {
-    this.leewayPath = props.leewayPath || "_preferred.performance.leeway";
+    this.leewayPath = props.leewayPath || "calculated.performance.leeway";
     this.awaPath = props.awaPath || "_preferred.environment.wind.angleApparent";
     this.twaPath = props.twaPath || "_preferred.environment.wind.angleTrueWater";
     this.targetAnglePath = props.targetAnglePath || "calculated.performance.targetAngle";
@@ -141,7 +141,7 @@ class BoatRose extends React.Component {
     var redrawData = utils.getRedrawData(this.cstate, 
       this.dstate,
       this.significance, 
-      [ "boatUp", "twa" ,"awa", "leeway", "twaHistory", "awaHistory", "targetAngle" ]);
+      [ "boatUp", "twa" ,"awa", "leewayAngle", "twaHistory", "awaHistory", "targetAngle" ]);
     if ( redrawData !== undefined ) {
       var canvas = document.getElementById(this.rosePointersId);
       if (canvas !== null && canvas.getContext ) {
@@ -156,7 +156,7 @@ class BoatRose extends React.Component {
 
           this.createBoatMarker(ctx, redrawData.twa, 'T', 'blue', 'white', 'black');
           this.createBoatMarker(ctx, redrawData.awa, 'A', 'orange', 'white', 'black');
-          this.createBoatMarker(ctx, redrawData.leeway, 'L', 'black', 'white', 'black');
+          this.createBoatMarker(ctx, redrawData.leewayAngle, 'L', 'black', 'white', 'black');
           this.createRadialHistory(ctx, redrawData.twa, redrawData.twaHistory, 'blue');
           this.createRadialHistory(ctx, redrawData.awa, redrawData.awaHistory, 'orange');
           this.createPointer(ctx, redrawData.targetAngle, "v", "black", "white");

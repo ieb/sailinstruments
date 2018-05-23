@@ -6,6 +6,7 @@ import Bacon from 'baconjs';
 import windAndCurrent from './windAndCurrent.js';
 import performance from './performance.js';
 import vmg from './vmg.js';
+import leeway from './leeway.js';
 
 /**
  * this class allows claculations on derived data reducing the data that the server needs to supply.
@@ -23,7 +24,8 @@ class Calculations  {
     this.calculations = [
       windAndCurrent(props),
       this.polarPerformance,
-      vmg(props)
+      vmg(props),
+      leeway(props),
     ];
     this.unsubscribes = [];
     this.connect();

@@ -59,8 +59,8 @@ class PolarChart extends React.Component {
   setPaths(props) {
     this.hdmPath = this.props.hdmPath || "_preferred.navigation.headingMagnetic";
     this.otherTackDirPath = this.props.otherTackDirPath || "calculated.performance.headingMagnetic";
-    this.twsPath = this.props.twsPath || "_preferred.environment.wind.speedTrue";
-    this.twaPath = this.props.twaPath || "_preferred.environment.wind.angleTrueWater";
+    this.twsPath = this.props.twsPath || "calculated.environment.wind.speedTrue";
+    this.twaPath = this.props.twaPath || "calculated.environment.wind.angleTrueWater";
     this.stwPath = this.props.stwPath || "_preferred.navigation.speedThroughWater";
     this.targetSpeedPath = this.props.targetSpeedPath || "calculated.performance.targetSpeed";
     this.targetAnglePath = this.props.targetAnglePath || "calculated.performance.targetAngle";

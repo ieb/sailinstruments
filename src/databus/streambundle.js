@@ -24,6 +24,19 @@ and path produced with signalkSchema.keyForSourceIdPath.
 There is a _preferred sourceId that contains values from a stream in preferred order
 with a idle timeout of 30s.
 
+ie, if you getBusForSourcePath or getStreamForSourcePath you will get exatly the sourceID sourcePath 
+asked for.
+
+The incomming datastream gets pushed to 
+the exact Bus
+the _preferred Bus if the incomming stream is the highest priority source
+the allSources Bus
+
+If you want to subscribe to a spedific source, use the sourceID
+If you want to subscribe to a path from any source, use _preferred as a sourceId
+If you want to subscribe to all changes and decide for yourself, then use allSources and inspect
+the updates.
+
 */
 
 
@@ -91,6 +104,7 @@ StreamBundle.prototype.push = function(sourceId, pathValue) {
   
   var autoBus = this.getBusForAutoPath(sourceId, pathValue.path);
   if ( autoBus !== undefined ) {
+//    console.log("Delivering ",pathValue.path," from ",sourceId," to _preferred");
     autoBus.push(pathValue.value);
   }
   
@@ -147,6 +161,8 @@ StreamBundle.prototype.getBusForSourcePath = function(sourceId, path) {
   if(!result) {
     console.debug("New Bus for ", { key: key, sourceId:sourceId, path:path});
     result = this.buses[key] = new Bacon.Bus();
+ //   result.sourceId = sourceId;
+//    result.path = path;
   }
   return result;
 }

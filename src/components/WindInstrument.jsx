@@ -109,43 +109,43 @@ class WindInstrument extends React.Component {
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.polarSpeed" />
+                dataPath="calculated.performance.polarSpeed" />
             <DataBox top="65" left="10"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.polarSpeedRatio" />
+                dataPath="calculated.performance.polarSpeedRatio" />
             <DataBox top="505" left="10" 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.targetAngle" />
+                dataPath="calculated.performance.targetAngle" />
             <DataBox top="560" left="10"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.targetSpeed" />
+                dataPath="calculated.performance.targetSpeed" />
 
             <DataBox top="10" left="510"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.headingMagnetic" />
+                dataPath="calculated.performance.headingMagnetic" />
             <DataBox top="65" left="510"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.ignore" />
+                dataPath="calculated.performance.ignore" />
             <DataBox top="505" left="510" 
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.leeway" />
+                dataPath="calculated.performance.leeway" />
             <DataBox top="560" left="510"
                 updaterate={this.state.updaterate} 
                 damping={this.state.damping} 
                 app={this.app}
-                dataPath="_preferred.performance.ignore" />
+                dataPath="calculated.performance.ignore" />
         </div>
     );
   }
