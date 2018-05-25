@@ -63,7 +63,7 @@ class Calculations  {
             return bus;
           })
         ).changes()
-        .debounceImmediate(100)
+        .debounceImmediate(200)
         .skipDuplicates(function(before,after) {
             var tnow = (new Date()).getTime();
             if ( _.isEqual(before,after) ) {

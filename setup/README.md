@@ -153,7 +153,7 @@ Which will setup systemd and ~/.signalk/*, these files need modifying.
       },
       "ssl": false,
       "pipedProviders": [
-      
+
       ],
       "disablesecurity": {
         "strategy": "@signalk/sk-simple-token-security"
@@ -166,81 +166,51 @@ Which will setup systemd and ~/.signalk/*, these files need modifying.
     }
     EOF
 
+Using the admin UI add the following plugins
 
-    cat << EOF > package.json
-    {
-      "name": "signalk-server-config",
-      "version": "0.0.1",
-      "description": "This file is here to track your plugin and webapp installs.",
-      "repository": {},
-      "license": "Apache-2.0",
-      "dependencies": {
-        "@ieb/signalk-derived-data": "github:ieb/signalk-derived-data#withPolars",
-        "@ieb/signalk-enviro": "github:ieb/signalk-enviro",
-        "@ieb/signalk-imu": "github:ieb/signalk-imu",
-        "@ieb/signalk-telemetry": "github:ieb/signalk-telemetry",
-        "@ieb/signalk-temperature": "github:ieb/signalk-temperature",
-        "@ieb/signalk-to-nke": "github:ieb/signalk-to-nke",
-      }
+    "@ib236/sailinstruments": "^0.1.6",
+    "@ib236/signalk-derived-data": "^1.4.112",
+    "@ib236/signalk-prometheus-exporter": "0.0.1",
+    "@ib236/signalk-to-influxdb": "^1.1.100",
+
+Also add manually, if not released
+
+    "@ieb/signalk-enviro": "github:ieb/signalk-enviro",
+    "@ieb/signalk-telemetry": "github:ieb/signalk-telemetry",
+    "@ieb/signalk-temperature": "github:ieb/signalk-temperature",
+    "@ieb/signalk-to-nke": "github:ieb/signalk-to-nke"
+
+Configure the packages
+Configure the providers, with a Due converter plugged into the USB port it appears on /dev/ttyACM0 the device might vary.
+
+     {
+      "id": "Due Actisense",
+      "pipeElements": [
+        {
+          "type": "providers/simple",
+          "options": {
+            "logging": false,
+            "type": "NMEA2000",
+            "subOptions": {
+              "type": "ngt-1",
+              "device": "/dev/ttyACM0"
+            }
+          }
+        }
+      ],
+      "enabled": true
     }
-    EOF
 
 
 
 
-## Influx DB install
-
-    cd /opt
-    wget https://dl.influxdata.com/influxdb/releases/influxdb-1.5.2_linux_armhf.tar.gz
-    tar xvfz influxdb-1.5.2_linux_armhf.tar.gz
-    ln -s influxdb-1.5.2-1 influxdb
-    useradd influxdb
-    groupadd influxdb
-    chown -R influxdb influxdb/var
-    ln -s /opt/influxdb/etc/influxdb /etc/influxdb
-    ln -s /opt/influxdb/etc/logrotate.d/influxdb /etc/logrotate.d/influxdb
-    ln -s /opt/influxdb/usr/lib/influxdb/scripts/influxdb.service /etc/systemd/system/influxdb.service
-    cd /usr/bin/
-    ln -s /opt/influxdb/usr/bin/influx* .
-    cd /opt
-    ln -s /opt/influxdb/var/lib/influxdb /var/lib/influxdb
-    ln -s /opt/influxdb/var/log/influxdb /var/log/influxdb
-    cd /usr/share/man/man1/
-    ln -s /opt/influxdb/usr/share/man/man1/influx* .
-    systemctl daemon-reload
-    systemctl enable influxdb 
-    service influxdb status
 
 
-The Admin UI has been deprevated, use influx on the command line to manipulate. Standard influx ports.
-May want to edit the config to reduce the flush time to 100ms.
-
-    influx
-    create database "luna"
-    create database "collectd"
-    show databases
-
-Connect the SignalK InfluxDB plugin to send data to Influx, then check with measurements.
 
 
-    show measurements
+## Install Prometheus
 
-
-Edit collectd to disable rrdtool, battery and irq plugins, removing the config sections.
-Enable network and add the following
-
-    <Plugin network>
-          Server "127.0.0.1" "8096"
-    </Plugin>
-
-Edit /etc/influxdb/influxdb.conf to enable collectd
-
-    [[collectd]]
-      enabled = true
-      bind-address = ":8096"
-      database = "collectd"
-      typesdb = "/usr/share/collectd/types.db"
-
+See README_prometheus.md
 
 ## Grafana install
 
