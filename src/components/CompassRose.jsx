@@ -105,6 +105,8 @@ class CompassRose extends React.Component {
       save = this.drawCompassPointers() || save;
       if ( save ) {
         utils.saveDrawState(this.cstate, this.dstate);
+      } else {
+        utils.resetDrawState(this.cstate);
       }
       //var raf = window.requestAnimationFrame(this.draw);
     }
@@ -116,6 +118,7 @@ class CompassRose extends React.Component {
   }
 
 
+
         // outer compas rose pointers.
   drawCompassPointers() {
     var redrawData = utils.getRedrawData(this.cstate, 
@@ -123,18 +126,21 @@ class CompassRose extends React.Component {
       this.significance, 
       [ "boatUp", "groundWindDirection" ,"oppositeTackDirection" ]);
     if ( redrawData !== undefined ) {
+      var skin = utils.getSkin(redrawData);
       var canvas = document.getElementById(this.rosePointersId);
       if (canvas !== null && canvas.getContext ) {
         var ctx = canvas.getContext('2d');
         ctx.save();
           this.clearArea(ctx, canvas);
+          ctx.strokeStyle = skin.black;
+          ctx.fillStyle = skin.black;
           ctx.translate(310,310);
 
           // outer rose rotation.
           ctx.rotate(-redrawData.boatUp);
 
-          this.createCompasMarker(ctx, redrawData.groundWindDirection, 'G', 'green', 'white', 'black');
-          this.createCompasMarker(ctx, redrawData.oppositeTackDirection, 'O', 'black', 'white', 'black');
+          this.createCompasMarker(ctx, redrawData.groundWindDirection, 'G', skin.green, skin.white, skin.black);
+          this.createCompasMarker(ctx, redrawData.oppositeTackDirection, 'O', skin.black, skin.white, skin.black);
 
         ctx.restore();
         return true;
@@ -178,6 +184,7 @@ class CompassRose extends React.Component {
       this.significance, 
       [ "boatUp" ]);
     if ( redrawData !== undefined ) {
+      var skin = utils.getSkin(redrawData);
       var canvas = document.getElementById(this.roseId);
       if (canvas !== null && canvas.getContext ) {
         var ctx = canvas.getContext('2d');
@@ -195,6 +202,8 @@ class CompassRose extends React.Component {
         ctx.save();
         this.clearArea(ctx, canvas);
         ctx.translate(310,310);
+        ctx.strokeStyle = skin.black;
+        ctx.fillStyle = skin.black;
 
         // outer rose rotation.
         ctx.rotate(-redrawData.boatUp);
@@ -221,7 +230,7 @@ class CompassRose extends React.Component {
         ctx.restore();
 
         ctx.save();
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = skin.black;
         ctx.lineWidth = 0.5;
         ctx.fill(pointerN1);
         ctx.stroke(pointerN2);

@@ -6,7 +6,7 @@ The majority of stats are calculated in the application itself. Full instruments
 components, which self register with a stream of data. At the moment the instument layout is hard coded, but longer
 term the plan is to make it all browser configurable.
 
-![Sailing Instrument](WindInstrumentsv2.png)
+![Polar Display Inverted](screenshots/PolarInverted.png)
 
 The outer magnetic heading rose is configured to be north up and has a ground wind direction (G) and a opposite tack (O) direction maker, the values of which are calcualted real time. The outer ring can also be head up. The inner ring is relative the boat also north up or head up, shown in north up mode. It points to the magnetic heading. The L marker marks leeway calculated internally. A is aparent wind angle and T is true wind angle. the small VMG marker is the target twa to achieve maxkimum upwind or downwind VMG based on the polar performance of the boat. This is loaded from a polar file, in json form, currently set to a Pogo 1250. The lines going towards the center are TWA and AWA history. Round the outside various databoxes give speeds, target speeds, polar performance etc. Going up wind the aim is to keep the T marker lined up with the VMG marker, which will give the boat maximum performance and acceleration as it exits a tack and brings AWA forwards.
 
@@ -14,17 +14,21 @@ All the instruments were SVG based, although this resulted in high CPU loads, so
 
 In addition the layout and settings can be configured. These are currently saved to local storage so survive restarts. A Raw view is available to make changes to aspects that cant be changed in the UI.
 
-![Sailing Instrument](DataInstruments.png)
+![Polar Display Normal](screenshots/PolarNormal.png)
 
-![Sailing Instrument](stripchart.png)
+![Polar Display Night](screenshots/PolarNight.png)
 
-![Sailing Instrument](RawLayoutData.png)
+![Data Inverted](screenshots/DataInverted.png)
 
-![Sailing Instrument](SettingsPage.png)
+![Data Night](screenshots/DataNight.png)
 
-![Sailing Instrument](TabContentEditing.png)
+![Sailing Instrument](screenshots/RawLayoutData.png)
 
-![Sailing Instrument](TabNaming.png)
+![Sailing Instrument](screenshots/SettingsPage.png)
+
+![Sailing Instrument](screenshots/TabContentEditing.png)
+
+![Sailing Instrument](screenshots/TabNaming.png)
 
 
 
@@ -54,6 +58,7 @@ In addition the layout and settings can be configured. These are currently saved
 - [X] Allow loading of polars from dist/polars
 - [X] calculate GWD, leeway and observed current vectors.  HDT with Stw - leeway = course through water, stw, then - current speed + direction in COG/SOG, so its possible to calculate the observed current vectors.
 - [X] Add configuration lock for touch screens.
+- [X] Inveted and night display.
 - [ ] Visualise sail plan against polar.
 - [ ] Import or input list of waypoints.
 - [ ] Expand stats capabilities, (standard deviation, moving averages)
@@ -133,4 +138,4 @@ This application tries to derive its data from these settings so that it works w
 On the server I use the derived data performance plugin and the InfluxDB plugin feeding a stack of InfluxDB with Grafana using Collectd to capture OS level stats on the performance of the Raspberry PI as well as all NMEA2000 data. This allows longer term monitoring of both the Pi operations and boat performance. Here is an example dashboard in Grafana.  For full details on setup look at setup/README.md
 
 
-![Gragana OS Dashboard](GrafanaOSDashBoard.png)
+![Gragana OS Dashboard](screenshots/GrafanaOSDashBoard.png)

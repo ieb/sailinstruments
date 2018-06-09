@@ -192,6 +192,8 @@ class PolarChart extends React.Component {
       save = this.drawPolarHistory() || save;
       if ( save ) {
         utils.saveDrawState(this.cstate, this.dstate);
+      } else {
+        utils.resetDrawState(this.cstate);
       }
       // perhaps we want to control the refresh rate ?
       //var raf = window.requestAnimationFrame(this.draw);      
@@ -228,12 +230,15 @@ class PolarChart extends React.Component {
       this.significance, 
       [ "boatUp", "maxStw", "twa" ,"stw", "targetAngle", "targetSpeed", "twaHistory", "stwHistory"  ]);
     if ( redrawData !== undefined && redrawData.maxStw !== undefined) {
+      var skin = utils.getSkin(redrawData);
       var canvas = document.getElementById(this.polarHistoryId);
       if (canvas !== null && canvas.getContext ) {
         var ctx = canvas.getContext('2d');
         ctx.save();
         this.clearArea(ctx, canvas);
         ctx.translate(310,310);
+        ctx.strokeStyle = skin.black;
+        ctx.fillStyle = skin.black;
         // outer rose rotation.
         ctx.rotate(-redrawData.boatUp);
 
@@ -248,9 +253,9 @@ class PolarChart extends React.Component {
         };
         utils.drawSmoothRadialLine(ctx, a, 2, "rgb(0,255,255)");
         ctx.restore();
-        this.drawPolarVector(ctx, redrawData.twa, redrawData.stw*scale, "blue");
-        this.drawPolarVector(ctx, redrawData.targetAngle, redrawData.targetSpeed*scale, "black");
-        utils.drawSmoothRadialLine(ctx, redrawData.polarCurve, 1, "black");
+        this.drawPolarVector(ctx, redrawData.twa, redrawData.stw*scale, skin.blue);
+        this.drawPolarVector(ctx, redrawData.targetAngle, redrawData.targetSpeed*scale, skin.black);
+        utils.drawSmoothRadialLine(ctx, redrawData.polarCurve, 1, skin.black);
 
         ctx.restore();
         return true;
@@ -271,6 +276,7 @@ class PolarChart extends React.Component {
       this.significance, 
       [ "boatUp", "maxStw" ]);
     if ( redrawData !== undefined && redrawData.maxStw !== undefined) {
+      var skin = utils.getSkin(redrawData);
       var canvas = document.getElementById(this.polarRingsId);
       if (canvas !== null && canvas.getContext ) {
         var ctx = canvas.getContext('2d');
@@ -278,10 +284,13 @@ class PolarChart extends React.Component {
 
         this.clearArea(ctx, canvas);
         ctx.translate(310,310);
+        ctx.strokeStyle = skin.black;
+        ctx.fillStyle = skin.black;
 
         ctx.font = '20px '+this.fontFamily;
         ctx.textAlign = 'right';
-        ctx.fillStyle = "black";
+        ctx.fillStyle = skin.black;
+        ctx.textStyle = skin.black;
         ctx.fillText(redrawData.polarName, 250, -280);
 
         // outer rose rotation.
@@ -298,13 +307,14 @@ class PolarChart extends React.Component {
         }
         ctx.font = '15px '+this.fontFamily;
         ctx.textAlign = 'center';
+        ctx.strokeStyle = skin.black;
+        ctx.fillStyle = skin.black;
 
         for ( var i = step; i <= maxStwKn; i+= step) {
           var radius = scale * i;
           ctx.beginPath();
           ctx.arc(0, 0, radius, 0, 2*Math.PI, false);
           ctx.stroke();
-          ctx.fillStyle = "black";
           ctx.fillText(i.toString(), 0, -radius+15);
         }
 
@@ -327,6 +337,7 @@ class PolarChart extends React.Component {
       this.significance, 
       [ "boatUp" ]);
     if ( redrawData !== undefined) {
+      var skin = utils.getSkin(redrawData);
       var canvas = document.getElementById(this.polarId);
       if (canvas !== null && canvas.getContext ) {
         var ctx = canvas.getContext('2d');
@@ -345,6 +356,8 @@ class PolarChart extends React.Component {
         {
           this.clearArea(ctx, canvas);
           ctx.translate(310,310);
+          ctx.strokeStyle = skin.black;
+          ctx.fillStyle = skin.black;
 
           // outer rose rotation.
           ctx.rotate(-redrawData.boatUp);

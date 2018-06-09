@@ -91,6 +91,14 @@ class ConfigureCell extends React.Component {
     return pathOptions;
   }
 
+  addOptions(value, choices) {
+    var pathOptions = [];
+    for (var k in choices) {
+      pathOptions.push((<option key={k} value={k} >{choices[k]}</option>));
+    }
+    return pathOptions;
+  }
+
 
 
   buildFormContent() {
@@ -120,6 +128,11 @@ class ConfigureCell extends React.Component {
           if ( k.endsWith('Path') ) {
               formContent.push((<select key={k} name={k} value={value.value} onChange={this.onValueChange} >
                 {this.getPathOptions(value.value)}
+                </select>
+                ));
+          } else if ( value.choices !== undefined) {
+              formContent.push((<select key={k} name={k} value={value.value} onChange={this.onValueChange} >
+                {this.addOptions(value.value, value.choices)}
                 </select>
                 ));
           } else if ( typeof value.value === 'boolean') {

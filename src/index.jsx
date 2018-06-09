@@ -28,7 +28,6 @@ class App extends React.Component {
         var self = this;
         this.state = {
         };
-
         this.databus = new StreamBundle({
           configStream: this.configStream,
         });
@@ -120,7 +119,7 @@ class App extends React.Component {
     console.log("Starting to render");
     return ( 
         <div>
-        <div className="fullbrightness">
+        <div>
             {this.state.settings}
             {this.displaySettingsButtons()}
             <Layout app={this} locked={this.state.lock} />
@@ -138,5 +137,4 @@ class App extends React.Component {
 const element = <App sourcePriority="" ></App>;    
 
 console.log("Now Running");
-document.body.className = "running";
 render(element, document.getElementById("react"));

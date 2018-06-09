@@ -27,6 +27,7 @@ Restart=on-failure
 ExecStart=/opt/prometheus/prometheus \
           --config.file=/opt/prometheus/prometheus.yml \
           --storage.tsdb.path=/opt/prometheus/data \
+          --storage.tsdb.retention=3650d \
           --web.console.templates=/opt/prometheus/consoles \
           --web.console.libraries=/opt/prometheus/console_libraries
 

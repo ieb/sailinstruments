@@ -50,6 +50,7 @@ class Layout extends React.Component {
     // for the moment hard code this, although a settings fialog would allow components to be added.
     // each component must exist inside its own div. Components cant share svg space.
     this.state = {
+      skinClass: "cs_normal",
       editing: undefined,
       tabs: [
        {
@@ -81,6 +82,7 @@ class Layout extends React.Component {
       this.state = savedState;
     }
     this.initialiseTabs(this.state.tabs);
+    document.body.className = this.state.skinClass || "cs_normal";
     // must attach anyFunctions to the saved state.
     this.doneConfigureCell = this.doneConfigureCell.bind(this);
 
@@ -316,6 +318,7 @@ class Layout extends React.Component {
     sourcePriority = sourcePriority.join(",");
     var polarSourceUri = this.state.polarSourceUri || "pogo1250";
     var hostPort = this.state.socket || "default";
+    var skinClass = this.state.skinClass || "cs_normal";
     var knownSource = [];
     var knownKeys = this.app.knownKeys;
     for(var k in knownKeys ) {
@@ -344,16 +347,29 @@ class Layout extends React.Component {
             value: polarSourceUri,
             title: "Polar performance source",
             help: "Name of the polar file, leave blank for default, prefix with sk: for one provided by SignalK, or no prefix for a file in the app"
-          } 
+          },
+          skinClass: {
+            value: skinClass,
+            choices: {
+              cs_normal: "Normal",
+              cs_invert: "Inverted",
+              cs_night: "Night"
+            },
+            title: "Display colour scheme",
+            help: "Select the color scheme used for the display"
+          }
         }
       },
       update: (update) => {
         console.log("Got Update ",update);
+        document.body.className = update.skinClass.value;
+        console.log("Document Body classname set to  ",document.body.className);
         self.setState({
           sourceIdPreferences: update.sourcePriority.value.replace(/\s/g,"").split(","),
           socket: update.hp.value,
-          polarSourceUri: update.polarSURL.value
-        })
+          polarSourceUri: update.polarSURL.value,
+          skinClass: update.skinClass.value
+        });
       }
     });
   }

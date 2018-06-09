@@ -125,6 +125,8 @@ class BoatRose extends React.Component {
       save = this.drawRosePointers() || save;
       if ( save ) {
         utils.saveDrawState(this.cstate, this.dstate);
+      } else {
+        utils.resetDrawState(this.cstate);
       }
       // perhaps we want to control the refresh rate ?
       //var raf = window.requestAnimationFrame(this.draw);      
@@ -143,23 +145,26 @@ class BoatRose extends React.Component {
       this.significance, 
       [ "boatUp", "twa" ,"awa", "leewayAngle", "twaHistory", "awaHistory", "targetAngle" ]);
     if ( redrawData !== undefined ) {
+      var skin = utils.getSkin(redrawData);
       var canvas = document.getElementById(this.rosePointersId);
       if (canvas !== null && canvas.getContext ) {
         var ctx = canvas.getContext('2d');
         ctx.save();
           this.clearArea(ctx, canvas);
           ctx.translate(310,310);
+          ctx.strokeStyle = skin.black;
+          ctx.fillStyle = skin.black;
 
 
           // outer rose rotation.
           ctx.rotate(redrawData.boatUp);
 
-          this.createBoatMarker(ctx, redrawData.twa, 'T', 'blue', 'white', 'black');
-          this.createBoatMarker(ctx, redrawData.awa, 'A', 'orange', 'white', 'black');
-          this.createBoatMarker(ctx, redrawData.leewayAngle, 'L', 'black', 'white', 'black');
-          this.createRadialHistory(ctx, redrawData.twa, redrawData.twaHistory, 'blue');
-          this.createRadialHistory(ctx, redrawData.awa, redrawData.awaHistory, 'orange');
-          this.createPointer(ctx, redrawData.targetAngle, "v", "black", "white");
+          this.createBoatMarker(ctx, redrawData.twa, 'T', skin.blue, skin.white, skin.black);
+          this.createBoatMarker(ctx, redrawData.awa, 'A', skin.orange, skin.white, skin.black);
+          this.createBoatMarker(ctx, redrawData.leewayAngle, 'L', skin.black, skin.white, skin.black);
+          this.createRadialHistory(ctx, redrawData.twa, redrawData.twaHistory, skin.blue);
+          this.createRadialHistory(ctx, redrawData.awa, redrawData.awaHistory, skin.orange);
+          this.createPointer(ctx, redrawData.targetAngle, "v", skin.black, skin.white);
         ctx.restore();
         return true;
       }
@@ -250,6 +255,7 @@ class BoatRose extends React.Component {
       this.significance, 
       [ "boatUp" ]);
     if ( redrawData !== undefined ) {
+      var skin = utils.getSkin(redrawData);
       var canvas = document.getElementById(this.roseId);
       if (canvas !== null && canvas.getContext ) {
         var ctx = canvas.getContext('2d');
@@ -271,15 +277,17 @@ class BoatRose extends React.Component {
 
           // outer rose rotation.
           ctx.rotate(redrawData.boatUp);
+          ctx.strokeStyle = skin.black;
+          ctx.fillStyle = skin.black;
 
 
           // draw sectors
           ctx.save();
           {
             ctx.lineWidth = 30;
-            ctx.strokeStyle = 'red';
+            ctx.strokeStyle = skin.red;
             ctx.stroke(portSector);
-            ctx.strokeStyle = 'green';
+            ctx.strokeStyle = skin.green;
             ctx.stroke(starboardSector);            
           }
           ctx.restore();
@@ -287,9 +295,9 @@ class BoatRose extends React.Component {
           // boat shape.
           ctx.save();
           {
-            ctx.fillStyle = 'red';
+            ctx.fillStyle = skin.red;
             ctx.fill(boatPort);
-            ctx.fillStyle = 'green';
+            ctx.fillStyle = skin.green;
             ctx.fill(boatStarboard);            
           }
           ctx.restore();

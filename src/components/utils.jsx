@@ -37,7 +37,40 @@ const asIs = function(x) {
 class Utils {
 
 
+  static getSkin(redrawData) {
+    const skins = {
+      cs_normal : {
+          black : 'black',
+          white : 'white',
+          blue: 'blue',
+          orange: 'orange',
+          red: 'red',
+          green: 'green'
+      },
+      cs_invert : {
+          black : 'white',
+          white : 'black',
+          blue: '#21d6e1',
+          orange: '#fffa0b',
+          red: 'red',
+          green: 'green'
 
+      },
+      cs_night : {
+          black : 'red',
+          white : 'black',
+          blue: '#21d6e1',
+          orange: '#fffa0b',
+          red: 'red',
+          green: 'green'
+      }
+    };
+    var skin = skins[redrawData.skinClass];
+    if ( skin === undefined) {
+      skin = skins.cs_normal;
+    }
+    return skin;
+  }
 
 
   static resolve(valueStreams, databus) {
@@ -175,24 +208,41 @@ class Utils {
 
   static saveDrawState(state, drawState) {
     for(var p in state) {
-      try {
-        if ( Array.isArray(state[p])) {
-          if ( drawState[p] === undefined) {
-            drawState[p] = [];
+      if ( p !== "forceRedraw") {
+        try {
+          if ( Array.isArray(state[p])) {
+            if ( drawState[p] === undefined) {
+              drawState[p] = [];
+            }
+            for(var j = 0; j < state[p].length; j++ ) {
+              drawState[p][j] = state[p][j];
+            }
+          } else if ( state[p] !== undefined ) {
+            drawState[p] = state[p];            
           }
-          for(var j = 0; j < state[p].length; j++ ) {
-            drawState[p][j] = state[p][j];
-          }
-        } else if ( state[p] !== undefined ) {
-          drawState[p] = state[p];            
+        } catch(e) {
+          console.error(p,e);
         }
-      } catch(e) {
-        console.error(p,e);
+      } else {
+        state.forceRedraw = false;
       }
     }
   }
 
+  static resetDrawState(state) {
+      state.forceRedraw = false;    
+  }
+
   static getRedrawData(cstate, dstate, sig, props) {
+    if ( cstate.forceRedraw ) {
+      return cstate;
+    }
+    var skinClass = document.body.className;
+    if ( skinClass !== cstate.skinClass) {
+      cstate.skinClass = skinClass;
+      cstate.forceRedraw = true;
+      return cstate;
+    }
     for(var i in props) {
       var p = props[i];
       if ( Array.isArray(cstate[p])) {
@@ -211,6 +261,7 @@ class Utils {
         }            
       }
     }
+
     return undefined;
   }
 

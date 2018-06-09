@@ -318,6 +318,8 @@ class StripChart extends React.Component {
       var save = this.drawChart(); 
       if ( save ) {
         utils.saveDrawState(this.cstate, this.dstate);
+      } else {
+        utils.resetDrawState(this.cstate);
       }
     }
   }
@@ -411,6 +413,7 @@ class StripChart extends React.Component {
       this.significance, 
       [ "timeSequence"   ]);
     if ( redrawData !== undefined ) {
+      var skin = utils.getSkin(redrawData);
       var canvas = this.canvas;
       if (canvas !== null && canvas.getContext ) {
 
@@ -431,7 +434,7 @@ class StripChart extends React.Component {
             .domain(extents)
             .range([0, width]);
 
-        this.drawAxis(ctx, x, true, width, height, 0, "black");
+        this.drawAxis(ctx, x, true, width, height, 0, skin.black);
 
 
         for (var i = 0; i < redrawData.datasets.length; i++) {

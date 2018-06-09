@@ -1,13 +1,28 @@
 .react-tabs__tab-list {
-  border-bottom: 1px solid #aaa;
+  border-bottom: 1px solid #000;
   margin: 0 0 10px;
   padding: 0;
+  background-color: #fff;
 }
+
+.cs_invert .react-tabs__tab-list {
+  border-bottom: 1px solid #fff;
+  background-color: #000;
+}
+
+
+.cs_night .react-tabs__tab-list {
+  border-bottom: 1px solid red;
+  background-color: #000;
+}
+
 
 .react-tabs__tab {
   display: inline-block;
   border: 1px solid transparent;
-  border-bottom: none;
+  background-color: inherit;
+  color: inherit;
+  border-bottom: 1px solid #000;
   bottom: -1px;
   position: relative;
   list-style: none;
@@ -18,17 +33,41 @@
   cursor: pointer;
 }
 
+.cs_invert .react-tabs__tab {
+  border-bottom: 1px solid #fff;
+}
+.cs_night .react-tabs__tab {
+  border-bottom: 1px solid #f00;
+}
+
+
+
 .react-tabs__tab--selected {
-  background: #fff;
-  border-color: #aaa;
-  color: black;
-  border-radius: 5px 5px 0 0;
+  background-color: inherit;
+  color: inherit;
+  border: 1px solid #000;
+  border-bottom: 1px solid #fff;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px
+}
+
+.cs_invert .react-tabs__tab--selected {
+  border-color: #fff;
+  border-bottom: 1px solid #000;
+}
+
+.cs_night .react-tabs__tab--selected {
+  border-color: #f00;
+  border-bottom: 1px solid #000;
 }
 
 .react-tabs__tab--disabled {
   color: GrayText;
   cursor: default;
 }
+
+
+
 
 .react-tabs__tab:focus {
   box-shadow: 0 0 5px hsl(208, 99%, 50%);
