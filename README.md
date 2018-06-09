@@ -135,7 +135,12 @@ This application tries to derive its data from these settings so that it works w
 
 # Other setup
 
-On the server I use the derived data performance plugin and the InfluxDB plugin feeding a stack of InfluxDB with Grafana using Collectd to capture OS level stats on the performance of the Raspberry PI as well as all NMEA2000 data. This allows longer term monitoring of both the Pi operations and boat performance. Here is an example dashboard in Grafana.  For full details on setup look at setup/README.md
+On the server I use the derived data performance plugin and the Prometheus Signalk exporter plugin feeding a local Prometheus instance which also captures OS level stats  on the performance of the Raspberry PI as well as all NMEA2000 data. This allows longer term monitoring of both the Pi operations and boat performance. Here is an example dashboard in Grafana.  For full details on setup look at setup/README.md
 
 
-![Gragana OS Dashboard](screenshots/GrafanaOSDashBoard.png)
+![Grafana OS Dashboard](screenshots/GrafanaEnv.png)
+
+![Grafana OS Dashboard](screenshots/GrafanaNode.png)
+
+![Grafana OS Dashboard](screenshots/GrafanaGuages.png)
+
