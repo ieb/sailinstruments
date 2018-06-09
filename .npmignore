@@ -1,1 +1,8 @@
 node_modules
+*.log
+src
+patches
+KernelHang.md
+test*
+webpack.*
+setup
