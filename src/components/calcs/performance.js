@@ -10,7 +10,8 @@ module.exports = function(props) {
 
 
   props.configStream.onValue((config) => {
-    loadPolar(config.polarSourceUrl);
+    console.log("Reconfigure Polar with ",config);
+    loadPolar(config.polarSourceUri);
   });
 
   function loadPolar(updatedPolarUri) {
@@ -55,19 +56,23 @@ module.exports = function(props) {
   }
 
   function resolvePolar(polarUri, cb) {
-      if (polarUri === undefined || polarUri === "undefined" || polarUri === "pogo1250" ) {
-        // could provide many differnt polars bundled into the application, using the internal: protocol.
-        // provided there was an easy source to get them from and webkit could be persuaded to load them.
-        polarUri = "pogo1250";
-        console.log("Loading default Polar");
-        cb(polarUri, require('./polar/pogo1250'));
+      var puri = polarUri || "pogo1250";
+      if ( !puri.includes("/") ) {
+        try {
+          console.log("Loading default named polar ", puri);
+          var polarData = require('./polar/'+puri);
+          cb(polarUri, polarData);          
+        } catch(e) {
+          console.error(e);
+          console.error("Failed to load named polar, no polar loaded ", puri);
+        }
       } else {
-        // try to load from the dist store of polar files.
-        var url = "polars/"+polarUri+".json";
-        fetch(url)
+        // assume it is a  relative or absolute uri
+        console.log("Loading Polar by url ", puri);
+        fetch(puri)
             .then(res => res.json(), (error) => {
                 console.log("Error Parsing Polar  ", error);
-                console.log("Polars should in json form in @ieb/sailinginstuments/dist/polars/<name>.json see src/components/calc/polar/* for format ");
+                console.log("Polars should in json form in @ieb/sailinginstuments/dist/polars/<name>.json see https://github.com/ieb/sailinstruments/blob/master/src/components/calcs/polar/* for format ");
             })
             .then((polar) => {
               cb(polarUri, polar);

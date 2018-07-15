@@ -346,7 +346,7 @@ class Layout extends React.Component {
           polarSURL: {
             value: polarSourceUri,
             title: "Polar performance source",
-            help: "Name of the polar file, leave blank for default, prefix with sk: for one provided by SignalK, or no prefix for a file in the app"
+            help: "Name of the polar file shipped with the app, leave blank for default (pogo1250), or use a url eg /examples/j109polar.json, see https://github.com/ieb/sailinstruments/tree/master/src/components/calcs/polar/README.md "
           },
           skinClass: {
             value: skinClass,
@@ -363,7 +363,6 @@ class Layout extends React.Component {
       update: (update) => {
         console.log("Got Update ",update);
         document.body.className = update.skinClass.value;
-        console.log("Document Body classname set to  ",document.body.className);
         self.setState({
           sourceIdPreferences: update.sourcePriority.value.replace(/\s/g,"").split(","),
           socket: update.hp.value,
