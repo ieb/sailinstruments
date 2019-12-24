@@ -6,6 +6,7 @@ import  ReactGridLayout from 'react-grid-layout';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import WindInstrument from './WindInstrument.jsx';
 import StripChart from './StripChart.jsx';
+import Course from './Course.jsx';
 import PolarInstrument from './PolarInstrument.jsx';
 import DataInstrument from './DataInstrument.jsx';
 import InlineEdit from './InlineEdit.jsx';
@@ -39,7 +40,8 @@ class Layout extends React.Component {
       PolarInstrument: PolarInstrument,
       DataInstrument: DataInstrument,
       LayoutRaw: LayoutRaw,
-      StripChart: StripChart
+      StripChart: StripChart,
+      Course: Course,
     };
     // register the layout with the app so that components can be registered.
     this.app.registerLayout(this);
@@ -428,6 +430,7 @@ class Layout extends React.Component {
               <button onClick={(e) => { this.onAddClick(tab, "PolarInstrument", 10, 10)}}>Add Polar Instrument</button>
               <button onClick={(e) => { this.onAddClick(tab, "StripChart", 10, 4)}}>Add Strip Chart</button>
               <button onClick={(e) => { this.onAddClick(tab, "LayoutRaw", 10, 10)}}>Add Layout Editor</button>
+              <button onClick={(e) => { this.onAddClick(tab, "Course", 10, 10)}}>Race Course Planner</button>
               <button onClick={(e) => { this.removeTab(tab)}}>Remove Tab</button>
             </div>
             <div className="tabControls" >

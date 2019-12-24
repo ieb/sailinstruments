@@ -23,16 +23,7 @@ module.exports = {
      new HtmlWebpackPlugin({
        template: 'src/index.html'
      }),
-     new webpack.HashedModuleIdsPlugin(),
-     new webpack.optimize.CommonsChunkPlugin({
-       name: 'vendor',
-       minChunks: function(module) {
-          return isExternal(module);
-       }
-     }),
-     new webpack.optimize.CommonsChunkPlugin({
-       name: 'manifest'
-     })
+     new webpack.HashedModuleIdsPlugin()
    ],
   externals: ['mdns'],
   output: {

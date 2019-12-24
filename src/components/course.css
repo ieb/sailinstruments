@@ -1,0 +1,21 @@
+.course tr:nth-child(even) {background: #CCC}
+.course tr:nth-child(odd) {background: #FFF}
+.course table {
+    margin-bottom: 10px;
+    border-spacing: 0px;
+}
+.course table.marks tr:nth-child(odd) {
+    background: #faedd9
+}
+.course table.route tr:nth-child(odd) {
+    background: #dbf4db
+}
+.course tr {
+    padding:  0 0px;
+}
+.course td {
+    margin: 1px;
+}
+.course .headding {
+    font-size: 1.5em;
+}
