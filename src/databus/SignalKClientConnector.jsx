@@ -24,27 +24,27 @@ class SignalKClientConnector {
     // default to the same server the UI was loaded from.
 
     if (this.autoconnect) {
-      this.doConnect(this.getDefaultSocket());
+      this.doConnect(this.getDefaultUrl());
     }
     this.updateConfig = this.updateConfig.bind(this);
     props.configStream.onValue(this.updateConfig);
   }
 
-  getDefaultSocket() {
-    var hostPort = window.location.hostname+":"+window.location.port;
-    console.log("")
+  getDefaultUrl() {
+    var url = window.location.protocol+"//"+window.location.hostname+":"+window.location.port;
     if ( window.location.protocol.startsWith("file:")) {
-      hostPort = "localhost:3000";  // assume there is a sk server on localhost.
-    } else if ( hostPort.endsWith(":") ) {
-      hostPort = hostPort.substring(0,hostPort.length-1);
+      url = "http://localhost:3000";  // assume there is a sk server on localhost.
+    } else if ( url.endsWith(":") ) {
+      url = url.substring(0,url.length-1);
     }
-    return hostPort;    
+    return url;
   }
+
 
   updateConfig(config) {
     console.log("Got new Config ", config);
-    if (config.socket !== undefined && config.socket !==  this.hostPort ) {
-      this.doConnect(config.socket);
+    if (config.signalkUrl !== undefined && config.signalkUrl !==  this.signalkUrl ) {
+      this.doConnect(config.signalkUrl);
     }
   }
 
@@ -73,21 +73,22 @@ class SignalKClientConnector {
     
   }
 
-  doConnect(connectHost) {
-    console.log("Connecting to signalk at ",connectHost, this.connection);
-    if ( connectHost === "default" || connectHost === undefined ) {
-      connectHost = this.getDefaultSocket();
+  doConnect(signalkUrl) {
+    console.log("Connecting to signalk at ",signalkUrl, this.connection);
+    if ( signalkUrl === "default" || signalkUrl === undefined ) {
+      signalkUrl = this.getDefaultUrl();
     }
     if ( this.connection !== undefined && typeof this.connection.close === "function" ) {
       this.connection.close();
     }
     if ( this.client == undefined ) {
+      var url = new URL(signalkUrl);
       this.client = new Client({
-        hostname: connectHost.split(":")[0],
-        port: connectHost.split(":")[1],
+        hostname: url.hostname,
+        port: url.port,
         reconnect: true,
         autoConnect: false,
-        useTLS: false,
+        useTLS: (url.protocol === "https"),
         notifications: false
       });
     }
@@ -97,7 +98,7 @@ class SignalKClientConnector {
     this.client.on('error', this.handleError);
     this.client.on('close', this.handleClose);
     this.client.connect();
-    this.hostPort = connectHost;
+    this.signalkUrl = signalkUrl;
   }
 
   doDisconnect() {

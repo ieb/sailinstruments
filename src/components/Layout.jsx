@@ -90,15 +90,6 @@ class Layout extends React.Component {
 
   }
 
-  getDefaulSocket() {
-    var hostPort = window.location.hostname+":"+window.location.port;
-    if ( window.location.protocol.startsWith("file:")) {
-      hostPort = "localhost:3000";  // assume there is a sk server on localhost.
-    } else if ( hostPort.endsWith(":") ) {
-      hostPort = hostPort.substring(0,hostPort.length-1);
-    }
-    return hostPort;
-  }
 
   registerComponent(name, constructor) {
     this.namedComponents[name]= constructor;
@@ -319,7 +310,7 @@ class Layout extends React.Component {
     var sourcePriority = this.state.sourceIdPreferences || [];
     sourcePriority = sourcePriority.join(",");
     var polarSourceUri = this.state.polarSourceUri || "pogo1250";
-    var hostPort = this.state.socket || "default";
+    var signalkUrl = this.state.signalkUrl || "default";
     var skinClass = this.state.skinClass || "cs_normal";
     var knownSource = [];
     var knownKeys = this.app.knownKeys;
@@ -335,10 +326,10 @@ class Layout extends React.Component {
     this.configureCell("_global", {
       contents: {
         props: {
-          hp: {
-            value: hostPort,
-            title: "Signal K Websocket Host:Port",
-            help: "Host and port for the SignalK Websocket"
+          signalkUrl: {
+            value: signalkUrl,
+            title: "Signal K URL eg http://localhost:3000",
+            help: "URL where the SignalK server is running"
           },
           sourcePriority: {
             value: sourcePriority,
@@ -367,7 +358,7 @@ class Layout extends React.Component {
         document.body.className = update.skinClass.value;
         self.setState({
           sourceIdPreferences: update.sourcePriority.value.replace(/\s/g,"").split(","),
-          socket: update.hp.value,
+          signalkUrl: update.signalkUrl.value,
           polarSourceUri: update.polarSURL.value,
           skinClass: update.skinClass.value
         });

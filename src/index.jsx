@@ -84,7 +84,7 @@ class App extends React.Component {
 
 // perhaps this wants to be in the layout ?
 
-  openGlobalSettings(sourcePriority, hostPort, polarSourceUrl, feedback) {
+  openGlobalSettings() {
     if ( this.layout !== undefined ) {
       this.layout.configureGlobal();
     }
