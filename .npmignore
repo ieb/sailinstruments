@@ -7,3 +7,8 @@ test*
 webpack.*
 setup
 screenshots
+.cache
+octave-workspace
+reprocess.js 
+.babelrc
+TabNaming.png

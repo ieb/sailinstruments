@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "parcel build src/index.html --public-url ./",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "rm -rf dist && npm run build"
   },
   "keywords": [
     "signal k",
