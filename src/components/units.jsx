@@ -178,22 +178,26 @@ module.exports = function(){
   var schemaPatch = require('./schema_patch.json');
 
 
-  for (var key in schema.metadata) {
-    schema.metadata[key].regex = new RegExp(key.replace('.', '\.').replace('*', '.*').replace('$', ''));
-  }
+//  for (var key in schema.metadata) {
+//    schema.metadata[key].regex = new RegExp(key.replace('.', '\.').replace('*', '.*').replace('$', ''));
+//  }
 
   const getLabelForPath = function(path) {
-    var i18nElement = schemaPatch.i18n.en[path] || schema.i18n.en[path] 
-    return i18nElement ?
-      i18nElement.shortName || i18nElement.longName || "??" :
-      path
+    var i18nElement = schemaPatch.i18n.en[path];
+    if ( i18nElement ) {
+      return i18nElement.shortName || i18nElement.longName;
+    } else {
+      console.log("Label undefined for ", path);
+      return path;
+    }
   }
 
   const getUnitForPath = function(path) {
     if ( schemaPatch.metadata[path] !== undefined && schemaPatch.metadata[path].unit !== undefined ) {
       return schemaPatch.metadata[path].unit;
     }
-    return schema.getUnits('vessels.foo.' + path);
+    var units = schema.getUnits('vessels.foo.' + path);
+    return  units;
   }
 
 
