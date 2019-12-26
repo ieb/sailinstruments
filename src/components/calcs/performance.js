@@ -2,8 +2,8 @@
 "use strict";
 
 
-const _ = require('lodash')
-
+const _ = require('lodash');
+const defaultPolar = require('./polar/pogo1250');
 // for the moment, hard code the polar data.
 
 module.exports = function(props) {
@@ -56,20 +56,19 @@ module.exports = function(props) {
   }
 
   function resolvePolar(polarUri, cb) {
-      var puri = polarUri || "pogo1250";
-      if ( !puri.includes("/") ) {
+      if ( !polarUri ) {
         try {
-          console.log("Loading default named polar ", puri);
-          var polarData = require('./polar/'+puri);
-          cb(polarUri, polarData);          
+          console.log("Loading default pogo1250 ");
+          var polarData = defaultPolar;
+          cb("./polar/pogo1250", polarData);          
         } catch(e) {
           console.error(e);
-          console.error("Failed to load named polar, no polar loaded ", puri);
+          console.error("Failed to load named polar, no polar loaded polar1250");
         }
       } else {
         // assume it is a  relative or absolute uri
-        console.log("Loading Polar by url ", puri);
-        fetch(puri)
+        console.log("Loading Polar by url ", polarUri);
+        fetch(polarUri)
             .then(res => res.json(), (error) => {
                 console.log("Error Parsing Polar  ", error);
                 console.log("Polars should in json form in @ieb/sailinginstuments/dist/polars/<name>.json see https://github.com/ieb/sailinstruments/blob/master/src/components/calcs/polar/* for format ");
