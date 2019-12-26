@@ -2,8 +2,7 @@
 "use strict";
 
 import React from 'react';
-import sk from '@signalk/client';
-const SignalkClient = sk.Client;
+import Client from '@signalk/client';
 //import InternalDemo from "./InternalDemo";
 
 class SignalKClientConnector {
@@ -33,6 +32,7 @@ class SignalKClientConnector {
 
   getDefaultSocket() {
     var hostPort = window.location.hostname+":"+window.location.port;
+    console.log("")
     if ( window.location.protocol.startsWith("file:")) {
       hostPort = "localhost:3000";  // assume there is a sk server on localhost.
     } else if ( hostPort.endsWith(":") ) {
@@ -56,6 +56,7 @@ class SignalKClientConnector {
     this.connection = connection;
     this.connected = true;
     this.connectionError = "connected ok"; 
+    this.client.subscribe(); 
   }
   handleDisconnect() {
     this.connected =  false;
@@ -63,6 +64,7 @@ class SignalKClientConnector {
   }
   handleError(error) {
     this.connectionError =  "Error "+error;
+    console.log("Error",error);
   }
   handleClose(event) {
     this.connection = undefined;
@@ -80,14 +82,21 @@ class SignalKClientConnector {
       this.connection.close();
     }
     if ( this.client == undefined ) {
-      this.client = new SignalkClient();
+      this.client = new Client({
+        hostname: connectHost.split(":")[0],
+        port: connectHost.split(":")[1],
+        reconnect: true,
+        autoConnect: false,
+        useTLS: false,
+        notifications: false
+      });
     }
-    this.connection =  this.client.connectDelta(connectHost,
-        this.handleDeltaMessage, 
-        this.handleConnect,
-        this.handleDisconnect,
-        this.handleError,
-        this.handleClose);
+    this.client.on('delta', this.handleDeltaMessage);
+    this.client.on('connect', this.handleConnect);
+    this.client.on('disconnect', this.handleDisconnect);
+    this.client.on('error', this.handleError);
+    this.client.on('close', this.handleClose);
+    this.client.connect();
     this.hostPort = connectHost;
   }
 
