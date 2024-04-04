@@ -1,3 +1,9 @@
+# Retired Project
+
+Please note, that I no longer maintain this project as the I found the power consumption of the hardware required to make it work was too high on
+a sailing boat. Mostly the display requirements. If I find a way to fix that, I will return to it and update it.
+
+
 # Sailing Instuments for SignalK
 
 This plugin contains instruments for SignalK designed to run in a browser on a tablet or laptop. The instruments
